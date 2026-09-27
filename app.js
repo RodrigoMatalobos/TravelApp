@@ -1,7 +1,16 @@
 let currentViewState = { level: 'paises', paisId: null };
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(err => console.error('Service Worker error:', err));
+  let reloadingAfterUpdate = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloadingAfterUpdate) return;
+    reloadingAfterUpdate = true;
+    window.location.reload();
+  });
+
+  navigator.serviceWorker.register('sw.js?v=1.0.7', { updateViaCache: 'none' })
+    .then(registration => registration.update())
+    .catch(err => console.error('Service Worker error:', err));
 }
 
 document.addEventListener('DOMContentLoaded', () => {
