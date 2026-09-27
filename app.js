@@ -27,14 +27,12 @@ function analyzeBookingQr() {
     return;
   }
 
-  const resultWindow = window.open('', '_blank');
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
   fileInput.accept = 'image/*';
   fileInput.onchange = async () => {
     const file = fileInput.files?.[0];
     if (!file) {
-      resultWindow?.close();
       return;
     }
 
@@ -53,13 +51,8 @@ function analyzeBookingQr() {
         throw new Error('El QR no contiene un enlace web seguro.');
       }
 
-      if (resultWindow) {
-        resultWindow.location.href = targetUrl.href;
-      } else {
-        window.location.href = targetUrl.href;
-      }
+      window.location.assign(targetUrl.href);
     } catch (error) {
-      resultWindow?.close();
       alert(error.message || 'No se pudo analizar el QR.');
     } finally {
       fileInput.remove();
