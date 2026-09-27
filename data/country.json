@@ -1,0 +1,8 @@
+[
+  { "id": "spain", "pais": "España", "flag": "🇪🇸", "bgImage": "img/spain.jpg" },
+  { "id": "finland", "pais": "Finlandia", "flag": "🇫🇮", "bgImage": "img/finland.jpg" },
+  { "id": "sweden", "pais": "Suecia", "flag": "🇸🇪", "bgImage": "img/sweden.jpg" },
+  { "id": "belgium", "pais": "Bélgica", "flag": "🇧🇪", "bgImage": "img/belgium.jpg" },
+  { "id": "germany", "pais": "Alemania", "flag": "🇩🇪", "bgImage": "img/germany.jpg" },
+  { "id": "czech", "pais": "República Checa", "flag": "🇨🇿", "bgImage": "img/czech.jpg" }
+]

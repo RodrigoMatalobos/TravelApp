@@ -1,0 +1,16 @@
+{
+  "name": "Europa 2026-2027",
+  "short_name": "ViajeEuropa",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f4f6",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

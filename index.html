@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viaje Europa 2026/2027</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e293b">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+    
+    <!-- Encabezado con Botón de Volver -->
+    <header class="bg-slate-800 border-b border-slate-700 p-4 sticky top-0 z-50 flex items-center justify-between shadow-md">
+        <button id="btnBack" class="hidden text-sm bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg transition-all">
+            ⬅️ Volver
+        </button>
+        <h1 id="headerTitle" class="text-base font-bold text-center flex-1">🌍 Plan de Viaje</h1>
+    </header>
+
+    <!-- Contenedor Principal donde se renderizan las vistas -->
+    <main id="app" class="p-4 max-w-md mx-auto space-y-4">
+        <!-- JS inyectará el contenido aquí -->
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

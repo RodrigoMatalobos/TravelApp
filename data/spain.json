@@ -1,0 +1,68 @@
+{
+  "id": "espana",
+  "pais": "España",
+  "flag": "🇪🇸",
+  "servicios": {
+    "consulados": "https://maps.google.com/?q=Consulado+Argentina+Barcelona",
+    "farmacias": "https://maps.google.com/?q=Farmacias+Barcelona",
+    "lavanderias": "https://maps.google.com/?q=Lavanderias+Barcelona"
+  },
+  "ciudades": [
+    {
+      "nombre": "Barcelona (Ida)",
+      "fechas": "30/11/2026 – 08/12/2026",
+      "hotel": "Apartamentos DV",
+      "hotelUrl": "https://www.booking.com/hotel/es/apartamentos-dv-barcelona6.es.html",
+      "mapaHotelLink": "https://maps.google.com/?q=Apartamentos+DV+Barcelona",
+      "comoLlegar": "Metro L9S hasta Torrassa/Collblanc + 8 min a pie.",
+      "actividades": [
+        {
+          "nombre": "Abadía de Montserrat",
+          "mapa": "https://maps.google.com/?q=Abadia+de+Montserrat"
+        },
+        {
+          "nombre": "Sagrada Familia",
+          "mapa": "https://maps.google.com/?q=Basílica+de+la+Sagrada+Familia"
+        },
+        {
+          "nombre": "Barrio Gótico",
+          "mapa": "https://maps.google.com/?q=barrio-gotico"
+        }
+      ],
+      "gastronomia": [
+        {
+          "nombre": "Tapas en Boquería",
+          "mapa": "https://maps.google.com/?q=Mercado+de+La+Boqueria"
+        },
+        {
+          "nombre": "Paella en Barceloneta",
+          "mapa": "https://maps.google.com/?q=La+Barceloneta+Barcelona"
+        }
+      ]
+    },
+    {
+      "nombre": "Barcelona (Vuelta)",
+      "fechas": "08/01/2027 – 12/01/2027",
+      "hotel": "Barcelona Century Hotel",
+      "hotelUrl": "",
+      "mapaHotelLink": "https://maps.google.com/?q=Barcelona+Century+Hotel",
+      "comoLlegar": "Aerobús A1/A2 a Plaça Universitat o Metro L9S+L5 a Hospital Clínic.",
+      "actividades": [
+        {
+          "nombre": "Compras de último momento",
+          "mapa": ""
+        },
+        {
+          "nombre": "Passeig de Gràcia",
+          "mapa": "https://maps.google.com/?q=Passeig+de+Gracia+Barcelona"
+        }
+      ],
+      "gastronomia": [
+        {
+          "nombre": "Churros en Petritxol",
+          "mapa": "https://maps.google.com/?q=Carrer+de+Petritxol+Barcelona"
+        }
+      ]
+    }
+  ]
+}
