@@ -44,13 +44,26 @@ function showCiudadesView(paisId) {
   currentViewState = { level: 'ciudades', paisId: paisId };
   
   const container = document.getElementById('app');
-  container.innerHTML = '<p class="text-center text-slate-400 text-sm">Cargando itinerario...</p>';
+  container.innerHTML = '<p class="text-center text-slate-400 text-sm py-8">Cargando itinerario...</p>';
 
   fetch(`data/${paisId}.json`)
     .then(res => res.json())
     .then(pais => {
       updateHeader(`${pais.flag} ${pais.pais}`, true);
       container.innerHTML = '';
+
+      // 🎧 Botón de Spotify en el detalle del país
+      if (pais.spotifyUrl) {
+        const spotifyBtn = document.createElement('a');
+        spotifyBtn.href = pais.spotifyUrl;
+        spotifyBtn.target = "_blank";
+        spotifyBtn.className = 'w-full bg-emerald-600 hover:bg-emerald-500 text-white p-3 rounded-xl flex items-center justify-between text-xs font-bold active:scale-95 transition-all shadow-md mb-4';
+        spotifyBtn.innerHTML = `
+          <span class="flex items-center gap-2">🎧 Playlist de ${pais.pais}</span>
+          <span>Abrir Spotify ➔</span>
+        `;
+        container.appendChild(spotifyBtn);
+      }
 
       // Lista de Ciudades
       const ciudadesSection = document.createElement('div');
@@ -71,7 +84,7 @@ function showCiudadesView(paisId) {
       });
       container.appendChild(ciudadesSection);
 
-      // Bloques de Servicios (Consulado, Farmacias, Lavanderías)
+      // Servicios Útiles
       const divider = document.createElement('hr');
       divider.className = 'border-slate-800 my-4';
       container.appendChild(divider);

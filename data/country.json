@@ -1,8 +1,45 @@
 [
-  { "id": "spain", "pais": "España", "flag": "🇪🇸", "bgImage": "img/spain.jpg" },
-  { "id": "finland", "pais": "Finlandia", "flag": "🇫🇮", "bgImage": "img/finland.jpg" },
-  { "id": "sweden", "pais": "Suecia", "flag": "🇸🇪", "bgImage": "img/sweden.jpg" },
-  { "id": "belgium", "pais": "Bélgica", "flag": "🇧🇪", "bgImage": "img/belgium.jpg" },
-  { "id": "germany", "pais": "Alemania", "flag": "🇩🇪", "bgImage": "img/germany.jpg" },
-  { "id": "czech", "pais": "República Checa", "flag": "🇨🇿", "bgImage": "img/czech.jpg" }
+  {
+    "id": "spain",
+    "pais": "España",
+    "flag": "🇪🇸",
+    "spotifyUrl": "https://open.spotify.com/playlist/4RnXEi2McMcnsT3vInD03n",
+    "bgImage": "img/spain.jpg"
+    
+  },
+  {
+    "id": "finland",
+    "pais": "Finlandia",
+    "flag": "🇫🇮",
+    "spotifyUrl": "https://open.spotify.com/playlist/4RnXEi2McMcnsT3vInD03n",
+    "bgImage": "img/finland.jpg"
+  },
+  {
+    "id": "sweden",
+    "pais": "Suecia",
+    "flag": "🇸🇪",
+    "spotifyUrl": "https://open.spotify.com/playlist/4RnXEi2McMcnsT3vInD03n",
+    "bgImage": "img/sweden.jpg"
+  },
+  {
+    "id": "belgium",
+    "pais": "Bélgica",
+    "flag": "🇧🇪",
+    "spotifyUrl": "https://open.spotify.com/playlist/4RnXEi2McMcnsT3vInD03n",
+    "bgImage": "img/belgium.jpg"
+  },
+  {
+    "id": "germany",
+    "pais": "Alemania",
+    "flag": "🇩🇪",
+    "spotifyUrl": "https://open.spotify.com/playlist/4RnXEi2McMcnsT3vInD03n",
+    "bgImage": "img/germany.jpg"
+  },
+  {
+    "id": "czech",
+    "pais": "República Checa",
+    "flag": "🇨🇿",
+    "spotifyUrl": "https://open.spotify.com/playlist/4RnXEi2McMcnsT3vInD03n",
+    "bgImage": "img/czech.jpg"
+  }
 ]
