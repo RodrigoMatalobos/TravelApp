@@ -21,6 +21,54 @@ function escapeHtml(value = '') {
     .replace(/'/g, '&#039;');
 }
 
+function analyzeBookingQr() {
+  if (!('BarcodeDetector' in window)) {
+    alert('Este navegador no permite analizar QR automáticamente. Descargá la imagen y escaneala con la cámara del teléfono.');
+    return;
+  }
+
+  const resultWindow = window.open('', '_blank');
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*';
+  fileInput.onchange = async () => {
+    const file = fileInput.files?.[0];
+    if (!file) {
+      resultWindow?.close();
+      return;
+    }
+
+    try {
+      const imageBitmap = await createImageBitmap(file);
+      const detector = new BarcodeDetector({ formats: ['qr_code'] });
+      const results = await detector.detect(imageBitmap);
+      imageBitmap.close();
+
+      if (!results.length || !results[0].rawValue) {
+        throw new Error('No se encontró un QR en la imagen seleccionada.');
+      }
+
+      const targetUrl = new URL(results[0].rawValue);
+      if (!['http:', 'https:'].includes(targetUrl.protocol)) {
+        throw new Error('El QR no contiene un enlace web seguro.');
+      }
+
+      if (resultWindow) {
+        resultWindow.location.href = targetUrl.href;
+      } else {
+        window.location.href = targetUrl.href;
+      }
+    } catch (error) {
+      resultWindow?.close();
+      alert(error.message || 'No se pudo analizar el QR.');
+    } finally {
+      fileInput.remove();
+    }
+  };
+  document.body.appendChild(fileInput);
+  fileInput.click();
+}
+
 function renderEmptyState(message) {
   const container = document.getElementById('app');
   if (!container) return;
@@ -285,13 +333,24 @@ function showDetalleCiudadView(pais, ciudadIndex, paisIdOverride) {
             <a href="${escapeHtml(ciudad.mapaHotelLink)}" target="_blank" rel="noopener noreferrer" class="bg-slate-700 hover:bg-slate-600 text-white text-xs py-1.5 px-3 rounded-lg flex items-center gap-1 active:scale-95 transition-all">
               📍 Ubicación
             </a>` : ''}
-          ${ciudad.hotelUrl ? `
+          ${ciudad.hotelUrl && ciudad.qrUrl ? `
+            <button type="button" onclick="analyzeBookingQr()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs py-1.5 px-3 rounded-lg flex items-center gap-1 active:scale-95 transition-all">
+              🏨 Booking
+            </button>` : ciudad.hotelUrl ? `
             <a href="${escapeHtml(ciudad.hotelUrl)}" target="_blank" rel="noopener noreferrer" class="bg-blue-600 hover:bg-blue-500 text-white text-xs py-1.5 px-3 rounded-lg flex items-center gap-1 active:scale-95 transition-all">
               🏨 Booking
             </a>` : ''}
           ${ciudad.qrUrl ? `
             <a href="${escapeHtml(ciudad.qrUrl)}" target="_blank" rel="noopener noreferrer" class="bg-slate-700 hover:bg-slate-600 text-white text-xs py-1.5 px-3 rounded-lg flex items-center gap-1 active:scale-95 transition-all">
               🔳 QR reserva
+            </a>` : ''}
+          ${ciudad.voucherEsUrl ? `
+            <a href="${escapeHtml(ciudad.voucherEsUrl)}" target="_blank" rel="noopener noreferrer" class="bg-slate-700 hover:bg-slate-600 text-white text-xs py-1.5 px-3 rounded-lg flex items-center gap-1 active:scale-95 transition-all">
+              📄 Voucher ES
+            </a>` : ''}
+          ${ciudad.voucherLocalUrl ? `
+            <a href="${escapeHtml(ciudad.voucherLocalUrl)}" target="_blank" rel="noopener noreferrer" class="bg-slate-700 hover:bg-slate-600 text-white text-xs py-1.5 px-3 rounded-lg flex items-center gap-1 active:scale-95 transition-all">
+              📄 Voucher original
             </a>` : ''}
         </div>
       </div>
