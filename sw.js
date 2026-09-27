@@ -1,15 +1,14 @@
-const CACHE_NAME = 'europa-2026-v1.0.1';
-const ASSETS_TO_CACHE = [
+const CACHE_NAME = 'europa-2026-v1.0.2';
+const APP_SHELL = [
   './',
   './index.html',
   './app.js',
-  './data.json',
   './manifest.json',
   './img/spain.jpg',
   './img/finland.jpg',
   './img/sweden.jpg',
   './img/belgium.jpg',
-  './img/germay.jpg',
+  './img/germany.jpg',
   './img/czech.jpg',
   './data/country.json',
   './data/spain.json',
@@ -21,34 +20,68 @@ const ASSETS_TO_CACHE = [
   'https://cdn.tailwindcss.com'
 ];
 
-// Instalación: Guarda todos los archivos en caché
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS_TO_CACHE))
+      .then(cache => cache.addAll(APP_SHELL))
       .then(() => self.skipWaiting())
   );
 });
 
-// Activación: Limpia cachés antiguas
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-      );
-    })
+    caches.keys().then(keys => Promise.all(
+      keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+    )).then(() => self.clients.claim())
   );
 });
 
-// Estrategia de búsqueda: Busca en caché primero, si no hay red responde localmente
 self.addEventListener('fetch', event => {
+  const request = event.request;
+
+  if (request.method !== 'GET') {
+    return;
+  }
+
+  const url = new URL(request.url);
+  const isLocalAsset = url.origin === self.location.origin;
+
+  if (!isLocalAsset && !url.href.startsWith('https://cdn.tailwindcss.com')) {
+    return;
+  }
+
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
+          return response;
+        })
+        .catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
+    caches.match(request).then(cachedResponse => {
       if (cachedResponse) {
         return cachedResponse;
       }
-      return fetch(event.request);
+
+      return fetch(request)
+        .then(response => {
+          if (!response || response.status !== 200 || response.type !== 'basic') {
+            return response;
+          }
+
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME)
+            .then(cache => cache.put(request, responseClone));
+
+          return response;
+        })
+        .catch(() => caches.match(request));
     })
   );
 });

@@ -1,0 +1,158 @@
+{
+  "id": "germany",
+  "pais": "Alemania",
+  "flag": "🇩🇪",
+  "spotifyUrl": "https://open.spotify.com/playlist/4RnXEi2McMcnsT3vInD03n",
+  "bgImage": "img/germany.jpg",
+  "servicios": {
+    "consulados": "https://maps.google.com/?q=Embajada+Argentina+en+Berlin",
+    "farmacias": "https://maps.google.com/?q=Apotheke+Berlin",
+    "lavanderias": "https://maps.google.com/?q=Waschsalon+Berlin"
+  },
+  "ciudades": [
+    {
+      "nombre": "Colonia",
+      "fechas": "22/12/2026 – 25/12/2026",
+      "hotel": "Premier Inn Köln City Süd",
+      "hotelUrl": "https://www.booking.com/hotel/de/premier-inn-koln-city-sud.es.html",
+      "mapaHotelLink": "https://maps.google.com/?q=Premier+Inn+Koln+City+Sud",
+      "comoLlegar": "Desde Köln Hauptbahnhof",
+      "actividades": [
+        {
+          "nombre": "tomar Stadtbahn 16 a Poststraße.",
+          "mapa": ""
+        }
+      ],
+      "gastronomia": [
+        {
+          "nombre": "Catedral de Colonia",
+          "mapa": "https://maps.google.com/?q=Catedral+de+Colonia"
+        },
+        {
+          "nombre": "Museo Ludwig",
+          "mapa": "https://maps.google.com/?q=Museo+Ludwig+Colonia"
+        }
+      ]
+    },
+    {
+      "nombre": "Dresde",
+      "fechas": "25/12/2026 – 28/12/2026",
+      "hotel": "Premier Inn Dresden City Zentrum",
+      "hotelUrl": "",
+      "mapaHotelLink": "https://maps.google.com/?q=Premier+Inn+Dresden+City+Zentrum",
+      "comoLlegar": "Desde Dresden Hauptbahnhof",
+      "actividades": [
+        {
+          "nombre": "caminata 10 min.",
+          "mapa": ""
+        }
+      ],
+      "gastronomia": [
+        {
+          "nombre": "Frauenkirche",
+          "mapa": "https://maps.google.com/?q=Frauenkirche+Dresden"
+        },
+        {
+          "nombre": "Palacio Zwinger",
+          "mapa": "https://maps.google.com/?q=Palacio+Zwinger+Dresden"
+        }
+      ]
+    },
+    {
+      "nombre": "Berlín",
+      "fechas": "28/12/2026 – 31/12/2026",
+      "hotel": "Hotel Berlin Center",
+      "hotelUrl": "",
+      "mapaHotelLink": "https://maps.google.com/?q=Hotel+Berlin+Center",
+      "comoLlegar": "Desde la estación central",
+      "actividades": [
+        {
+          "nombre": "tomar S-Bahn hacia Mitte.",
+          "mapa": ""
+        }
+      ],
+      "gastronomia": [
+        {
+          "nombre": "Muro de Berlín",
+          "mapa": "https://maps.google.com/?q=Muro+de+Berlín"
+        },
+        {
+          "nombre": "Museo de Pérgamo",
+          "mapa": "https://maps.google.com/?q=Museo+Pérgamo+Berlín"
+        }
+      ]
+    },
+    {
+      "nombre": "Colonia",
+      "fechas": "22/12/2026 – 25/12/2026",
+      "hotel": "Premier Inn Köln City Süd",
+      "hotelUrl": "https://www.booking.com/hotel/de/premier-inn-koln-city-sud.es.html",
+      "mapaHotelLink": "https://maps.google.com/?q=Premier+Inn+Koln+City+Sud",
+      "comoLlegar": "Desde Köln Hauptbahnhof",
+      "actividades": [
+        {
+          "nombre": "tomar Stadtbahn 16 a Poststraße.",
+          "mapa": ""
+        }
+      ],
+      "gastronomia": [
+        {
+          "nombre": "Catedral de Colonia",
+          "mapa": "https://maps.google.com/?q=Catedral+de+Colonia"
+        },
+        {
+          "nombre": "Museo Ludwig",
+          "mapa": "https://maps.google.com/?q=Museo+Ludwig+Colonia"
+        }
+      ]
+    },
+    {
+      "nombre": "Dresde",
+      "fechas": "25/12/2026 – 28/12/2026",
+      "hotel": "Premier Inn Dresden City Zentrum",
+      "hotelUrl": "",
+      "mapaHotelLink": "https://maps.google.com/?q=Premier+Inn+Dresden+City+Zentrum",
+      "comoLlegar": "Desde Dresden Hauptbahnhof",
+      "actividades": [
+        {
+          "nombre": "caminata 10 min.",
+          "mapa": ""
+        }
+      ],
+      "gastronomia": [
+        {
+          "nombre": "Frauenkirche",
+          "mapa": "https://maps.google.com/?q=Frauenkirche+Dresden"
+        },
+        {
+          "nombre": "Palacio Zwinger",
+          "mapa": "https://maps.google.com/?q=Palacio+Zwinger+Dresden"
+        }
+      ]
+    },
+    {
+      "nombre": "Berlín",
+      "fechas": "28/12/2026 – 31/12/2026",
+      "hotel": "Hotel Berlin Center",
+      "hotelUrl": "",
+      "mapaHotelLink": "https://maps.google.com/?q=Hotel+Berlin+Center",
+      "comoLlegar": "Desde la estación central",
+      "actividades": [
+        {
+          "nombre": "tomar S-Bahn hacia Mitte.",
+          "mapa": ""
+        }
+      ],
+      "gastronomia": [
+        {
+          "nombre": "Muro de Berlín",
+          "mapa": "https://maps.google.com/?q=Muro+de+Berlín"
+        },
+        {
+          "nombre": "Museo de Pérgamo",
+          "mapa": "https://maps.google.com/?q=Museo+Pérgamo+Berlín"
+        }
+      ]
+    }
+  ]
+}

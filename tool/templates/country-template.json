@@ -1,0 +1,39 @@
+{
+  "id": "spain",
+  "pais": "España",
+  "flag": "🇪🇸",
+  "spotifyUrl": "https://open.spotify.com/playlist/4RnXEi2McMcnsT3vInD03n",
+  "driveFolderUrl": "",
+  "bgImage": "img/spain.jpg",
+  "servicios": {
+    "consulados": "https://maps.google.com/?q=Consulado+General+de+la+República+Argentina+en+Barcelona",
+    "farmacias": "https://maps.google.com/?q=Farmacias+Barcelona",
+    "lavanderias": "https://maps.google.com/?q=Lavanderias+Barcelona"
+  },
+  "ciudades": [
+    {
+      "nombre": "Barcelona (Ida)",
+      "fechas": "30/11/2026 – 08/12/2026",
+      "hotel": "Apartamentos DV",
+      "hotelUrl": "https://www.booking.com/hotel/es/apartamentos-dv-barcelona6.es.html",
+      "mapaHotelLink": "https://maps.google.com/?q=Apartamentos+DV+Barcelona",
+      "comoLlegar": "Metro L9S hasta Torrassa/Collblanc + 8 min a pie.",
+      "actividades": [
+        {
+          "nombre": "Abadía de Montserrat",
+          "mapa": "https://maps.google.com/?q=Abadia+de+Montserrat"
+        },
+        {
+          "nombre": "Sagrada Familia",
+          "mapa": "https://maps.google.com/?q=Basílica+de+la+Sagrada+Familia"
+        }
+      ],
+      "gastronomia": [
+        {
+          "nombre": "Tapas en Boquería",
+          "mapa": "https://maps.google.com/?q=Mercado+de+La+Boqueria"
+        }
+      ]
+    }
+  ]
+}

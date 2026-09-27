@@ -1,0 +1,16 @@
+[
+  {
+    "id": "spain",
+    "pais": "España",
+    "flag": "🇪🇸",
+    "spotifyUrl": "https://open.spotify.com/playlist/4RnXEi2McMcnsT3vInD03n",
+    "bgImage": "img/spain.jpg"
+  },
+  {
+    "id": "germany",
+    "pais": "Alemania",
+    "flag": "🇩🇪",
+    "spotifyUrl": "https://open.spotify.com/playlist/4RnXEi2McMcnsT3vInD03n",
+    "bgImage": "img/germany.jpg"
+  }
+]
