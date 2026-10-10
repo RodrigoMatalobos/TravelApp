@@ -1,8 +1,10 @@
-const CACHE_NAME = 'europa-2026-v1.0.7';
+const CACHE_NAME = 'europa-2026-v1.0.11';
 const APP_SHELL = [
   './',
   './index.html',
   './app.js',
+  './globe.js',
+  './img/earth-blue-marble.jpg',
   './manifest.json',
   './img/spain.jpg',
   './img/finland.jpg',
@@ -11,20 +13,29 @@ const APP_SHELL = [
   './img/germany.jpg',
   './img/czech.jpg',
   './data/country.json',
+  './data/map-locations.json',
   './data/spain.json',
   './data/finland.json',
   './data/sweden.json',
   './data/belgium.json',
   './data/germany.json',
   './data/czech.json',
-  'https://cdn.tailwindcss.com'
+  'https://cdn.tailwindcss.com',
+  'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js',
+  'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.core.js'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(async cache => {
+      const localAssets = APP_SHELL.filter(asset => !asset.startsWith('https://'));
+      const externalAssets = APP_SHELL.filter(asset => asset.startsWith('https://'));
+      await cache.addAll(localAssets);
+      await Promise.all(externalAssets.map(asset => cache.add(asset).catch(error => {
+        console.warn('No se pudo precargar el recurso externo:', asset, error);
+      })));
+      await self.skipWaiting();
+    })
   );
 });
 
@@ -46,7 +57,10 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
   const isLocalAsset = url.origin === self.location.origin;
 
-  if (!isLocalAsset && !url.href.startsWith('https://cdn.tailwindcss.com')) {
+  const isExternalLibrary = url.href.startsWith('https://cdn.tailwindcss.com')
+    || url.href === 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js'
+    || url.href === 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.core.js';
+  if (!isLocalAsset && !isExternalLibrary) {
     return;
   }
 

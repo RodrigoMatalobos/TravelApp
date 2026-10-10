@@ -1,4 +1,8 @@
 let currentViewState = { level: 'paises', paisId: null };
+let homeMode = 'globe';
+let homeCountries = [];
+let disposeGlobe = null;
+let focusedGlobeLocation = null;
 
 if ('serviceWorker' in navigator) {
   let reloadingAfterUpdate = false;
@@ -8,7 +12,7 @@ if ('serviceWorker' in navigator) {
     window.location.reload();
   });
 
-  navigator.serviceWorker.register('sw.js?v=1.0.7', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('sw.js?v=1.0.11', { updateViaCache: 'none' })
     .then(registration => registration.update())
     .catch(err => console.error('Service Worker error:', err));
 }
@@ -142,22 +146,8 @@ function showPaisesView() {
         return;
       }
 
-      container.innerHTML = '';
-      paises.forEach(p => {
-        const card = document.createElement('div');
-        card.className = 'relative h-32 rounded-2xl overflow-hidden shadow-lg cursor-pointer active:scale-95 transition-all border border-slate-700 mb-3';
-        card.onclick = () => showCiudadesView(p.id);
-
-        card.innerHTML = `
-          <img src="${escapeHtml(p.bgImage || '')}" class="absolute inset-0 w-full h-full object-cover brightness-50" alt="${escapeHtml(p.pais || 'País')}">
-          <div class="absolute inset-0 p-4 flex items-end bg-gradient-to-t from-slate-950/80 to-transparent">
-            <h2 class="text-xl font-bold text-white flex items-center gap-2">
-              <span>${escapeHtml(p.flag || '')}</span> ${escapeHtml(p.pais || 'Sin nombre')}
-            </h2>
-          </div>
-        `;
-        container.appendChild(card);
-      });
+      homeCountries = paises;
+      renderHomeView();
     })
     .catch(err => {
       handleFetchError('No se pudo cargar la lista de países. Revisa que exista data/country.json.', 'data/country.json');
@@ -171,6 +161,7 @@ function showCiudadesView(paisId) {
 
   const container = document.getElementById('app');
   if (!container) return;
+  container.className = 'p-4 max-w-md mx-auto space-y-4';
   container.innerHTML = '<p class="text-center text-slate-400 text-sm py-8">Cargando itinerario...</p>';
 
   getJson(`data/${canonicalPaisId}.json`)
@@ -279,6 +270,7 @@ function showDetalleCiudadView(pais, ciudadIndex, paisIdOverride) {
 
   const container = document.getElementById('app');
   if (!container) return;
+  container.className = 'p-4 max-w-md mx-auto space-y-4';
 
   const actividades = normalizeActivities(ciudad.actividades);
   const gastronomia = normalizeActivities(ciudad.gastronomia);
@@ -337,6 +329,147 @@ function handleBack() {
   } else if (currentViewState.level === 'ciudades') {
     showPaisesView();
   }
+}
+
+function createHomeSwitch() {
+  const switcher = document.createElement('div');
+  switcher.className = 'inline-flex items-center gap-1 rounded-full border border-white/15 bg-[#142d33]/90 p-1 shadow-lg backdrop-blur';
+  switcher.setAttribute('aria-label', 'Vista de destinos');
+  switcher.innerHTML = `
+    <button type="button" data-home-mode="globe" class="rounded-full px-4 py-2 text-xs font-semibold transition-colors">🌐 Globo</button>
+    <button type="button" data-home-mode="list" class="rounded-full px-4 py-2 text-xs font-semibold transition-colors">☷ Lista</button>
+  `;
+  switcher.querySelectorAll('button').forEach(button => {
+    const active = button.dataset.homeMode === homeMode;
+    button.classList.add(...(active ? ['bg-[#e7a66e]', 'text-[#18252a]'] : ['text-slate-200', 'hover:bg-white/10']));
+    button.setAttribute('aria-pressed', String(active));
+    button.addEventListener('click', () => {
+      homeMode = button.dataset.homeMode;
+      renderHomeView();
+    });
+  });
+  return switcher;
+}
+
+function renderHomeView() {
+  const container = document.getElementById('app');
+  if (!container) return;
+  disposeGlobe?.();
+  disposeGlobe = null;
+  focusedGlobeLocation = null;
+
+  if (homeMode === 'list') {
+    container.className = 'p-4 max-w-md mx-auto space-y-4';
+    container.innerHTML = '';
+    container.appendChild(createHomeSwitch());
+    homeCountries.forEach(country => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'relative block h-32 w-full overflow-hidden rounded-xl border border-slate-700 text-left shadow-lg transition-transform active:scale-[.98]';
+      card.onclick = () => showCiudadesView(country.id);
+      card.innerHTML = `
+        <img src="${escapeHtml(country.bgImage || '')}" class="absolute inset-0 h-full w-full object-cover brightness-50" alt="">
+        <span class="absolute inset-0 flex items-end bg-gradient-to-t from-slate-950/80 to-transparent p-4">
+          <span class="text-xl font-bold text-white">${escapeHtml(country.flag || '')} ${escapeHtml(country.pais || 'Sin nombre')}</span>
+        </span>
+      `;
+      container.appendChild(card);
+    });
+    return;
+  }
+
+  container.className = 'relative isolate h-[calc(100svh-64px)] min-h-[520px] w-full overflow-hidden bg-[#09191e]';
+  container.innerHTML = `
+    <div id="globe-scene" class="absolute inset-0"></div>
+    <div class="pointer-events-none absolute left-5 top-5 z-10 max-w-[55%]">
+      <p class="text-[10px] font-bold uppercase tracking-[.18em] text-[#9dbfba]">Ruta del viaje</p>
+      <h2 class="mt-1 text-lg font-semibold text-white md:text-xl">Europa <span class="text-[#e7a66e]">2026</span></h2>
+      <p class="mt-1 text-[9px] text-slate-400">NASA Blue Marble</p>
+    </div>
+    <div id="home-switch-slot" class="absolute right-4 top-4 z-20"></div>
+    <section id="destination-toast" class="absolute bottom-5 left-4 right-4 z-20 mx-auto max-w-md rounded-xl border border-white/15 bg-[#12272dcc] p-4 text-white shadow-2xl backdrop-blur-md" aria-live="polite">
+      <div class="flex items-start justify-between gap-4">
+        <div class="min-w-0">
+          <p id="destination-country" class="text-[10px] font-bold uppercase tracking-[.16em] text-[#e7a66e]">Tu recorrido</p>
+          <h3 id="destination-title" class="mt-1 text-lg font-semibold">Tocá un destino</h3>
+          <p id="destination-date" class="mt-1 text-xs text-slate-300">Girá el globo y elegí una parada.</p>
+        </div>
+        <button id="destination-open" type="button" class="hidden shrink-0 rounded-lg bg-[#e7a66e] px-3 py-2 text-xs font-bold text-[#172328] transition-colors hover:bg-[#f2bd8f]">Ver itinerario <span aria-hidden="true">→</span></button>
+      </div>
+    </section>
+    <p class="pointer-events-none absolute bottom-[126px] left-0 right-0 z-10 text-center text-[10px] text-slate-300/75">Arrastr&aacute; para girar · pellizc&aacute; para acercar</p>
+  `;
+  container.querySelector('#home-switch-slot').appendChild(createHomeSwitch());
+
+  function showDestination(location) {
+    focusedGlobeLocation = location;
+    const toast = container.querySelector('#destination-toast');
+    const openButton = container.querySelector('#destination-open');
+    container.querySelector('#destination-country').textContent = `${location.flag || ''} ${location.countryName}`;
+    container.querySelector('#destination-title').textContent = location.name;
+    const stage = location.stage ? ` · ${location.stage}` : '';
+    container.querySelector('#destination-date').textContent = `Etapa ${location.routeIndex + 1} de ${location.routeLength}${stage}`;
+    if (location.countryId) {
+      openButton.classList.remove('hidden');
+      openButton.onclick = async () => {
+        try {
+          const country = await getJson(`data/${location.countryId}.json`);
+          const cities = Array.isArray(country.ciudades) ? country.ciudades : [];
+          const hasSelectedCity = location.openMode === 'detail'
+            && Number.isInteger(location.cityIndex)
+            && cities[location.cityIndex];
+          const cityIndex = hasSelectedCity ? location.cityIndex : cities.length === 1 ? 0 : null;
+
+          if (cityIndex !== null && cities[cityIndex]) {
+            showDetalleCiudadView(country, cityIndex, location.countryId);
+          } else {
+            showCiudadesView(location.countryId);
+          }
+        } catch {
+          handleFetchError('No se pudo cargar el itinerario de este destino.', `data/${location.countryId}.json`);
+        }
+      };
+    } else {
+      openButton.classList.add('hidden');
+    }
+    toast.classList.remove('animate-[toast-in_.25s_ease-out]');
+    requestAnimationFrame(() => toast.classList.add('animate-[toast-in_.25s_ease-out]'));
+  }
+
+  Promise.all([import('./globe.js'), getJson('data/map-locations.json')])
+    .then(([{ mountTravelGlobe }, route]) => {
+      if (!container.isConnected || homeMode !== 'globe') return;
+      const canvasContainer = container.querySelector('#globe-scene');
+      if (!canvasContainer) return;
+      const locations = (Array.isArray(route.stops) ? route.stops : []).map((stop, index, stops) => ({
+        ...stop,
+        lat: stop.latitude,
+        lon: stop.longitude,
+        routeIndex: index,
+        routeLength: stops.length
+      }));
+      disposeGlobe = mountTravelGlobe(
+        canvasContainer,
+        locations,
+        location => {
+          if (location) showDestination(location);
+          else if (!focusedGlobeLocation) {
+            container.querySelector('#destination-country').textContent = 'Tu recorrido';
+            container.querySelector('#destination-title').textContent = 'Tocá un destino';
+            container.querySelector('#destination-date').textContent = 'Girá el globo y elegí una parada.';
+            container.querySelector('#destination-open').classList.add('hidden');
+          }
+        },
+        showDestination
+      );
+    })
+    .catch(error => {
+      console.error('No se pudo cargar el globo:', error);
+      const title = container.querySelector('#destination-title');
+      const detail = container.querySelector('#destination-date');
+      if (title) title.textContent = 'Globo no disponible';
+      if (detail) detail.textContent = 'Podés cambiar a Lista para ver tus destinos.';
+    });
 }
 
 function updateHeader(title, showBackBtn) {

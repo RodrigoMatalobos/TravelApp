@@ -70,6 +70,42 @@ El programa guarda la URL raíz de `Viaje Europa 2026` en `tool/drive-config.jso
 
 Los tickets pueden contener datos personales. Mantené las carpetas restringidas a las cuentas autorizadas; la app no agrega autenticación propia a Drive.
 
+## Completar paradas del globo
+
+El recorrido y sus coordenadas están en `data/map-locations.json`. Las paradas de ciudades usan `countryId` y `cityIndex` para enlazarse con los JSON del itinerario; respetá el orden de `stops`, ya que define la ruta dibujada.
+
+Cuando termines de completar los JSON de países, comprobá si falta alguna ciudad o si hay índices todavía sin datos:
+
+```bash
+node tool/sync-map-locations.js --check
+```
+
+Para agregar las ciudades pendientes con sus coordenadas y posición en el viaje:
+
+```bash
+node tool/sync-map-locations.js
+```
+
+El script pide latitud y longitud decimales, una etiqueta opcional y dónde insertar cada parada. Por defecto la agrega antes del regreso. Solo guarda `data/map-locations.json` al confirmar con `SI`; si hay un índice de ruta que todavía no existe en el JSON del país, primero pide completar esos datos.
+
+## Mantener las paradas del globo
+
+El recorrido editable está en `data/map-locations.json`. Cada ciudad usa `countryId` y `cityIndex` para vincularse con su entrada en `data/<countryId>.json`; las coordenadas son decimales de latitud y longitud. Conservá el orden de `stops`, porque determina la línea del viaje.
+
+Cuando termines de completar los JSON de países, revisá qué ciudades faltan en el mapa:
+
+```bash
+node tool/sync-map-locations.js --check
+```
+
+Para agregar las pendientes, ejecutá:
+
+```bash
+node tool/sync-map-locations.js
+```
+
+El programa solicita coordenadas, una etiqueta opcional y la posición de cada nueva parada. Por defecto las inserta antes del regreso. Solo escribe en `data/map-locations.json` si confirmás con `SI`; si detecta índices de paradas que todavía no existen en un JSON, se detiene para que primero completes esos datos.
+
 ### Cómo escribir actividades y gastronomía
 
 Usá este formato dentro del CSV:
@@ -93,6 +129,7 @@ Podés probar el generador y el administrador sin instalar dependencias extra co
 
 ```bash
 node --test tool/generate-data.test.js tool/manage-drive-folders.test.js
+node --test tool/sync-map-locations.test.js
 ```
 
 ## Nota
