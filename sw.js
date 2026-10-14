@@ -1,8 +1,9 @@
-const CACHE_NAME = 'europa-2026-v1.0.11';
+const CACHE_NAME = 'europa-2026-v1.0.18';
 const APP_SHELL = [
   './',
   './index.html',
   './app.js',
+  './vault.js',
   './globe.js',
   './img/earth-blue-marble.jpg',
   './manifest.json',
@@ -12,14 +13,6 @@ const APP_SHELL = [
   './img/belgium.jpg',
   './img/germany.jpg',
   './img/czech.jpg',
-  './data/country.json',
-  './data/map-locations.json',
-  './data/spain.json',
-  './data/finland.json',
-  './data/sweden.json',
-  './data/belgium.json',
-  './data/germany.json',
-  './data/czech.json',
   'https://cdn.tailwindcss.com',
   'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js',
   'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.core.js'
@@ -66,10 +59,12 @@ self.addEventListener('fetch', event => {
 
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
+      fetch(new Request(request, { cache: 'reload' }))
         .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
+          if (response && response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
+          }
           return response;
         })
         .catch(() => caches.match('./index.html'))

@@ -16,6 +16,15 @@
             ⬅️ Volver
         </button>
         <h1 id="headerTitle" class="text-base font-bold text-center flex-1">🌍 Plan de Viaje</h1>
+        <div class="flex items-center gap-2">
+            <button id="btnVault" type="button" class="text-xs bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg transition-all">
+                🔐 Configurar Vault
+            </button>
+            <button id="btnVaultMenu" type="button" aria-label="Abrir menú del Vault" aria-controls="vaultMenu" aria-expanded="false" class="hidden h-10 w-10 rounded-lg border border-slate-600 bg-slate-700 text-lg text-white hover:bg-slate-600">
+                ☰
+            </button>
+            <button id="btnSignOut" type="button" aria-label="Cerrar sesión" title="Cerrar sesión" class="hidden h-10 w-10 rounded-lg border border-slate-600 bg-slate-700 text-lg text-white hover:bg-slate-600">⏻</button>
+        </div>
     </header>
 
     <!-- Contenedor Principal donde se renderizan las vistas -->
@@ -23,6 +32,29 @@
         <!-- JS inyectará el contenido aquí -->
     </main>
 
-    <script src="app.js"></script>
+    <div id="vaultMenu" class="fixed inset-0 z-[100] hidden" aria-hidden="true">
+        <button type="button" data-menu-close class="absolute inset-0 h-full w-full bg-slate-950/70" aria-label="Cerrar menú"></button>
+        <nav class="absolute right-0 top-0 flex h-full w-[min(20rem,86vw)] flex-col border-l border-slate-700 bg-slate-900 p-5 shadow-2xl" aria-label="Listas del viaje">
+            <div class="mb-6 flex items-center justify-between border-b border-slate-700 pb-4">
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-[.16em] text-emerald-400">Espacio compartido</p>
+                    <h2 class="mt-1 text-lg font-semibold text-white">Listas del viaje</h2>
+                </div>
+                <button type="button" data-menu-close aria-label="Cerrar menú" class="h-9 w-9 rounded-lg text-xl text-slate-300 hover:bg-slate-800 hover:text-white">×</button>
+            </div>
+            <div class="space-y-2">
+                <button type="button" data-vault-page="Valija" class="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-left text-sm font-semibold text-white hover:border-emerald-500/60 hover:bg-slate-800/80">🧳 Valija</button>
+                <button type="button" data-vault-page="Compras" class="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-left text-sm font-semibold text-white hover:border-emerald-500/60 hover:bg-slate-800/80">🛒 Compras</button>
+                <button type="button" data-vault-page="Gastos" class="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-left text-sm font-semibold text-white hover:border-emerald-500/60 hover:bg-slate-800/80">💶 Gastos</button>
+                <button type="button" data-admin-access class="hidden w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-left text-sm font-semibold text-white hover:border-emerald-500/60 hover:bg-slate-800/80">👥 Administrar accesos</button>
+            </div>
+            <p class="mt-auto border-t border-slate-700 pt-4 text-xs leading-relaxed text-slate-400">Cada listado tiene su propia pantalla. Los cambios se comparten al tocar Guardar.</p>
+        </nav>
+    </div>
+
+    <script type="module" src="./firebase-client.js"></script>
+    <script type="module" src="./firestore-data.js"></script>
+    <script type="module" src="./vault.js"></script>
+    <script type="module" src="./app.js"></script>
 </body>
 </html>

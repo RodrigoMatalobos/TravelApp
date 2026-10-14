@@ -1,0 +1,17 @@
+# Private Google Drive Vault manifest
+/vault.json
+
+# npm and Vite generated files
+/node_modules/
+/dist/
+/.env
+/.env.*
+!/.env.example
+/google-vault-config.js
+/GOOGLE_VAULT_SETUP.md
+/PLAN*
+
+# Private itinerary data and generated exports
+/data.json
+/data/*.json
+/output/
