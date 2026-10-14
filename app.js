@@ -28,10 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (backButton) {
     backButton.addEventListener('click', handleBack);
   }
-  const vaultButton = document.getElementById('btnVault');
-  if (vaultButton) {
-    vaultButton.addEventListener('click', showVaultView);
-  }
   document.getElementById('btnVaultMenu')?.addEventListener('click', () => setVaultMenuOpen(true));
   document.querySelectorAll('[data-menu-close]').forEach(button => {
     button.addEventListener('click', () => setVaultMenuOpen(false));
@@ -59,12 +55,12 @@ function renderSignIn(message = '') {
   updateVaultNavigation();
   const container = document.getElementById('app');
   if (!container) return;
-  container.className = 'p-4 max-w-md mx-auto space-y-4';
+  container.className = 'flex min-h-[calc(100svh-64px)] max-w-md mx-auto items-center justify-center p-4';
   container.innerHTML = `
     <section class="rounded-xl border border-slate-700 bg-slate-800 p-5 text-center">
       <h2 class="text-lg font-semibold text-white">Acceso al viaje</h2>
       <p class="mt-2 text-sm text-slate-300">Iniciá sesión con Google para ver el itinerario y las listas compartidas.</p>
-      <button id="firebase-sign-in" type="button" class="mt-5 w-full rounded-lg bg-white px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-100">Continuar con Google</button>
+      <button id="firebase-sign-in" type="button" class="mt-5 w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-500">Acceso</button>
       <p id="firebase-auth-message" class="mt-3 text-sm text-red-300" role="status">${escapeHtml(message)}</p>
     </section>
   `;
@@ -565,7 +561,6 @@ function setVaultMenuOpen(open) {
 
 function updateVaultNavigation() {
   const enabled = Boolean(activeMember?.enabled);
-  document.getElementById('btnVault')?.classList.add('hidden');
   document.getElementById('btnVaultMenu')?.classList.toggle('hidden', !enabled);
   document.getElementById('btnSignOut')?.classList.toggle('hidden', !signedInUser);
   document.querySelector('[data-admin-access]')?.classList.toggle('hidden', !enabled || activeMember?.role !== 'admin');
