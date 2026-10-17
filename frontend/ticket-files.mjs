@@ -46,6 +46,24 @@ export function normalizeSelectedFolderFiles(files) {
   });
 }
 
+export function ticketButtonLabel(file, files) {
+  const match = String(file.name || '').match(/^(.*?)[ _-]([a-z]{2})\.pdf$/i);
+  if (!match) return file.name;
+
+  const [, baseName, language] = match;
+  if (language.toLowerCase() === 'es') return 'Voucher ES';
+
+  const normalizedBase = normalizeFolderName(baseName);
+  const hasSpanishVersion = files.some(candidate => {
+    const candidateMatch = String(candidate.name || '').match(/^(.*?)[ _-]([a-z]{2})\.pdf$/i);
+    return candidateMatch
+      && candidateMatch[2].toLowerCase() === 'es'
+      && normalizeFolderName(candidateMatch[1]) === normalizedBase;
+  });
+
+  return hasSpanishVersion ? 'Voucher original' : file.name;
+}
+
 function countryKey(value) {
   const normalized = normalizeFolderName(value);
   return COUNTRY_ALIASES[normalized] || normalized;
@@ -75,9 +93,15 @@ function cityBase(value) {
 export function findCityIndex(folderName, cities = []) {
   const folderBase = cityBase(folderName);
   if (!folderBase) return -1;
-  const candidates = cities
+  const namedCities = cities
     .map((city, index) => ({ city, index }))
-    .filter(({ city }) => cityBase(city?.nombre) === folderBase);
+    .map(entry => ({ ...entry, base: cityBase(entry.city?.nombre) }));
+  const exactCandidates = namedCities.filter(({ base }) => base === folderBase);
+  if (exactCandidates.length === 1) return exactCandidates[0].index;
+
+  const candidates = exactCandidates.length
+    ? exactCandidates
+    : namedCities.filter(({ base }) => base.startsWith(`${folderBase} `));
   if (candidates.length === 1) return candidates[0].index;
 
   const stage = tripStage(folderName);
@@ -92,9 +116,7 @@ function pathParts(file) {
 export function filesForCountry(files, country) {
   return files.filter(file => {
     const parts = pathParts(file);
-    if (!folderMatchesCountry(parts[0], country)) return false;
-    if (parts.length === 2) return true;
-    return findCityIndex(parts[1], country.ciudades) === -1;
+    return folderMatchesCountry(parts[0], country) && parts.length === 2;
   });
 }
 

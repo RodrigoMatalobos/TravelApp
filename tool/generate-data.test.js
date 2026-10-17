@@ -25,9 +25,9 @@ test('generateFromCsv genera country.json y un archivo por país', () => {
   const csvPath = path.join(tempDir, 'sample.csv');
 
   const csv = [
-    'country_id,country_name,flag,spotify_url,bg_image,servicios_consulados,servicios_farmacias,servicios_lavanderias,servicios_supermercados,city_name,city_dates,hotel_name,hotel_url,hotel_map,como_llegar,activities,gastronomia,drive_folder_url',
-    'spain,España,🇪🇸,https://spotify.test,img/spain.jpg,https://maps.test,https://farmacia.test,https://lavanderia.test,https://supermercado.test,Barcelona,30/11/2026 – 08/12/2026,Hotel Test,https://hotel.test,https://hotel.map.test,Metro test,"Museo|https://m.com||Plaza|https://p.com","Paella|https://paella.com",',
-    'germany,Alemania,🇩🇪,https://spotify.de,img/germany.jpg,https://maps.de,https://farmacia.de,https://lavanderia.de,https://supermercado.de,Berlín,01/01/2027 – 03/01/2027,Hotel Berlin,,https://hotel.berlin.map,Tren test,"Muro|https://muro.com","Bratwurst|https://brat.com",https://drive.google.com/drive/folders/germany'
+    'country_id,country_name,flag,spotify_url,bg_image,servicios_consulados,servicios_farmacias,servicios_lavanderias,servicios_supermercados,city_name,city_dates,hotel_name,hotel_map,como_llegar,activities,gastronomia,drive_folder_url',
+    'spain,España,🇪🇸,https://spotify.test,img/spain.jpg,https://maps.test,https://farmacia.test,https://lavanderia.test,https://supermercado.test,Barcelona,30/11/2026 – 08/12/2026,Hotel Test,https://hotel.map.test,Metro test,"Museo|https://m.com||Plaza|https://p.com","Paella|https://paella.com",',
+    'germany,Alemania,🇩🇪,https://spotify.de,img/germany.jpg,https://maps.de,https://farmacia.de,https://lavanderia.de,https://supermercado.de,Berlín,01/01/2027 – 03/01/2027,Hotel Berlin,https://hotel.berlin.map,Tren test,"Muro|https://muro.com","Bratwurst|https://brat.com",https://drive.google.com/drive/folders/germany'
   ].join('\n');
 
   fs.writeFileSync(csvPath, csv, 'utf8');
@@ -50,6 +50,7 @@ test('generateFromCsv genera country.json y un archivo por país', () => {
     const germanyData = JSON.parse(fs.readFileSync(path.join(tempDir, 'tool-output', 'germany.json'), 'utf8'));
     assert.strictEqual(germanyData.driveFolderUrl, 'https://drive.google.com/drive/folders/germany');
     assert.strictEqual(germanyData.servicios.supermercados, 'https://supermercado.de');
+    assert.equal(Object.hasOwn(germanyData.ciudades[0], 'hotelUrl'), false);
   } finally {
     process.chdir(originalCwd);
     fs.rmSync(tempDir, { recursive: true, force: true });

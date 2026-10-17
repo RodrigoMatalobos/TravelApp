@@ -10,6 +10,7 @@ import {
   writeBatch
 } from 'firebase/firestore';
 import { db } from './firebase-client.js';
+import { mergeCountryCatalog } from './country-catalog.mjs';
 
 const INITIAL_COUNTRY_IDS = ['finland', 'sweden', 'belgium', 'germany', 'spain', 'czech'];
 const COUNTRY_IMAGES = {
@@ -32,11 +33,8 @@ function orderedBy(data, field = 'order') {
 
 async function loadCountries() {
   const snapshot = await getDocs(collection(db, 'countries'));
-  return orderedBy(snapshot.docs.map(country => ({
-    id: country.id,
-    ...country.data(),
-    bgImage: COUNTRY_IMAGES[country.id] || country.data().bgImage || ''
-  })));
+  const storedCountries = snapshot.docs.map(country => ({ id: country.id, ...country.data() }));
+  return mergeCountryCatalog(storedCountries, COUNTRY_IMAGES);
 }
 
 async function loadCountry(countryId) {

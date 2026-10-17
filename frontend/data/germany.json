@@ -1,0 +1,259 @@
+{
+  "id": "germany",
+  "pais": "Alemania",
+  "flag": "🇩🇪",
+  "spotifyUrl": "https://open.spotify.com/playlist/65Pm1szZCEc6uFMEXx2oqW",
+  "driveFolderUrl": "",
+  "bgImage": "img/germany.jpg",
+  "servicios": {
+    "consulados": "https://maps.google.com/?q=Embajada+Argentina+Berlin",
+    "farmacias": "https://maps.google.com/?q=Farmacias+Colonia+Alemania",
+    "lavanderias": "https://maps.google.com/?q=Lavanderias+autoservicio+Colonia+Alemania",
+    "supermercados": "https://maps.google.com/?q=Supermercados+Colonia+Alemania"
+  },
+  "ciudades": [
+    {
+      "nombre": "Colonia",
+      "fechas": "2 días en Colonia + excursión de día a Aquisgrán · fechas por confirmar",
+      "hotel": "Premier Inn Köln City Süd",
+      "mapaHotelLink": "https://maps.google.com/?q=Premier+Inn+K%C3%B6ln+City+S%C3%BCd",
+      "comoLlegar": "",
+      "actividades": [
+        {
+          "dia": 1,
+          "nombre": "KölnCard de 48 horas: transporte público ilimitado en la zona urbana y descuentos en varias atracciones. Precio de referencia: 18 €; confirmar tarifa vigente.",
+          "mapa": ""
+        },
+        {
+          "dia": 1,
+          "nombre": "Catedral de Colonia y museos principales.",
+          "mapa": "https://maps.google.com/?q=K%C3%B6lner+Dom"
+        },
+        {
+          "dia": 1,
+          "nombre": "Casco histórico (Altstadt) y plazas medievales.",
+          "mapa": "https://maps.google.com/?q=Altstadt+K%C3%B6ln"
+        },
+        {
+          "dia": 1,
+          "nombre": "Cruce del Rin y cervecería tradicional por la noche.",
+          "mapa": "https://maps.google.com/?q=Hohenzollernbr%C3%BCcke+K%C3%B6ln"
+        },
+        {
+          "dia": 2,
+          "nombre": "Museo Ludwig, Museo Wallraf-Richartz y terraza del KölnTriangle. La KölnCard ofrece descuentos indicados del 20 %; confirmar condiciones vigentes.",
+          "mapa": "https://maps.google.com/?q=Museum+Ludwig+K%C3%B6ln"
+        },
+        {
+          "dia": 2,
+          "nombre": "Hahnentor y recorrido por el Barrio Belga.",
+          "mapa": "https://maps.google.com/?q=Hahnentorburg+K%C3%B6ln"
+        },
+        {
+          "dia": 2,
+          "nombre": "Ehrenfeld y el mural de los Piratas de Edelweiss, en Bartholomäus-Schink-Straße, bajo los arcos de las vías del tren.",
+          "mapa": "https://maps.google.com/?q=Bartholom%C3%A4us-Schink-Stra%C3%9Fe+K%C3%B6ln"
+        },
+        {
+          "dia": 2,
+          "nombre": "Paseo por el arte urbano, las tiendas retro y los restaurantes de Ehrenfeld. Tranvías 3 o 4 por Venloer Straße.",
+          "mapa": "https://maps.google.com/?q=Ehrenfeld+K%C3%B6ln"
+        },
+        {
+          "dia": 3,
+          "nombre": "Excursión de día a Aquisgrán desde Colonia; no se pasa la noche allí.",
+          "mapa": "https://maps.google.com/?q=Aachen+Germany"
+        },
+        {
+          "dia": 3,
+          "nombre": "Elisenbrunnen y Puppenbrunnen; punto de partida para recorrer el centro desde la estación central.",
+          "mapa": "https://maps.google.com/?q=Elisenbrunnen+Aachen"
+        },
+        {
+          "dia": 3,
+          "nombre": "Catedral de Aquisgrán, Katschhof, Ayuntamiento y Tesoro de la Catedral.",
+          "mapa": "https://maps.google.com/?q=Aachener+Dom"
+        },
+        {
+          "dia": 3,
+          "nombre": "Nobis Printen, frente a la catedral; barrio Pontviertel y puerta medieval Ponttor.",
+          "mapa": "https://maps.google.com/?q=Ponttor+Aachen"
+        },
+        {
+          "dia": 3,
+          "nombre": "Opcionales en Aquisgrán: Centre Charlemagne y Carolus Thermen (termas a 35 °C).",
+          "mapa": "https://maps.google.com/?q=Carolus+Thermen+Aachen"
+        }
+      ],
+      "gastronomia": [
+        {
+          "dia": 2,
+          "nombre": "Cena y cerveza Kölsch en una cervecería tradicional de Colonia.",
+          "mapa": "https://maps.google.com/?q=K%C3%B6lsch+Brauhaus+K%C3%B6ln"
+        },
+        {
+          "dia": 3,
+          "nombre": "Nobis Printen: galletas Aachener Printen, una especialidad dulce local.",
+          "mapa": "https://maps.google.com/?q=Nobis+Printen+Aachen"
+        }
+      ]
+    },
+    {
+      "nombre": "Dresde",
+      "fechas": "3 días · fechas por confirmar",
+      "hotel": "Premier Inn Dresden City Centre",
+      "mapaHotelLink": "https://maps.google.com/?q=Premier+Inn+Dresden+City+Centre",
+      "comoLlegar": "Llegada desde Colonia. El primer recorrido probablemente empiece alrededor de las 14:00. Itinerario pensado para Navidad.",
+      "actividades": [
+        {
+          "dia": 1,
+          "nombre": "Barrio de Neustadt y Kunsthofpassage: patios artísticos, incluido el Patio de los Elementos.",
+          "mapa": "https://maps.google.com/?q=Kunsthofpassage+Dresden"
+        },
+        {
+          "dia": 1,
+          "nombre": "Grafitis de Neustadt, estatua del Elector Dorado y Puente de Augusto sobre el Elba.",
+          "mapa": "https://maps.google.com/?q=Goldener+Reiter+Dresden"
+        },
+        {
+          "dia": 2,
+          "nombre": "Schlossplatz, Georgentor y Fürstenzug (Desfile de los Príncipes), mural de porcelana de Meissen.",
+          "mapa": "https://maps.google.com/?q=F%C3%BCrstenzug+Dresden"
+        },
+        {
+          "dia": 2,
+          "nombre": "Terraza de Brühl, Theaterplatz y exterior de la Ópera Semper.",
+          "mapa": "https://maps.google.com/?q=Br%C3%BChlsche+Terrasse+Dresden"
+        },
+        {
+          "dia": 2,
+          "nombre": "Hofkirche (Catedral de la Santísima Trinidad); entrada libre según el horario indicado. Confirmar horario festivo.",
+          "mapa": "https://maps.google.com/?q=Kathedrale+Dresden"
+        },
+        {
+          "dia": 2,
+          "nombre": "Frauenkirche y plaza Neumarkt; subida opcional a la torre. Precio de referencia: 10 €; confirmar tarifa vigente.",
+          "mapa": "https://maps.google.com/?q=Frauenkirche+Dresden"
+        },
+        {
+          "dia": 2,
+          "nombre": "Jardines y terrazas superiores del Zwinger; acceso exterior gratuito según el horario indicado.",
+          "mapa": "https://maps.google.com/?q=Zwinger+Dresden"
+        },
+        {
+          "dia": 2,
+          "nombre": "Albertinum y Galería de Nuevos Maestros; horario indicado: martes a domingo, de 10:00 a 18:00.",
+          "mapa": "https://maps.google.com/?q=Albertinum+Dresden"
+        },
+        {
+          "dia": 2,
+          "nombre": "Opcionales: Residenzschloss y Bóveda Verde; Galería Alte Meister dentro del Zwinger, con entrada.",
+          "mapa": "https://maps.google.com/?q=Residenzschloss+Dresden"
+        },
+        {
+          "dia": 3,
+          "nombre": "Excursión al puente de Bastei y Felsenburg Neurathen: tren S1 hasta Kurort Rathen, ferry y subida a pie.",
+          "mapa": "https://maps.google.com/?q=Bastei+Bridge+Germany"
+        },
+        {
+          "dia": 3,
+          "nombre": "Pfunds Molkerei: horario indicado de 10:00 a 18:00; cierra el 25 y 26 de diciembre. No se permiten fotos y hay pocas mesas.",
+          "mapa": "https://maps.google.com/?q=Pfunds+Molke+Dresden"
+        },
+        {
+          "dia": 3,
+          "nombre": "Yenidze, antigua fábrica de tabaco de arquitectura oriental. Se puede visitar la fachada o el restaurante bajo la cúpula.",
+          "mapa": "https://maps.google.com/?q=Yenidze+Dresden"
+        }
+      ],
+      "gastronomia": [
+        {
+          "dia": 1,
+          "nombre": "Elegir una cervecería para la noche de Navidad: Watzke am Goldenen Reiter, Freiberger Schankhaus o Augustiner an der Frauenkirche.",
+          "mapa": "https://maps.google.com/?q=cervecer%C3%ADas+Dresden"
+        },
+        {
+          "dia": 3,
+          "nombre": "Pfunds Molkerei: probar buttermilk con zumo de frutas o comprar quesos y recuerdos.",
+          "mapa": "https://maps.google.com/?q=Pfunds+Molke+Dresden"
+        }
+      ]
+    },
+    {
+      "nombre": "Berlín",
+      "fechas": "28/12/2026 – 02/01/2027",
+      "hotel": "Hampton by Hilton Berlin City West",
+      "mapaHotelLink": "https://maps.google.com/?q=Hampton+by+Hilton+Berlin+City+West",
+      "comoLlegar": "Llegada prevista el 28/12; instalarse en el alojamiento antes del primer paseo.",
+      "actividades": [
+        {
+          "dia": 1,
+          "nombre": "28/12 · Llegada desde Dresde y paseo de bienvenida por la Puerta de Brandeburgo y Unter den Linden.",
+          "mapa": "https://maps.google.com/?q=Brandenburg+Gate+Berlin"
+        },
+        {
+          "dia": 1,
+          "nombre": "Stasi Museum por la tarde; horario indicado de lunes a viernes, de 10:00 a 18:00.",
+          "mapa": "https://maps.google.com/?q=Stasi+Museum+Berlin"
+        },
+        {
+          "dia": 2,
+          "nombre": "29/12 · Visita al Bundestag (Parlamento alemán), con entrada reservada previamente.",
+          "mapa": "https://maps.google.com/?q=Reichstag+Building+Berlin"
+        },
+        {
+          "dia": 2,
+          "nombre": "Paseo por Nikolaiviertel, el barrio medieval más antiguo, y el Ayuntamiento Rojo (Rotes Rathaus).",
+          "mapa": "https://maps.google.com/?q=Nikolaiviertel+Berlin"
+        },
+        {
+          "dia": 3,
+          "nombre": "30/12 · Tour guiado en español por los búnkeres con Berliner Unterwelten, en Gesundbrunnen. Reservar online con 30 días de anticipación.",
+          "mapa": "https://maps.google.com/?q=Berliner+Unterwelten+Gesundbrunnen"
+        },
+        {
+          "dia": 3,
+          "nombre": "Recorrido por la zona comercial e histórica del oeste de Berlín.",
+          "mapa": "https://maps.google.com/?q=Kurfurstendamm+Berlin"
+        },
+        {
+          "dia": 4,
+          "nombre": "31/12 · Deutsches Spionagemuseum y recorrido a pie por el Barrio Judío de Mitte.",
+          "mapa": "https://maps.google.com/?q=Deutsches+Spionagemuseum+Berlin"
+        },
+        {
+          "dia": 4,
+          "nombre": "Nochevieja: preparar la celebración y reservar con anticipación para la cena.",
+          "mapa": ""
+        },
+        {
+          "dia": 5,
+          "nombre": "01/01 · Alte Nationalgalerie en la Isla de los Museos; apertura especial indicada de 12:00 a 18:00.",
+          "mapa": "https://maps.google.com/?q=Alte+Nationalgalerie+Berlin"
+        },
+        {
+          "dia": 6,
+          "nombre": "02/01 · East Side Gallery y cruce por el histórico puente Oberbaumbrücke.",
+          "mapa": "https://maps.google.com/?q=East+Side+Gallery+Berlin"
+        },
+        {
+          "dia": 6,
+          "nombre": "Paseo por Kreuzberg para ver los murales Astronaut Cosmonaut y el Mural del Elefante.",
+          "mapa": "https://maps.google.com/?q=Astronaut+Cosmonaut+Mural+Berlin"
+        }
+      ],
+      "gastronomia": [
+        {
+          "dia": 4,
+          "nombre": "Opciones para reservar en Nochevieja: Restaurant Maximilians Berlin, BRLO Brwhouse, Das Lemke o Hofbräu Wirtshaus Berlin.",
+          "mapa": "https://maps.google.com/?q=restaurants+Berlin+Mitte"
+        },
+        {
+          "dia": 6,
+          "nombre": "Kebab y comida local en Kreuzberg.",
+          "mapa": "https://maps.google.com/?q=Kebab+Kreuzberg+Berlin"
+        }
+      ]
+    }
+  ]
+}

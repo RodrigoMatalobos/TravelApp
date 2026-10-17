@@ -50,7 +50,6 @@ Las columnas principales son:
 - `city_name`
 - `city_dates`
 - `hotel_name`
-- `hotel_url`
 - `hotel_map`
 - `como_llegar`
 - `activities`

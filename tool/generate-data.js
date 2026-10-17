@@ -129,7 +129,6 @@ function buildCity(record) {
     nombre: normalizeString(record.city_name),
     fechas: normalizeString(record.city_dates),
     hotel: normalizeString(record.hotel_name),
-    hotelUrl: normalizeString(record.hotel_url),
     mapaHotelLink: normalizeString(record.hotel_map),
     comoLlegar: normalizeString(record.como_llegar),
     actividades: parseItemList(record.activities),

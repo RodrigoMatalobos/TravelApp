@@ -6,6 +6,7 @@ import {
   filesForCountry,
   findCityIndex,
   folderMatchesCountry,
+  ticketButtonLabel,
   normalizeSelectedFolderFiles
 } from '../frontend/ticket-files.mjs';
 
@@ -22,7 +23,7 @@ const country = {
   ciudades: [
     { id: 'city-01', nombre: 'Helsinki (Ida)' },
     { id: 'city-02', nombre: 'Helsinki (Vuelta)' },
-    { id: 'city-03', nombre: 'Inari' }
+    { id: 'city-03', nombre: 'Inari y Rovaniemi (Laponia)' }
   ]
 };
 
@@ -36,6 +37,7 @@ test('city folder suffixes map to itinerary direction names', () => {
   assert.equal(findCityIndex('Helsinki 1', country.ciudades), 0);
   assert.equal(findCityIndex('Helsinki 2', country.ciudades), 1);
   assert.equal(findCityIndex('Inari Ida', country.ciudades), 2);
+  assert.equal(findCityIndex('Inari Vuelta', country.ciudades), 2);
 });
 
 test('ticket files are grouped under the matching country and city', () => {
@@ -43,14 +45,16 @@ test('ticket files are grouped under the matching country and city', () => {
     { id: 'root', relativePath: 'Finland/root-ticket.pdf' },
     { id: 'ida', relativePath: 'Finland/Helsinki 1/Hotel AX-es.pdf' },
     { id: 'return', relativePath: 'Finland/Helsinki 2/Hotel AX-fn.pdf' },
-    { id: 'inari', relativePath: 'Finland/Inari Ida/Inari-es.pdf' },
+    { id: 'inari-ida', relativePath: 'Finland/Inari Ida/Inari-es.pdf' },
+    { id: 'inari-vuelta', relativePath: 'Finland/Inari Vuelta/Inari-fn.pdf' },
+    { id: 'unknown-city', relativePath: 'Finland/Ciudad desconocida/desconocido.pdf' },
     { id: 'other', relativePath: 'Sweden/Stockholm/ticket.pdf' }
   ];
 
   assert.deepEqual(filesForCountry(files, country).map(file => file.id), ['root']);
   assert.deepEqual(filesForCity(files, country, country.ciudades[0]).map(file => file.id), ['ida']);
   assert.deepEqual(filesForCity(files, country, country.ciudades[1]).map(file => file.id), ['return']);
-  assert.deepEqual(filesForCity(files, country, country.ciudades[2]).map(file => file.id), ['inari']);
+  assert.deepEqual(filesForCity(files, country, country.ciudades[2]).map(file => file.id), ['inari-ida', 'inari-vuelta']);
 });
 
 test('local folder selection removes the selected root and preserves country/city paths', () => {
@@ -75,4 +79,16 @@ test('local folder selection rejects files without preserved folder structure', 
     () => normalizeSelectedFolderFiles([{ name: 'ticket.pdf' }]),
     /no conservó las carpetas/
   );
+});
+
+test('voucher language pairs use the previous button labels while other tickets keep their names', () => {
+  const files = [
+    { name: 'Hotel AX-es.pdf' },
+    { name: 'Hotel AX-fn.pdf' },
+    { name: 'DB_Billete_426380924439.pdf' }
+  ];
+
+  assert.equal(ticketButtonLabel(files[0], files), 'Voucher ES');
+  assert.equal(ticketButtonLabel(files[1], files), 'Voucher original');
+  assert.equal(ticketButtonLabel(files[2], files), 'DB_Billete_426380924439.pdf');
 });

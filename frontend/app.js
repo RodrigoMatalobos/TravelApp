@@ -4,7 +4,8 @@ import {
   filesForCity,
   filesForCountry,
   getTicketFiles,
-  saveLocalFolderFiles
+  saveLocalFolderFiles,
+  ticketButtonLabel
 } from './ticket-files.mjs';
 
 let currentViewState = { level: 'paises', paisId: null };
@@ -90,6 +91,15 @@ function renderSignIn(message = '') {
       button.disabled = false;
     }
   });
+}
+
+function renderCheckingAccess() {
+  updateHeader('Verificando acceso', false);
+  updateVaultNavigation();
+  const container = document.getElementById('app');
+  if (!container) return;
+  container.className = 'p-4 max-w-md mx-auto';
+  container.innerHTML = '<p class="py-8 text-center text-sm text-slate-300">Verificando permisos…</p>';
 }
 
 function renderPendingAccess(user, error = '') {
@@ -189,6 +199,7 @@ function initializeFirebaseAccess() {
       return;
     }
 
+    renderCheckingAccess();
     try {
       const member = await window.TravelFirestore.getMember(user.uid);
       if (!member?.enabled) {
@@ -324,79 +335,30 @@ function normalizeCountryId(rawId) {
   return aliases[value] || value;
 }
 
-function createCountryImportButton() {
-  if (activeMember?.role !== 'admin') return null;
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'rounded-lg border border-emerald-700/70 bg-emerald-950/40 px-3 py-2 text-xs font-semibold text-emerald-100 hover:bg-emerald-900/60';
-  button.textContent = 'Importar / actualizar países';
-  button.addEventListener('click', () => selectCountryDataFiles(button));
-  return button;
-}
-
 function appendTicketFiles(container, files, title) {
-  if (!canManageTicketFiles(activeMember) || !files.length) return;
+  if (!container || !canManageTicketFiles(activeMember) || !files.length) return;
   const section = document.createElement('section');
-  section.className = 'space-y-2';
-  section.innerHTML = `<h3 class="text-xs font-bold text-slate-300">${escapeHtml(title)}</h3>`;
+  section.className = 'mt-3 space-y-2';
+  section.innerHTML = `<h4 class="text-xs font-bold text-slate-300">${escapeHtml(title)}</h4>`;
   const list = document.createElement('div');
-  list.className = 'grid grid-cols-1 gap-2';
+  list.className = 'flex flex-wrap gap-2';
   files.forEach(file => {
     const link = document.createElement('a');
     const objectUrl = URL.createObjectURL(file.blob);
     const canPreview = file.mimeType === 'application/pdf' || file.mimeType?.startsWith('image/');
+    const label = ticketButtonLabel(file, files);
     link.href = objectUrl;
-    link.className = 'flex items-center justify-between gap-3 rounded-lg border border-slate-700 bg-slate-800 px-3 py-3 text-sm text-slate-100 hover:bg-slate-700';
+    link.className = 'inline-flex max-w-full items-center gap-1.5 rounded-lg bg-slate-700 px-3 py-1.5 text-xs text-white transition-colors hover:bg-slate-600 active:scale-95';
     link.rel = 'noopener noreferrer';
+    link.title = file.name;
+    link.setAttribute('aria-label', `${label}, ${canPreview ? 'Abrir' : 'Guardar'}`);
     if (canPreview) link.target = '_blank';
     else link.download = file.name;
-    link.innerHTML = `<span class="min-w-0 break-words">📄 ${escapeHtml(file.name)}</span><span class="shrink-0 text-emerald-300">${canPreview ? 'Abrir' : 'Guardar'} →</span>`;
+    link.innerHTML = `<span class="min-w-0 break-words">📄 ${escapeHtml(label)}</span><span class="shrink-0 text-emerald-300">${canPreview ? 'Abrir' : 'Guardar'} →</span>`;
     list.appendChild(link);
   });
   section.appendChild(list);
   container.appendChild(section);
-}
-
-function selectCountryDataFiles(button) {
-  const picker = document.createElement('input');
-  picker.type = 'file';
-  picker.accept = '.json,application/json';
-  picker.multiple = true;
-  picker.addEventListener('change', async () => {
-    const files = new Map(Array.from(picker.files || []).map(file => [file.name.toLowerCase(), file]));
-    const countries = {};
-    button.disabled = true;
-    button.textContent = 'Cargando países…';
-
-    try {
-      for (const countryId of window.TravelFirestore.INITIAL_COUNTRY_IDS) {
-        const file = files.get(`${countryId}.json`);
-        if (file) countries[countryId] = JSON.parse(await file.text());
-      }
-      const routeFile = files.get('map-locations.json');
-      if (!routeFile) throw new Error('Seleccioná también map-locations.json.');
-      if (!Object.keys(countries).length) throw new Error('Seleccioná al menos un JSON de país.');
-
-      const route = JSON.parse(await routeFile.text());
-      const existingCountries = await window.TravelFirestore.loadCountries();
-      const existingIds = new Set(existingCountries.map(country => country.id));
-      const existingSelected = Object.keys(countries).filter(countryId => existingIds.has(countryId));
-      const updateExistingCountries = existingSelected.length && window.confirm(
-        `Se actualizarán los países existentes seleccionados: ${existingSelected.join(', ')}. `
-        + 'Se conservarán los campos heredados de vouchers. ¿Continuar?'
-      ) ? existingSelected : [];
-      const result = await window.TravelFirestore.seedInitialData({ countries, route, updateExistingCountries });
-      if (!result.writeCount) {
-        button.textContent = 'No se importaron cambios';
-        return;
-      }
-      showPaisesView();
-    } catch (error) {
-      button.disabled = false;
-      button.textContent = error.message || 'No se pudieron importar los países.';
-    }
-  }, { once: true });
-  picker.click();
 }
 
 // Nivel 1: Cargar la lista de países
@@ -412,18 +374,7 @@ function showPaisesView() {
   window.TravelFirestore.loadCountries()
     .then(paises => {
       if (!Array.isArray(paises) || !paises.length) {
-        if (activeMember?.role === 'admin') {
-          container.innerHTML = `
-            <section class="rounded-xl border border-slate-700 bg-slate-800 p-5 text-center">
-              <h2 class="text-base font-semibold text-white">Itinerario todavía no cargado</h2>
-              <p class="mt-2 text-sm text-slate-300">Seleccioná los JSON de los países disponibles y map-locations.json.</p>
-              <button id="seed-initial-data" type="button" class="mt-4 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500">Seleccionar JSON e importar</button>
-            </section>`;
-          const button = container.querySelector('#seed-initial-data');
-          button?.addEventListener('click', () => selectCountryDataFiles(button));
-        } else {
-          renderEmptyState('El administrador todavía no cargó el itinerario.');
-        }
+        renderEmptyState('No se pudieron cargar los destinos.');
         return;
       }
 
@@ -448,7 +399,8 @@ function showCiudadesView(paisId) {
   window.TravelFirestore.loadCountry(canonicalPaisId)
     .then(async pais => {
       if (!pais || !pais.pais) {
-        renderEmptyState('El país solicitado no tiene información disponible.');
+        const selectedCountry = homeCountries.find(country => country.id === canonicalPaisId);
+        renderEmptyState(`El itinerario de ${escapeHtml(selectedCountry?.pais || 'este país')} todavía no está cargado.`);
         return;
       }
 
@@ -471,8 +423,6 @@ function showCiudadesView(paisId) {
         `;
         container.appendChild(spotifyBtn);
       }
-
-      appendTicketFiles(container, filesForCountry(downloadedTicketFiles, pais), 'Archivos del país');
 
       const ciudades = Array.isArray(pais.ciudades) ? pais.ciudades : [];
       if (!ciudades.length) {
@@ -550,11 +500,8 @@ function showDetalleCiudadView(pais, ciudadIndex, paisIdOverride) {
             <a href="${escapeHtml(ciudad.mapaHotelLink)}" target="_blank" rel="noopener noreferrer" class="bg-slate-700 hover:bg-slate-600 text-white text-xs py-1.5 px-3 rounded-lg flex items-center gap-1 active:scale-95 transition-all">
               📍 Ubicación
             </a>` : ''}
-          ${ciudad.hotelUrl ? `
-            <a href="${escapeHtml(ciudad.hotelUrl)}" target="_blank" rel="noopener noreferrer" class="bg-blue-600 hover:bg-blue-500 text-white text-xs py-1.5 px-3 rounded-lg flex items-center gap-1 active:scale-95 transition-all">
-              🏨 Booking
-            </a>` : ''}
         </div>
+        <div id="city-ticket-slot"></div>
       </div>
 
       <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700/50 space-y-1">
@@ -577,7 +524,11 @@ function showDetalleCiudadView(pais, ciudadIndex, paisIdOverride) {
       </div>
     </div>
   `;
-  appendTicketFiles(container, filesForCity(downloadedTicketFiles, pais, ciudad), 'Tickets y archivos');
+  appendTicketFiles(
+    container.querySelector('#city-ticket-slot'),
+    filesForCity(downloadedTicketFiles, pais, ciudad),
+    'Tickets y vouchers'
+  );
 }
 
 function handleBack() {
@@ -714,8 +665,6 @@ function renderHomeView() {
     container.className = 'p-4 max-w-md mx-auto space-y-4';
     container.innerHTML = '';
     container.appendChild(createHomeSwitch());
-    const importButton = createCountryImportButton();
-    if (importButton) container.appendChild(importButton);
     homeCountries.forEach(country => {
       const card = document.createElement('button');
       card.type = 'button';
@@ -756,8 +705,6 @@ function renderHomeView() {
   const homeControls = container.querySelector('#home-switch-slot');
   homeControls.classList.add('flex', 'flex-col', 'items-end', 'gap-2');
   homeControls.appendChild(createHomeSwitch());
-  const importButton = createCountryImportButton();
-  if (importButton) homeControls.appendChild(importButton);
 
   function showDestination(location) {
     focusedGlobeLocation = location;

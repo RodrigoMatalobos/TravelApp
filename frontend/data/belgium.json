@@ -1,0 +1,28 @@
+{
+  "id": "belgium",
+  "pais": "Bélgica",
+  "flag": "🇧🇪",
+  "servicios": {
+    "consulados": "https://maps.google.com/?q=Embajada+Argentina+Avenue+Louise+283+Bruxelles",
+    "farmacias": "https://maps.google.com/?q=Pharmacie+Bruxelles",
+    "lavanderias": "https://maps.google.com/?q=Laverie+Bruxelles"
+  },
+  "ciudades": [
+    {
+      "nombre": "Bruselas",
+      "fechas": "19/12/2026 – 22/12/2026",
+      "hotel": "B&B Marianne",
+      "comoLlegar": "Desde Gare du Midi / Gare Central, tomar Metro Línea 6 dirección Roi Baudouin hasta la estación Stuyvenbergh. Caminar 3 min.",
+      "mapaHotelLink": "https://maps.google.com/?q=BB+Marianne+Rue+Stuyvenbergh+46+Laeken",
+      "actividades": [
+        "Día 1: Parque de Bruselas, Palacio Real, MIM, Petit Sablon, Palacio de Justicia, Marolles, Manneken Pis, Grand Place, Galerías Saint-Hubert, Delirium Café.",
+        "Día 2: Barrio Europeo (Cincuentenario, Parlamento Europeo), Atomium, Ruta de murales de cómic (Tintín, Los Pitufos), Les Halles de Saint-Géry."
+      ],
+      "gastronomia": [
+        "Papas fritas en Maison Antoine (Place Jourdan) o Fritland",
+        "Waffles belgas, chocolates artesanales y degustación de cerveza"
+      ],
+      "mapaGastroLink": "https://maps.google.com/?q=Maison+Antoine+Place+Jourdan+Bruxelles"
+    }
+  ]
+}

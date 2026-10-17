@@ -1,0 +1,287 @@
+[
+  {
+    "id": "espana",
+    "pais": "España",
+    "flag": "🇪🇸",
+    "bgImage": "img/spain.jpg",
+    "servicios": {
+      "consulados": "https://maps.google.com/?q=Consulado+General+de+la+República+Argentina+en+Barcelona",
+      "farmacias": "https://maps.google.com/?q=Farmacias+Barcelona",
+      "lavanderias": "https://maps.google.com/?q=Lavanderias+Barcelona"
+    },
+    "ciudades": [
+      {
+        "nombre": "Barcelona (Ida)",
+        "fechas": "30/11/2026 – 08/12/2026",
+        "hotel": "Apartamentos DV",
+        "comoLlegar": "Desde Aeropuerto El Prat (BCN), tomar Metro L9S (Línea Naranja) hasta la estación Torrassa o Collblanc y caminar 7-10 min. Opción Taxi/Uber: 15-20 min.",
+        "mapaHotelLink": "https://maps.google.com/?q=Apartamentos+DV+Torns+3+Barcelona",
+        "actividades": [
+          "Visita a la Abadía de Montserrat",
+          "Paseo por Barrio Gótico y Sagrada Familia"
+        ],
+        "gastronomia": [
+          "Tapas en Mercado de La Boquería",
+          "Paella en Barceloneta"
+        ],
+        "mapaGastroLink": "https://maps.google.com/?q=Restaurantes+Barcelona"
+      },
+      {
+        "nombre": "Barcelona (Vuelta)",
+        "fechas": "08/01/2027 – 12/01/2027",
+        "hotel": "Barcelona Century Hotel",
+        "comoLlegar": "Desde Aeropuerto El Prat (BCN), Aerobús A1/A2 a Plaça Universitat o Metro L9S + L5 a Hospital Clínic. Caminar 4 min.",
+        "mapaHotelLink": "https://maps.google.com/?q=Barcelona+Century+Hotel+Carrer+de+Valencia+154",
+        "actividades": [
+          "Compras de último momento",
+          "Caminata por Passeig de Gràcia"
+        ],
+        "gastronomia": [
+          "Churros con chocolate en Petritxol"
+        ],
+        "mapaGastroLink": "https://maps.google.com/?q=Restaurantes+Eixample+Barcelona"
+      }
+    ]
+  },
+  {
+    "id": "finlandia",
+    "pais": "Finlandia",
+    "flag": "🇫🇮",
+    "bgImage": "img/finland.jpg",
+    "servicios": {
+      "consulados": "https://maps.google.com/?q=Embajada+Argentina+Bulevardi+5+A+11+Helsinki",
+      "farmacias": "https://maps.google.com/?q=Apteekki+Helsinki",
+      "lavanderias": "https://maps.google.com/?q=24+Pesula+Helsinki"
+    },
+    "ciudades": [
+      {
+        "nombre": "Helsinki (Noche 1)",
+        "fechas": "08/12/2026 – 09/12/2026",
+        "hotel": "Hotel AX",
+        "comoLlegar": "Desde el Aeropuerto Vantaa tomar Tren I o P a la Estación Central. Transbordo al Tranvía 9 dirección Jätkäsaari hasta Huutokonttori / Välimerenkatu (frente al hotel).",
+        "mapaHotelLink": "https://maps.google.com/?q=Hotel+AX+Valimerenkatu+18+Helsinki",
+        "actividades": [
+          "Descanso de vuelo y paseo por zona portuaria de Jätkäsaari"
+        ],
+        "gastronomia": [
+          "Cena rápida cerca del puerto de Jätkäsaari"
+        ],
+        "mapaGastroLink": "https://maps.google.com/?q=Restaurantes+Jatnasaari+Helsinki"
+      },
+      {
+        "nombre": "Inari (Laponia)",
+        "fechas": "10/12/2026 – 13/12/2026",
+        "hotel": "Inari Camping Resort",
+        "comoLlegar": "Descender en la parada principal de bus Matkahuolto en Inari y caminar 500m al norte por la calle principal Inarintie.",
+        "mapaHotelLink": "https://maps.google.com/?q=Inari+Camping+Resort+Inarintie+42",
+        "actividades": [
+          "Caza de Auroras Boreales",
+          "Paseos por el pueblo de Rovaniemi (Santa Claus Village, Plaza Lordi, Sampokeskus)"
+        ],
+        "gastronomia": [
+          "Probar el queso finlandés flambeado (juustoleipä)"
+        ],
+        "mapaGastroLink": "https://maps.google.com/?q=Restaurants+Inari+Finland"
+      },
+      {
+        "nombre": "Helsinki (Noche 2)",
+        "fechas": "14/12/2026 – 15/12/2026",
+        "hotel": "Töölö Towers",
+        "comoLlegar": "Desde Estación Central, tomar Tranvía 1 o 2 a Töölö, descender en Apollonkatu / Töölöntori y caminar 2 min.",
+        "mapaHotelLink": "https://maps.google.com/?q=Toolo+Towers+Pohjoinen+Hesperiankatu+23+A",
+        "actividades": [
+          "Día 1: Biblioteca Oodi, Amos Rex, Capilla Kamppi, Plaza del Senado y Catedral, Catedral Uspenski, Kauppatori.",
+          "Día 2: Iglesia Temppeliaukio, Vanha Kauppahalli, Seurasaari, Barrio Kallio, Sauna (Kotiharjun / Allas Sea Pool), Patinaje en Rautatientori, Suomenlinna."
+        ],
+        "gastronomia": [
+          "Korvapuusti (rollos de canela) en Café Esplanad",
+          "Sopa tradicional de salmón (lohikeitto) en Kauppatori",
+          "Probar el yogur Skyr Noma"
+        ],
+        "mapaGastroLink": "https://maps.google.com/?q=Vanha+Kauppahalli+Helsinki"
+      }
+    ]
+  },
+  {
+    "id": "suecia",
+    "pais": "Suecia",
+    "flag": "🇸🇪",
+    "bgImage": "img/sweden.jpg",
+    "servicios": {
+      "consulados": "https://maps.google.com/?q=Embajada+Argentina+Narvavagen+32+Stockholm",
+      "farmacias": "https://maps.google.com/?q=Apotek+Stockholm",
+      "lavanderias": "https://maps.google.com/?q=Tvattomat+Stockholm"
+    },
+    "ciudades": [
+      {
+        "nombre": "Estocolmo",
+        "fechas": "15/12/2026 – 19/12/2026",
+        "hotel": "Mälardrottningen Yacht Hotel",
+        "comoLlegar": "Desde el puerto de Viking Line (Stadsgården), caminar 10-12 min a Slussen. Tomar Metro Línea Roja/Verde hasta Gamla Stan (o caminar) y cruzar a la isla de Riddarholmen. Muelle oeste.",
+        "mapaHotelLink": "https://maps.google.com/?q=Malardrottningen+Yacht+Hotel+Riddarholmen",
+        "actividades": [
+          "Día 1: Riddarholmen, Gamla Stan (Stortorget, Mårten Trotzigs Gränd, Catedral), Palacio Real, Parlamento, Kungsträdgården, Museo Vasa.",
+          "Día 2: Ayuntamiento de Estocolmo, Barrio Södermalm (Ascensor Katarina, Götgatan), Museo Fotografiska, Tour por estaciones de Metro con arte (Línea Azul y Roja).",
+          "Día 3: Biblioteca Pública, Östermalms Saluhall, Palacio de Drottningholm, Museo Nacional / Skansen."
+        ],
+        "gastronomia": [
+          "Albóndigas suecas (Köttbullar)",
+          "Arenques (Sill) y Toast Skagen",
+          "Salmón curado (Gravlax)"
+        ],
+        "mapaGastroLink": "https://maps.google.com/?q=Ostermalms+Saluhall+Stockholm"
+      }
+    ]
+  },
+  {
+    "id": "belgica",
+    "pais": "Bélgica",
+    "flag": "🇧🇪",
+    "bgImage": "img/belgium.jpg",
+    "servicios": {
+      "consulados": "https://maps.google.com/?q=Embajada+Argentina+Avenue+Louise+283+Bruxelles",
+      "farmacias": "https://maps.google.com/?q=Pharmacie+Bruxelles",
+      "lavanderias": "https://maps.google.com/?q=Laverie+Bruxelles"
+    },
+    "ciudades": [
+      {
+        "nombre": "Bruselas",
+        "fechas": "19/12/2026 – 22/12/2026",
+        "hotel": "B&B Marianne",
+        "comoLlegar": "Desde Gare du Midi / Gare Central, tomar Metro Línea 6 dirección Roi Baudouin hasta la estación Stuyvenbergh. Caminar 3 min.",
+        "mapaHotelLink": "https://maps.google.com/?q=BB+Marianne+Rue+Stuyvenbergh+46+Laeken",
+        "actividades": [
+          "Día 1: Parque de Bruselas, Palacio Real, MIM, Petit Sablon, Palacio de Justicia, Marolles, Manneken Pis, Grand Place, Galerías Saint-Hubert, Delirium Café.",
+          "Día 2: Barrio Europeo (Cincuentenario, Parlamento Europeo), Atomium, Ruta de murales de cómic (Tintín, Los Pitufos), Les Halles de Saint-Géry."
+        ],
+        "gastronomia": [
+          "Papas fritas en Maison Antoine (Place Jourdan) o Fritland",
+          "Waffles belgas, chocolates artesanales y degustación de cerveza"
+        ],
+        "mapaGastroLink": "https://maps.google.com/?q=Maison+Antoine+Place+Jourdan+Bruxelles"
+      }
+    ]
+  },
+  {
+    "id": "alemania",
+    "pais": "Alemania",
+    "flag": "🇩🇪",
+    "bgImage": "img/germany.jpg",
+    "servicios": {
+      "consulados": "https://maps.google.com/?q=Embajada+Argentina+en+Berlin",
+      "farmacias": "https://maps.google.com/?q=Apotheke+Berlin",
+      "lavanderias": "https://maps.google.com/?q=Waschsalon+Berlin"
+    },
+    "ciudades": [
+      {
+        "nombre": "Colonia",
+        "fechas": "22/12/2026 – 25/12/2026",
+        "hotel": "Premier Inn Köln City Süd",
+        "comoLlegar": "Desde Köln Hauptbahnhof, tomar Stadtbahn (Tranvía) 16 o 18 a Poststraße o Severinstraße y caminar 3-5 min.",
+        "mapaHotelLink": "https://maps.google.com/?q=Premier+Inn+Koln+City+Sud+Perlengraben+2",
+        "actividades": [
+          "Catedral de Colonia",
+          "Excursión de un día a Aquisgrán (Aachen)"
+        ],
+        "gastronomia": [
+          "Cerveza tradicional Kölsch en cervecerías locales",
+          "Platos típicos renanos"
+        ],
+        "mapaGastroLink": "https://maps.google.com/?q=Brauhaus+Koln"
+      },
+      {
+        "nombre": "Dresde",
+        "fechas": "25/12/2026 – 28/12/2026",
+        "hotel": "Premier Inn Dresden City Zentrum",
+        "comoLlegar": "Desde Dresden Hauptbahnhof, caminata de 10 min por Prager Straße o Tranvía 8/9/11 a Altmarkt / Dr.-Külz-Ring.",
+        "mapaHotelLink": "https://maps.google.com/?q=Premier+Inn+Dresden+City+Zentrum+Dr-Kulz-Ring+15a",
+        "actividades": [
+          "Recorrido por la Altstadt (Casco Antiguo)",
+          "Frauenkirche, Palacio Zwinger y Ópera Semper"
+        ],
+        "gastronomia": [
+          "Dresdner Stollen (pan navideño)",
+          "Comida sajona tradicional"
+        ],
+        "mapaGastroLink": "https://maps.google.com/?q=Restaurants+Altstadt+Dresden"
+      },
+      {
+        "nombre": "Berlín",
+        "fechas": "28/12/2026 – 03/01/2027",
+        "hotel": "Hampton by Hilton City West",
+        "comoLlegar": "Desde Berlin Hauptbahnhof, tomar S-Bahn (S3, S5, S7) a Zoologischer Garten o Savignyplatz. Caminar 5 min por Kantstraße a Uhlandstraße.",
+        "mapaHotelLink": "https://maps.google.com/?q=Hampton+by+Hilton+City+West+Uhlandstr+188+Berlin",
+        "actividades": [
+          "Visita confirmada al Bundestag / Reichstag (29/12 a las 11:00 hs)",
+          "Estadio Olímpico de Berlín",
+          "Paseo de Año Nuevo por Karl-Marx-Allee"
+        ],
+        "gastronomia": [
+          "Currywurst tradicional en Curry 36",
+          "Döner Kebab berlinés"
+        ],
+        "mapaGastroLink": "https://maps.google.com/?q=Curry+36+Berlin"
+      }
+    ]
+  },
+  {
+    "id": "rep_checa",
+    "pais": "República Checa",
+    "flag": "🇨🇿",
+    "bgImage": "img/czech.jpg",
+    "servicios": {
+      "consulados": "https://maps.google.com/?q=Embajada+Argentina+en+Praga",
+      "farmacias": "https://maps.google.com/?q=Lekarna+Prague",
+      "lavanderias": "https://maps.google.com/?q=Laundromat+Prague"
+    },
+    "ciudades": [
+      {
+        "nombre": "Praga (Parte 1)",
+        "fechas": "03/01/2027 – 05/01/2027",
+        "hotel": "U 3 Pštrosů",
+        "comoLlegar": "Desde Hlavní nádraží (Estación Central), Metro C a Muzeum, transbordo a Metro A a Malostranská. Caminar 5 min o Tranvía 15/22 a Malostranské náměstí.",
+        "mapaHotelLink": "https://maps.google.com/?q=U+3+Pstrosu+Drazickeho+namesti+12+Prague",
+        "actividades": [
+          "Puente Carlos",
+          "Castillo de Praga y Malá Strana"
+        ],
+        "gastronomia": [
+          "Goulash checo y cerveza Pilsner Urquell",
+          "Trdelník en puestos callejeros"
+        ],
+        "mapaGastroLink": "https://maps.google.com/?q=Restaurants+Mala+Strana+Prague"
+      },
+      {
+        "nombre": "Karlovy Vary",
+        "fechas": "05/01/2027 – 06/01/2027",
+        "hotel": "Vienna House Dvořák",
+        "comoLlegar": "Desde la Terminal de Buses/Trenes de Karlovy Vary, Bus local N° 2 a parada Tržnice/Divadelní náměstí o Uber/Taxi directo.",
+        "mapaHotelLink": "https://maps.google.com/?q=Vienna+House+Dvorak+Nova+Louka+11+Karlovy+Vary",
+        "actividades": [
+          "Paseo por las Columnatas y fuentes termales",
+          "Relax balneario"
+        ],
+        "gastronomia": [
+          "Probar las galletas termales (Oplatky)",
+          "Licor Becherovka"
+        ],
+        "mapaGastroLink": "https://maps.google.com/?q=Restaurants+Karlovy+Vary"
+      },
+      {
+        "nombre": "Praga (Parte 2)",
+        "fechas": "06/01/2027 – 08/01/2027",
+        "hotel": "Prague Inn",
+        "comoLlegar": "Paseo peatonal cruzando el Puente Carlos a pie hacia la plaza Wenceslao / estación Můstek (28.října 15).",
+        "mapaHotelLink": "https://maps.google.com/?q=Prague+Inn+28.rijna+15+Prague",
+        "actividades": [
+          "Plaza de la Ciudad Vieja y Reloj Astronómico",
+          "Barrio Judío (Josefov)"
+        ],
+        "gastronomia": [
+          "Codillo de cerdo asado (Koleno)"
+        ],
+        "mapaGastroLink": "https://maps.google.com/?q=Restaurants+Stare+Mesto+Prague"
+      }
+    ]
+  }
+]

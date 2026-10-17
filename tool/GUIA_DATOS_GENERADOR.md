@@ -28,7 +28,6 @@ El generador convierte un CSV UTF-8 en un índice de países y un JSON por país
 | `city_name` | Nombre de la ciudad o etapa. |
 | `city_dates` | Fechas de esa estadía. |
 | `hotel_name` | Nombre del alojamiento. |
-| `hotel_url` | Enlace de reserva. |
 | `hotel_map` | Enlace de ubicación del alojamiento. |
 | `como_llegar` | Indicaciones para llegar. |
 | `activities` | Actividades separadas con el formato indicado abajo. |
@@ -59,8 +58,8 @@ Como el separador de columnas es la coma, encerrá entre comillas cualquier celd
 La forma más segura es copiar `tool/templates/input-template.csv` y reemplazar sus ejemplos:
 
 ```csv
-country_id,country_name,flag,spotify_url,bg_image,servicios_consulados,servicios_farmacias,servicios_lavanderias,servicios_supermercados,city_name,city_dates,hotel_name,hotel_url,hotel_map,como_llegar,activities,gastronomia,drive_folder_url
-france,Francia,🇫🇷,https://open.spotify.com/playlist/ejemplo,img/france.jpg,https://maps.google.com/?q=Consulado+Francia,https://maps.google.com/?q=Farmacias+Paris,https://maps.google.com/?q=Lavanderias+Paris,https://maps.google.com/?q=Supermercados+Paris,París,01/06/2027 - 04/06/2027,Hotel Central,https://example.com/hotel,https://maps.google.com/?q=Hotel+Central,"Desde el aeropuerto, tomá el tren al centro.","Museo|https://maps.google.com/?q=Museo||Jardín|https://maps.google.com/?q=Jardin","Panadería local|https://maps.google.com/?q=Boulangerie",https://drive.google.com/drive/folders/ejemplo
+country_id,country_name,flag,spotify_url,bg_image,servicios_consulados,servicios_farmacias,servicios_lavanderias,servicios_supermercados,city_name,city_dates,hotel_name,hotel_map,como_llegar,activities,gastronomia,drive_folder_url
+france,Francia,🇫🇷,https://open.spotify.com/playlist/ejemplo,img/france.jpg,https://maps.google.com/?q=Consulado+Francia,https://maps.google.com/?q=Farmacias+Paris,https://maps.google.com/?q=Lavanderias+Paris,https://maps.google.com/?q=Supermercados+Paris,París,01/06/2027 - 04/06/2027,Hotel Central,https://maps.google.com/?q=Hotel+Central,"Desde el aeropuerto, tomá el tren al centro.","Museo|https://maps.google.com/?q=Museo||Jardín|https://maps.google.com/?q=Jardin","Panadería local|https://maps.google.com/?q=Boulangerie",https://drive.google.com/drive/folders/ejemplo
 ```
 
 ## Generar archivos

@@ -11,8 +11,6 @@
 /frontend/legacy/drive/GOOGLE_VAULT_SETUP.md
 /PLAN*
 
-# Private itinerary data and generated exports
-/frontend/data.json
-/frontend/data/*.json
+# Private generator inputs and generated exports
 /tool/input.csv
 /tool/output/*.json
