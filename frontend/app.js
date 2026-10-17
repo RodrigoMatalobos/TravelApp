@@ -1,10 +1,10 @@
 import {
   canManageTicketFiles,
-  chooseDriveFolder,
-  downloadDriveFolder,
+  chooseLocalFolder,
   filesForCity,
   filesForCountry,
-  getTicketFiles
+  getTicketFiles,
+  saveLocalFolderFiles
 } from './ticket-files.mjs';
 
 let currentViewState = { level: 'paises', paisId: null };
@@ -29,7 +29,7 @@ if ('serviceWorker' in navigator && import.meta.env.DEV) {
     window.location.reload();
   });
 
-  navigator.serviceWorker.register('sw.js?v=1.0.19', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('sw.js?v=1.0.20', { updateViaCache: 'none' })
     .then(registration => registration.update())
     .catch(err => console.error('Service Worker error:', err));
 }
@@ -123,9 +123,9 @@ function renderTicketDownloadPrompt(message = '') {
   container.innerHTML = `
     <section class="w-full rounded-xl border border-slate-700 bg-slate-800 p-5 text-center">
       <h2 class="text-lg font-semibold text-white">Archivos del viaje</h2>
-      <p class="mt-2 text-sm text-slate-300">Elegí una carpeta de Drive para guardar sus archivos en este dispositivo y consultarlos desde el itinerario.</p>
+      <p class="mt-2 text-sm text-slate-300">Elegí la carpeta TravelApp desde Mis archivos. Se guardará en este dispositivo y podrás abrir sus documentos desde el itinerario.</p>
       ${message ? `<p class="mt-3 text-sm text-amber-200" role="status">${escapeHtml(message)}</p>` : ''}
-      <button id="download-ticket-folder" type="button" class="mt-5 w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-500">Elegir carpeta de Drive</button>
+      <button id="download-ticket-folder" type="button" class="mt-5 w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-500">Elegir carpeta en Mis archivos</button>
       <button id="skip-ticket-download" type="button" class="mt-2 w-full rounded-lg border border-slate-600 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-white/5">Ahora no</button>
     </section>
   `;
@@ -142,11 +142,10 @@ function renderTicketDownloadPrompt(message = '') {
 async function startTicketFolderDownload(button) {
   if (!canManageTicketFiles(activeMember)) return showPaisesView();
   button.disabled = true;
-  button.textContent = 'Conectando con Google Drive…';
+  button.textContent = 'Abriendo Mis archivos…';
   try {
-    const credentials = await window.TravelFirebase.requestDriveReadAccess();
-    const folder = await chooseDriveFolder(credentials);
-    if (!folder) {
+    const files = await chooseLocalFolder();
+    if (!files.length) {
       showTicketDownloadMenu = downloadedTicketFiles.length === 0;
       updateVaultNavigation();
       if (downloadedTicketFiles.length) showPaisesView();
@@ -154,11 +153,9 @@ async function startTicketFolderDownload(button) {
       return;
     }
 
-    await downloadDriveFolder({
-      folder,
-      accessToken: credentials.accessToken,
+    await saveLocalFolderFiles(files, {
       onProgress: (count, name) => {
-        button.textContent = `Descargando ${count}: ${name}`;
+        button.textContent = `Guardando ${count}: ${name}`;
       }
     });
     downloadedTicketFiles = await getTicketFiles();
