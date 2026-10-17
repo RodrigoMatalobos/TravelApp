@@ -11,11 +11,14 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase-client.js';
 
-const INITIAL_COUNTRY_IDS = ['finland', 'sweden', 'belgium'];
+const INITIAL_COUNTRY_IDS = ['finland', 'sweden', 'belgium', 'germany', 'spain', 'czech'];
 const COUNTRY_IMAGES = {
   finland: new URL('./img/finland.jpg', import.meta.url).href,
   sweden: new URL('./img/sweden.jpg', import.meta.url).href,
-  belgium: new URL('./img/belgium.jpg', import.meta.url).href
+  belgium: new URL('./img/belgium.jpg', import.meta.url).href,
+  germany: new URL('./img/germany.jpg', import.meta.url).href,
+  spain: new URL('./img/spain.jpg', import.meta.url).href,
+  czech: new URL('./img/czech.jpg', import.meta.url).href
 };
 const VAULT_SCHEMAS = Object.freeze({
   Valija: ['id', 'nombre', 'cantidad', 'nota', 'estado', 'asignado_a', 'created_at', 'updated_at', 'updated_by'],
@@ -29,7 +32,11 @@ function orderedBy(data, field = 'order') {
 
 async function loadCountries() {
   const snapshot = await getDocs(collection(db, 'countries'));
-  return orderedBy(snapshot.docs.map(country => ({ id: country.id, ...country.data() })));
+  return orderedBy(snapshot.docs.map(country => ({
+    id: country.id,
+    ...country.data(),
+    bgImage: COUNTRY_IMAGES[country.id] || country.data().bgImage || ''
+  })));
 }
 
 async function loadCountry(countryId) {
@@ -88,51 +95,72 @@ function serviceLabel(category) {
   return labels[category] || category;
 }
 
-async function seedInitialData({ finland, sweden, belgium, route }) {
-  const sources = { finland, sweden, belgium };
-  if (INITIAL_COUNTRY_IDS.some(countryId => !sources[countryId]?.ciudades)) {
-    throw new Error('Seleccioná los JSON de Finlandia, Suecia, Bélgica y map-locations.json.');
+async function seedInitialData({ countries = {}, route, updateExistingCountries = [] }) {
+  const countryIdsToSeed = INITIAL_COUNTRY_IDS.filter(countryId => Array.isArray(countries[countryId]?.ciudades));
+  if (!countryIdsToSeed.length) {
+    throw new Error('Seleccioná al menos un JSON de país y map-locations.json.');
   }
-  if (sources.belgium.id !== 'belgium' || sources.belgium.pais !== 'Bélgica') {
-    throw new Error('El archivo data/belgium.json no contiene datos de Bélgica.');
+  countryIdsToSeed.forEach(countryId => {
+    if (countries[countryId].id !== countryId) {
+      throw new Error(`El archivo ${countryId}.json no coincide con su nombre.`);
+    }
+  });
+  if (countries.belgium && countries.belgium.pais !== 'Bélgica') {
+    throw new Error('El archivo belgium.json no contiene datos de Bélgica.');
   }
 
   const routeStops = (Array.isArray(route?.stops) ? route.stops : [])
-    .filter(stop => INITIAL_COUNTRY_IDS.includes(stop.countryId));
+    .filter(stop => countryIdsToSeed.includes(stop.countryId));
   const routeOrder = new Map(routeStops.map((stop, index) => [stop.countryId, index]));
-  const countryIds = [...INITIAL_COUNTRY_IDS].sort((first, second) =>
+  const countryIds = [...countryIdsToSeed].sort((first, second) =>
     (routeOrder.get(first) ?? Number.MAX_SAFE_INTEGER) - (routeOrder.get(second) ?? Number.MAX_SAFE_INTEGER));
+  const updateIds = new Set(updateExistingCountries);
   const batch = writeBatch(db);
   let writeCount = 0;
 
   for (const countryId of countryIds) {
     const countryRef = doc(db, 'countries', countryId);
-    if ((await getDoc(countryRef)).exists()) continue;
+    const existingCountry = await getDoc(countryRef);
+    if (existingCountry.exists() && !updateIds.has(countryId)) continue;
 
-    const source = sources[countryId];
+    const source = countries[countryId];
     batch.set(countryRef, {
       id: countryId,
       pais: source.pais || countryId,
       flag: source.flag || '',
       spotifyUrl: source.spotifyUrl || '',
+      driveFolderUrl: source.driveFolderUrl || '',
       bgImage: COUNTRY_IMAGES[countryId] || '',
       order: routeOrder.get(countryId) ?? countryIds.indexOf(countryId)
-    });
+    }, { merge: true });
     writeCount += 1;
 
     for (const [cityIndex, sourceCity] of (source.ciudades || []).entries()) {
       const cityId = `city-${String(cityIndex + 1).padStart(2, '0')}`;
       const cityRef = doc(db, 'countries', countryId, 'cities', cityId);
       const { actividades = [], gastronomia = [], ...cityFields } = sourceCity;
-      batch.set(cityRef, { ...cityFields, id: cityId, order: cityIndex });
+      batch.set(cityRef, { ...cityFields, id: cityId, order: cityIndex }, { merge: true });
       writeCount += 1;
 
-      [...actividades.map(item => ['actividad', item]), ...gastronomia.map(item => ['gastronomia', item])]
-        .forEach(([category, activity], activityIndex) => {
-          const activityRef = doc(db, 'countries', countryId, 'cities', cityId, 'activities', `activity-${String(activityIndex + 1).padStart(3, '0')}`);
-          batch.set(activityRef, mapActivity(activity, category, activityIndex));
-          writeCount += 1;
-        });
+      const activityEntries = [
+        ...actividades.map(item => ['actividad', item]),
+        ...gastronomia.map(item => ['gastronomia', item])
+      ];
+      if (existingCountry.exists()) {
+        const existingActivities = await getDocs(collection(db, 'countries', countryId, 'cities', cityId, 'activities'));
+        const retainedActivityIds = new Set(activityEntries.map((_, index) => `activity-${String(index + 1).padStart(3, '0')}`));
+        existingActivities.docs
+          .filter(activity => !retainedActivityIds.has(activity.id))
+          .forEach(activity => {
+            batch.delete(activity.ref);
+            writeCount += 1;
+          });
+      }
+      activityEntries.forEach(([category, activity], activityIndex) => {
+        const activityRef = doc(db, 'countries', countryId, 'cities', cityId, 'activities', `activity-${String(activityIndex + 1).padStart(3, '0')}`);
+        batch.set(activityRef, mapActivity(activity, category, activityIndex));
+        writeCount += 1;
+      });
     }
 
     Object.entries(source.servicios || {}).forEach(([category, url], serviceIndex) => {
@@ -142,7 +170,7 @@ async function seedInitialData({ finland, sweden, belgium, route }) {
         label: serviceLabel(category),
         url: String(url || ''),
         order: serviceIndex
-      });
+      }, { merge: true });
       writeCount += 1;
     });
   }

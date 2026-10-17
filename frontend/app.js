@@ -1,3 +1,12 @@
+import {
+  canManageTicketFiles,
+  chooseDriveFolder,
+  downloadDriveFolder,
+  filesForCity,
+  filesForCountry,
+  getTicketFiles
+} from './ticket-files.mjs';
+
 let currentViewState = { level: 'paises', paisId: null };
 let homeMode = 'globe';
 let homeCountries = [];
@@ -5,6 +14,8 @@ let disposeGlobe = null;
 let focusedGlobeLocation = null;
 let signedInUser = null;
 let activeMember = null;
+let downloadedTicketFiles = [];
+let showTicketDownloadMenu = false;
 
 if ('serviceWorker' in navigator && import.meta.env.DEV) {
   navigator.serviceWorker.getRegistrations()
@@ -18,7 +29,7 @@ if ('serviceWorker' in navigator && import.meta.env.DEV) {
     window.location.reload();
   });
 
-  navigator.serviceWorker.register('sw.js?v=1.0.18', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('sw.js?v=1.0.19', { updateViaCache: 'none' })
     .then(registration => registration.update())
     .catch(err => console.error('Service Worker error:', err));
 }
@@ -41,6 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('[data-admin-access]')?.addEventListener('click', () => {
     setVaultMenuOpen(false);
     showAccessAdminView();
+  });
+  document.querySelector('[data-download-ticket-files]')?.addEventListener('click', event => {
+    setVaultMenuOpen(false);
+    startTicketFolderDownload(event.currentTarget);
   });
   document.getElementById('btnSignOut')?.addEventListener('click', () => window.TravelFirebase.signOut());
   document.addEventListener('keydown', event => {
@@ -98,6 +113,66 @@ function renderPendingAccess(user, error = '') {
   container.querySelector('#firebase-sign-out')?.addEventListener('click', () => window.TravelFirebase.signOut());
 }
 
+function renderTicketDownloadPrompt(message = '') {
+  if (!canManageTicketFiles(activeMember)) return showPaisesView();
+  updateHeader('Archivos del viaje', false);
+  updateVaultNavigation();
+  const container = document.getElementById('app');
+  if (!container) return;
+  container.className = 'flex min-h-[calc(100svh-64px)] max-w-md mx-auto items-center justify-center p-4';
+  container.innerHTML = `
+    <section class="w-full rounded-xl border border-slate-700 bg-slate-800 p-5 text-center">
+      <h2 class="text-lg font-semibold text-white">Archivos del viaje</h2>
+      <p class="mt-2 text-sm text-slate-300">Elegí una carpeta de Drive para guardar sus archivos en este dispositivo y consultarlos desde el itinerario.</p>
+      ${message ? `<p class="mt-3 text-sm text-amber-200" role="status">${escapeHtml(message)}</p>` : ''}
+      <button id="download-ticket-folder" type="button" class="mt-5 w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-500">Elegir carpeta de Drive</button>
+      <button id="skip-ticket-download" type="button" class="mt-2 w-full rounded-lg border border-slate-600 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-white/5">Ahora no</button>
+    </section>
+  `;
+  container.querySelector('#download-ticket-folder')?.addEventListener('click', event => {
+    startTicketFolderDownload(event.currentTarget);
+  });
+  container.querySelector('#skip-ticket-download')?.addEventListener('click', () => {
+    showTicketDownloadMenu = downloadedTicketFiles.length === 0;
+    updateVaultNavigation();
+    showPaisesView();
+  });
+}
+
+async function startTicketFolderDownload(button) {
+  if (!canManageTicketFiles(activeMember)) return showPaisesView();
+  button.disabled = true;
+  button.textContent = 'Conectando con Google Drive…';
+  try {
+    const credentials = await window.TravelFirebase.requestDriveReadAccess();
+    const folder = await chooseDriveFolder(credentials);
+    if (!folder) {
+      showTicketDownloadMenu = downloadedTicketFiles.length === 0;
+      updateVaultNavigation();
+      if (downloadedTicketFiles.length) showPaisesView();
+      else renderTicketDownloadPrompt('No seleccionaste una carpeta.');
+      return;
+    }
+
+    await downloadDriveFolder({
+      folder,
+      accessToken: credentials.accessToken,
+      onProgress: (count, name) => {
+        button.textContent = `Descargando ${count}: ${name}`;
+      }
+    });
+    downloadedTicketFiles = await getTicketFiles();
+    showTicketDownloadMenu = false;
+    updateVaultNavigation();
+    showPaisesView();
+  } catch (error) {
+    showTicketDownloadMenu = downloadedTicketFiles.length === 0;
+    updateVaultNavigation();
+    if (downloadedTicketFiles.length) showPaisesView();
+    else renderTicketDownloadPrompt(error.message || 'No se pudo descargar la carpeta.');
+  }
+}
+
 function initializeFirebaseAccess() {
   const container = document.getElementById('app');
   if (container) container.innerHTML = '<p class="py-8 text-center text-sm text-slate-300">Verificando acceso…</p>';
@@ -109,6 +184,8 @@ function initializeFirebaseAccess() {
   window.TravelFirebase.onAuthStateChanged(window.TravelFirebase.auth, async user => {
     signedInUser = user;
     activeMember = null;
+    downloadedTicketFiles = [];
+    showTicketDownloadMenu = false;
     updateVaultNavigation();
     if (!user) {
       renderSignIn();
@@ -123,6 +200,20 @@ function initializeFirebaseAccess() {
         return;
       }
       activeMember = member;
+      if (canManageTicketFiles(member)) {
+        try {
+          downloadedTicketFiles = await getTicketFiles();
+        } catch (error) {
+          console.warn('No se pudieron leer los archivos locales:', error);
+          downloadedTicketFiles = [];
+        }
+        showTicketDownloadMenu = downloadedTicketFiles.length === 0;
+        updateVaultNavigation();
+        if (downloadedTicketFiles.length) showPaisesView();
+        else renderTicketDownloadPrompt();
+        return;
+      }
+      downloadedTicketFiles = [];
       updateVaultNavigation();
       showPaisesView();
     } catch (error) {
@@ -236,6 +327,81 @@ function normalizeCountryId(rawId) {
   return aliases[value] || value;
 }
 
+function createCountryImportButton() {
+  if (activeMember?.role !== 'admin') return null;
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'rounded-lg border border-emerald-700/70 bg-emerald-950/40 px-3 py-2 text-xs font-semibold text-emerald-100 hover:bg-emerald-900/60';
+  button.textContent = 'Importar / actualizar países';
+  button.addEventListener('click', () => selectCountryDataFiles(button));
+  return button;
+}
+
+function appendTicketFiles(container, files, title) {
+  if (!canManageTicketFiles(activeMember) || !files.length) return;
+  const section = document.createElement('section');
+  section.className = 'space-y-2';
+  section.innerHTML = `<h3 class="text-xs font-bold text-slate-300">${escapeHtml(title)}</h3>`;
+  const list = document.createElement('div');
+  list.className = 'grid grid-cols-1 gap-2';
+  files.forEach(file => {
+    const link = document.createElement('a');
+    const objectUrl = URL.createObjectURL(file.blob);
+    const canPreview = file.mimeType === 'application/pdf' || file.mimeType?.startsWith('image/');
+    link.href = objectUrl;
+    link.className = 'flex items-center justify-between gap-3 rounded-lg border border-slate-700 bg-slate-800 px-3 py-3 text-sm text-slate-100 hover:bg-slate-700';
+    link.rel = 'noopener noreferrer';
+    if (canPreview) link.target = '_blank';
+    else link.download = file.name;
+    link.innerHTML = `<span class="min-w-0 break-words">📄 ${escapeHtml(file.name)}</span><span class="shrink-0 text-emerald-300">${canPreview ? 'Abrir' : 'Guardar'} →</span>`;
+    list.appendChild(link);
+  });
+  section.appendChild(list);
+  container.appendChild(section);
+}
+
+function selectCountryDataFiles(button) {
+  const picker = document.createElement('input');
+  picker.type = 'file';
+  picker.accept = '.json,application/json';
+  picker.multiple = true;
+  picker.addEventListener('change', async () => {
+    const files = new Map(Array.from(picker.files || []).map(file => [file.name.toLowerCase(), file]));
+    const countries = {};
+    button.disabled = true;
+    button.textContent = 'Cargando países…';
+
+    try {
+      for (const countryId of window.TravelFirestore.INITIAL_COUNTRY_IDS) {
+        const file = files.get(`${countryId}.json`);
+        if (file) countries[countryId] = JSON.parse(await file.text());
+      }
+      const routeFile = files.get('map-locations.json');
+      if (!routeFile) throw new Error('Seleccioná también map-locations.json.');
+      if (!Object.keys(countries).length) throw new Error('Seleccioná al menos un JSON de país.');
+
+      const route = JSON.parse(await routeFile.text());
+      const existingCountries = await window.TravelFirestore.loadCountries();
+      const existingIds = new Set(existingCountries.map(country => country.id));
+      const existingSelected = Object.keys(countries).filter(countryId => existingIds.has(countryId));
+      const updateExistingCountries = existingSelected.length && window.confirm(
+        `Se actualizarán los países existentes seleccionados: ${existingSelected.join(', ')}. `
+        + 'Se conservarán los campos heredados de vouchers. ¿Continuar?'
+      ) ? existingSelected : [];
+      const result = await window.TravelFirestore.seedInitialData({ countries, route, updateExistingCountries });
+      if (!result.writeCount) {
+        button.textContent = 'No se importaron cambios';
+        return;
+      }
+      showPaisesView();
+    } catch (error) {
+      button.disabled = false;
+      button.textContent = error.message || 'No se pudieron importar los países.';
+    }
+  }, { once: true });
+  picker.click();
+}
+
 // Nivel 1: Cargar la lista de países
 function showPaisesView() {
   currentViewState = { level: 'paises', paisId: null };
@@ -253,44 +419,11 @@ function showPaisesView() {
           container.innerHTML = `
             <section class="rounded-xl border border-slate-700 bg-slate-800 p-5 text-center">
               <h2 class="text-base font-semibold text-white">Itinerario todavía no cargado</h2>
-              <p class="mt-2 text-sm text-slate-300">Seleccioná los itinerarios locales de Suecia, Finlandia, Bélgica y la ruta. Los demás países quedan fuera.</p>
+              <p class="mt-2 text-sm text-slate-300">Seleccioná los JSON de los países disponibles y map-locations.json.</p>
               <button id="seed-initial-data" type="button" class="mt-4 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500">Seleccionar JSON e importar</button>
             </section>`;
-          container.querySelector('#seed-initial-data')?.addEventListener('click', async event => {
-            const button = event.currentTarget;
-            const picker = document.createElement('input');
-            picker.type = 'file';
-            picker.accept = '.json,application/json';
-            picker.multiple = true;
-            picker.addEventListener('change', async () => {
-              const files = new Map(Array.from(picker.files || []).map(file => [file.name.toLowerCase(), file]));
-              const requiredFiles = {
-                finland: 'finland.json',
-                sweden: 'sweden.json',
-                belgium: 'belgium.json',
-                route: 'map-locations.json'
-              };
-              button.disabled = true;
-              button.textContent = 'Cargando en Firebase…';
-              try {
-                const sources = {};
-                for (const [key, filename] of Object.entries(requiredFiles)) {
-                  const file = files.get(filename);
-                  if (!file) throw new Error(`Falta seleccionar ${filename}.`);
-                  sources[key] = JSON.parse(await file.text());
-                }
-                const result = await window.TravelFirestore.seedInitialData(sources);
-                if (!result.writeCount) {
-                  renderEmptyState('Los datos iniciales ya estaban cargados. Actualizá para verlos.');
-                  return;
-                }
-                showPaisesView();
-              } catch (error) {
-                renderEmptyState(error.message || 'No se pudo cargar el itinerario inicial.');
-              }
-            }, { once: true });
-            picker.click();
-          });
+          const button = container.querySelector('#seed-initial-data');
+          button?.addEventListener('click', () => selectCountryDataFiles(button));
         } else {
           renderEmptyState('El administrador todavía no cargó el itinerario.');
         }
@@ -316,7 +449,7 @@ function showCiudadesView(paisId) {
   container.innerHTML = '<p class="text-center text-slate-400 text-sm py-8">Cargando itinerario...</p>';
 
   window.TravelFirestore.loadCountry(canonicalPaisId)
-    .then(pais => {
+    .then(async pais => {
       if (!pais || !pais.pais) {
         renderEmptyState('El país solicitado no tiene información disponible.');
         return;
@@ -342,18 +475,7 @@ function showCiudadesView(paisId) {
         container.appendChild(spotifyBtn);
       }
 
-      if (pais.driveFolderUrl) {
-        const driveBtn = document.createElement('a');
-        driveBtn.href = pais.driveFolderUrl;
-        driveBtn.target = '_blank';
-        driveBtn.rel = 'noopener noreferrer';
-        driveBtn.className = 'w-full bg-blue-700 hover:bg-blue-600 text-white p-3 rounded-xl flex items-center justify-between text-xs font-bold active:scale-95 transition-all shadow-md mb-4';
-        driveBtn.innerHTML = `
-          <span class="flex items-center gap-2">🎟️ Tickets de ${escapeHtml(pais.pais)}</span>
-          <span>Abrir Drive ➔</span>
-        `;
-        container.appendChild(driveBtn);
-      }
+      appendTicketFiles(container, filesForCountry(downloadedTicketFiles, pais), 'Archivos del país');
 
       const ciudades = Array.isArray(pais.ciudades) ? pais.ciudades : [];
       if (!ciudades.length) {
@@ -435,14 +557,6 @@ function showDetalleCiudadView(pais, ciudadIndex, paisIdOverride) {
             <a href="${escapeHtml(ciudad.hotelUrl)}" target="_blank" rel="noopener noreferrer" class="bg-blue-600 hover:bg-blue-500 text-white text-xs py-1.5 px-3 rounded-lg flex items-center gap-1 active:scale-95 transition-all">
               🏨 Booking
             </a>` : ''}
-          ${ciudad.voucherEsUrl ? `
-            <a href="${escapeHtml(ciudad.voucherEsUrl)}" target="_blank" rel="noopener noreferrer" class="bg-slate-700 hover:bg-slate-600 text-white text-xs py-1.5 px-3 rounded-lg flex items-center gap-1 active:scale-95 transition-all">
-              📄 Voucher ES
-            </a>` : ''}
-          ${ciudad.voucherLocalUrl ? `
-            <a href="${escapeHtml(ciudad.voucherLocalUrl)}" target="_blank" rel="noopener noreferrer" class="bg-slate-700 hover:bg-slate-600 text-white text-xs py-1.5 px-3 rounded-lg flex items-center gap-1 active:scale-95 transition-all">
-              📄 Voucher original
-            </a>` : ''}
         </div>
       </div>
 
@@ -466,6 +580,7 @@ function showDetalleCiudadView(pais, ciudadIndex, paisIdOverride) {
       </div>
     </div>
   `;
+  appendTicketFiles(container, filesForCity(downloadedTicketFiles, pais, ciudad), 'Tickets y archivos');
 }
 
 function handleBack() {
@@ -561,9 +676,14 @@ function setVaultMenuOpen(open) {
 
 function updateVaultNavigation() {
   const enabled = Boolean(activeMember?.enabled);
+  const canManageFiles = canManageTicketFiles(activeMember);
   document.getElementById('btnVaultMenu')?.classList.toggle('hidden', !enabled);
   document.getElementById('btnSignOut')?.classList.toggle('hidden', !signedInUser);
   document.querySelector('[data-admin-access]')?.classList.toggle('hidden', !enabled || activeMember?.role !== 'admin');
+  document.querySelector('[data-download-ticket-files]')?.classList.toggle(
+    'hidden',
+    !canManageFiles || downloadedTicketFiles.length > 0 || !showTicketDownloadMenu
+  );
 }
 
 function createHomeSwitch() {
@@ -597,6 +717,8 @@ function renderHomeView() {
     container.className = 'p-4 max-w-md mx-auto space-y-4';
     container.innerHTML = '';
     container.appendChild(createHomeSwitch());
+    const importButton = createCountryImportButton();
+    if (importButton) container.appendChild(importButton);
     homeCountries.forEach(country => {
       const card = document.createElement('button');
       card.type = 'button';
@@ -634,7 +756,11 @@ function renderHomeView() {
     </section>
     <p class="pointer-events-none absolute bottom-[126px] left-0 right-0 z-10 text-center text-[10px] text-slate-300/75">Arrastr&aacute; para girar · pellizc&aacute; para acercar</p>
   `;
-  container.querySelector('#home-switch-slot').appendChild(createHomeSwitch());
+  const homeControls = container.querySelector('#home-switch-slot');
+  homeControls.classList.add('flex', 'flex-col', 'items-end', 'gap-2');
+  homeControls.appendChild(createHomeSwitch());
+  const importButton = createCountryImportButton();
+  if (importButton) homeControls.appendChild(importButton);
 
   function showDestination(location) {
     focusedGlobeLocation = location;
@@ -661,7 +787,7 @@ function renderHomeView() {
             showCiudadesView(location.countryId);
           }
         } catch {
-          handleFetchError('No se pudo cargar el itinerario de este destino.', `data/${location.countryId}.json`);
+          handleFetchError('No se pudo cargar el itinerario de este destino.', `frontend/data/${location.countryId}.json`);
         }
       };
     } else {

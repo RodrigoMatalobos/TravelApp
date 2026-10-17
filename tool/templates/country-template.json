@@ -8,7 +8,8 @@
   "servicios": {
     "consulados": "https://maps.google.com/?q=Consulado+General+de+la+República+Argentina+en+Barcelona",
     "farmacias": "https://maps.google.com/?q=Farmacias+Barcelona",
-    "lavanderias": "https://maps.google.com/?q=Lavanderias+Barcelona"
+    "lavanderias": "https://maps.google.com/?q=Lavanderias+Barcelona",
+    "supermercados": "https://maps.google.com/?q=Supermercados+Barcelona"
   },
   "ciudades": [
     {

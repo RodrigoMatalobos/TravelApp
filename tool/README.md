@@ -15,16 +15,16 @@ Este es el único CSV de entrada. `country-template.json` queda como referencia 
 Por defecto, el generador NO pisa los JSON de la app. Genera todo en una carpeta separada:
 
 ```bash
-node tool/generate-data.js tool/templates/input-template.csv --output output
+  node tool/generate-data.js tool/templates/input-template.csv --output tool/output
 ```
 
 Esto crea archivos en:
 
-- `output/country.json`
-- `output/spain.json`
-- `output/france.json`
+- `tool/output/country.json`
+- `tool/output/spain.json`
+- `tool/output/france.json`
 
-## Si querés escribir directamente en data/
+## Si querés escribir directamente en frontend/data/
 
 Solo cuando lo decidas explícitamente:
 
@@ -32,7 +32,7 @@ Solo cuando lo decidas explícitamente:
 node tool/generate-data.js tool/templates/input-template.csv --in-place
 ```
 
-> Con `--in-place` sí escribe en `data/`, pero hace merge de países existentes en lugar de borrar todo.
+> Con `--in-place` sí escribe en `frontend/data/`, pero hace merge de países existentes en lugar de borrar todo.
 
 ## Estructura esperada del CSV
 
@@ -46,6 +46,7 @@ Las columnas principales son:
 - `servicios_consulados`
 - `servicios_farmacias`
 - `servicios_lavanderias`
+- `servicios_supermercados`
 - `city_name`
 - `city_dates`
 - `hotel_name`
@@ -66,13 +67,13 @@ Ejecutá desde la carpeta del proyecto:
 node tool/manage-drive-folders.js
 ```
 
-El programa guarda la URL raíz de `Viaje Europa 2026` en `tool/drive-config.json` y permite cargar la URL compartida de cada subcarpeta por país. Solo actualiza los enlaces en `data/country.json` y en los JSON de esos países después de confirmar escribiendo `SI`. Enter conserva el valor actual; `-` lo quita.
+El programa guarda la URL raíz de `Viaje Europa 2026` en `tool/drive-config.json` y permite cargar la URL compartida de cada subcarpeta por país. Solo actualiza los enlaces en `frontend/data/country.json` y en los JSON de esos países después de confirmar escribiendo `SI`. Enter conserva el valor actual; `-` lo quita.
 
 Los tickets pueden contener datos personales. Mantené las carpetas restringidas a las cuentas autorizadas; la app no agrega autenticación propia a Drive.
 
 ## Completar paradas del globo
 
-El recorrido y sus coordenadas están en `data/map-locations.json`. Las paradas de ciudades usan `countryId` y `cityIndex` para enlazarse con los JSON del itinerario; respetá el orden de `stops`, ya que define la ruta dibujada.
+El recorrido y sus coordenadas están en `frontend/data/map-locations.json`. Las paradas de ciudades usan `countryId` y `cityIndex` para enlazarse con los JSON del itinerario; respetá el orden de `stops`, ya que define la ruta dibujada.
 
 Cuando termines de completar los JSON de países, comprobá si falta alguna ciudad o si hay índices todavía sin datos:
 
@@ -86,11 +87,11 @@ Para agregar las ciudades pendientes con sus coordenadas y posición en el viaje
 node tool/sync-map-locations.js
 ```
 
-El script pide latitud y longitud decimales, una etiqueta opcional y dónde insertar cada parada. Por defecto la agrega antes del regreso. Solo guarda `data/map-locations.json` al confirmar con `SI`; si hay un índice de ruta que todavía no existe en el JSON del país, primero pide completar esos datos.
+El script pide latitud y longitud decimales, una etiqueta opcional y dónde insertar cada parada. Por defecto la agrega antes del regreso. Solo guarda `frontend/data/map-locations.json` al confirmar con `SI`; si hay un índice de ruta que todavía no existe en el JSON del país, primero pide completar esos datos.
 
 ## Mantener las paradas del globo
 
-El recorrido editable está en `data/map-locations.json`. Cada ciudad usa `countryId` y `cityIndex` para vincularse con su entrada en `data/<countryId>.json`; las coordenadas son decimales de latitud y longitud. Conservá el orden de `stops`, porque determina la línea del viaje.
+El recorrido editable está en `frontend/data/map-locations.json`. Cada ciudad usa `countryId` y `cityIndex` para vincularse con su entrada en `frontend/data/<countryId>.json`; las coordenadas son decimales de latitud y longitud. Conservá el orden de `stops`, porque determina la línea del viaje.
 
 Cuando termines de completar los JSON de países, revisá qué ciudades faltan en el mapa:
 
@@ -104,7 +105,7 @@ Para agregar las pendientes, ejecutá:
 node tool/sync-map-locations.js
 ```
 
-El programa solicita coordenadas, una etiqueta opcional y la posición de cada nueva parada. Por defecto las inserta antes del regreso. Solo escribe en `data/map-locations.json` si confirmás con `SI`; si detecta índices de paradas que todavía no existen en un JSON, se detiene para que primero completes esos datos.
+El programa solicita coordenadas, una etiqueta opcional y la posición de cada nueva parada. Por defecto las inserta antes del regreso. Solo escribe en `frontend/data/map-locations.json` si confirmás con `SI`; si detecta índices de paradas que todavía no existen en un JSON, se detiene para que primero completes esos datos.
 
 ### Cómo escribir actividades y gastronomía
 

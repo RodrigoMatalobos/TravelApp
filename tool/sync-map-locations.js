@@ -6,7 +6,7 @@ const path = require('path');
 const readline = require('readline');
 
 const projectDir = path.resolve(__dirname, '..');
-const dataDir = path.join(projectDir, 'data');
+const dataDir = path.join(projectDir, 'frontend', 'data');
 const routePath = path.join(dataDir, 'map-locations.json');
 
 function normalizeCityName(value) {
@@ -81,7 +81,7 @@ function buildMapStop({ country, city, cityIndex, latitude, longitude, stage, ex
 function loadCountries() {
   const countryList = JSON.parse(fs.readFileSync(path.join(dataDir, 'country.json'), 'utf8'));
   if (!Array.isArray(countryList)) {
-    throw new Error('data/country.json debe contener una lista de países.');
+    throw new Error('frontend/data/country.json debe contener una lista de países.');
   }
 
   return countryList.map(country => {
@@ -113,7 +113,7 @@ async function main(argv = process.argv.slice(2)) {
   const countries = loadCountries();
   const route = JSON.parse(fs.readFileSync(routePath, 'utf8'));
   if (!Array.isArray(route.stops)) {
-    throw new Error('data/map-locations.json debe tener una lista stops.');
+    throw new Error('frontend/data/map-locations.json debe tener una lista stops.');
   }
 
   const staleStops = findStaleStops(countries, route.stops);
@@ -176,7 +176,7 @@ async function main(argv = process.argv.slice(2)) {
       pendingStops.push({ stop, position: position - 1 });
     }
 
-    const confirmation = (await promptLine(interfaceIO, 'Escribí SI para guardar las paradas nuevas en data/map-locations.json: ')).trim();
+    const confirmation = (await promptLine(interfaceIO, 'Escribí SI para guardar las paradas nuevas en frontend/data/map-locations.json: ')).trim();
     if (confirmation !== 'SI') {
       console.log('Cancelado; no se modificó el mapa.');
       return;

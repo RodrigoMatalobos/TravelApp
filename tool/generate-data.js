@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 const rootDir = path.resolve(__dirname, '..');
-const defaultDataDir = path.join(rootDir, 'data');
+const defaultDataDir = path.join(rootDir, 'frontend', 'data');
 const defaultOutputDir = path.join(rootDir, 'tool', 'output');
 
 function normalizeString(value) {
@@ -148,7 +148,8 @@ function buildCountryObject(record) {
     servicios: {
       consulados: normalizeString(record.servicios_consulados),
       farmacias: normalizeString(record.servicios_farmacias),
-      lavanderias: normalizeString(record.servicios_lavanderias)
+      lavanderias: normalizeString(record.servicios_lavanderias),
+      supermercados: normalizeString(record.servicios_supermercados)
     },
     ciudades: []
   };
@@ -289,7 +290,7 @@ function main() {
   console.log(`JSON generado correctamente en ${result.outputPath}`);
   console.log(`Países creados: ${result.generatedCountries.join(', ')}`);
   if (result.inPlace) {
-    console.log('Modo: escritura directa en data/ (sin sobrescribir por defecto).');
+    console.log('Modo: escritura directa en frontend/data/ (sin sobrescribir por defecto).');
   } else {
     console.log(`Modo seguro: se generó en ${result.outputPath} sin tocar los archivos principales.`);
   }

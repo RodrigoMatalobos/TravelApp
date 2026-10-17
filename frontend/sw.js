@@ -1,10 +1,7 @@
-const CACHE_NAME = 'europa-2026-v1.0.18';
+const CACHE_NAME = 'europa-2026-v1.0.19';
 const APP_SHELL = [
   './',
   './index.html',
-  './app.js',
-  './vault.js',
-  './globe.js',
   './img/earth-blue-marble.jpg',
   './manifest.json',
   './img/spain.jpg',
@@ -13,6 +10,7 @@ const APP_SHELL = [
   './img/belgium.jpg',
   './img/germany.jpg',
   './img/czech.jpg',
+  './icon/icon.png',
   'https://cdn.tailwindcss.com',
   'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js',
   'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.core.js'

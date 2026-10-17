@@ -1,22 +1,30 @@
-import { copyFileSync, mkdirSync } from 'node:fs';
+import { cpSync, copyFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
+
+const projectRoot = fileURLToPath(new URL('.', import.meta.url));
+const frontendRoot = resolve(projectRoot, 'frontend');
 
 function copyPwaAssets() {
   return {
     name: 'copy-pwa-assets',
     closeBundle() {
-      const root = process.cwd();
-      const output = resolve(root, 'dist');
-      copyFileSync(resolve(root, 'manifest.json'), resolve(output, 'manifest.json'));
-      copyFileSync(resolve(root, 'sw.js'), resolve(output, 'sw.js'));
-      mkdirSync(resolve(output, 'icon'), { recursive: true });
-      copyFileSync(resolve(root, 'icon/icon.png'), resolve(output, 'icon/icon.png'));
+      const output = resolve(projectRoot, 'dist');
+      copyFileSync(resolve(frontendRoot, 'manifest.json'), resolve(output, 'manifest.json'));
+      copyFileSync(resolve(frontendRoot, 'sw.js'), resolve(output, 'sw.js'));
+      cpSync(resolve(frontendRoot, 'icon'), resolve(output, 'icon'), { recursive: true });
+      cpSync(resolve(frontendRoot, 'img'), resolve(output, 'img'), { recursive: true });
     }
   };
 }
 
 export default defineConfig({
+  root: frontendRoot,
   base: '/TravelApp/',
-  plugins: [copyPwaAssets()]
+  plugins: [copyPwaAssets()],
+  build: {
+    outDir: resolve(projectRoot, 'dist'),
+    emptyOutDir: true
+  }
 });

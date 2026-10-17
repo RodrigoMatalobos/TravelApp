@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { SHEET_SCHEMAS, snapshotFromValues, makeWritePlan } = require('../vault-sync');
+const { SHEET_SCHEMAS, snapshotFromValues, makeWritePlan } = require('../frontend/vault-sync');
 
 function packingRecord(overrides = {}) {
   return {

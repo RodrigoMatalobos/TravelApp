@@ -6,7 +6,7 @@ const path = require('path');
 const readline = require('readline');
 
 const projectDir = path.resolve(__dirname, '..');
-const defaultDataDir = path.join(projectDir, 'data');
+const defaultDataDir = path.join(projectDir, 'frontend', 'data');
 const defaultConfigPath = path.join(__dirname, 'drive-config.json');
 
 function isDriveFolderUrl(value) {
@@ -32,7 +32,7 @@ function updateDriveFolderData({ rootFolderUrl, countryLinks, dataDir = defaultD
   const countryListPath = path.join(dataDir, 'country.json');
   const countryList = readJson(countryListPath);
   if (!Array.isArray(countryList)) {
-    throw new Error('data/country.json debe contener una lista de países.');
+    throw new Error('frontend/data/country.json debe contener una lista de países.');
   }
 
   if (rootFolderUrl && !isDriveFolderUrl(rootFolderUrl)) {
@@ -110,7 +110,7 @@ async function main() {
     }
 
     console.log(`\nSe actualizarán ${Object.keys(countryLinks).length} enlaces de país.`);
-    const confirmation = (await prompt.ask('Escribí SI para guardar los cambios en data/: ')).trim();
+    const confirmation = (await prompt.ask('Escribí SI para guardar los cambios en frontend/data/: ')).trim();
     if (confirmation !== 'SI') {
       console.log('Cambios cancelados; no se modificaron los JSON.');
       return;
