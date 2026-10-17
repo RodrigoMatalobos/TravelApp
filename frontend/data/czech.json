@@ -1,60 +1,99 @@
 {
-  "id": "espana",
-  "pais": "España",
-  "flag": "🇪🇸",
+  "id": "czech",
+  "pais": "República Checa",
+  "flag": "🇨🇿",
+  "spotifyUrl": "https://open.spotify.com/playlist/4RnXEi2McMcnsT3vInD03n",
   "servicios": {
-    "consulados": "https://maps.google.com/?q=Consulado+Argentina+Barcelona",
-    "farmacias": "https://maps.google.com/?q=Farmacias+Barcelona",
-    "lavanderias": "https://maps.google.com/?q=Lavanderias+Barcelona"
+    "consulados": "https://maps.google.com/?q=Embajada+Argentina+en+Praga",
+    "farmacias": "https://maps.google.com/?q=Lekarna+Prague",
+    "lavanderias": "https://maps.google.com/?q=Laundromat+Prague"
   },
   "ciudades": [
     {
-      "nombre": "Barcelona (Ida)",
-      "fechas": "30/11/2026 – 08/12/2026",
-      "hotel": "Apartamentos DV",
-      "mapaHotelLink": "https://maps.google.com/?q=Apartamentos+DV+Barcelona",
-      "comoLlegar": "Metro L9S hasta Torrassa/Collblanc + 8 min a pie.",
+      "nombre": "Praga (Ida)",
+      "fechas": "03/01/2027 – 05/01/2027",
+      "hotel": "U 3 Pštrosů",
+      "mapaHotelLink": "https://maps.google.com/?q=U+3+Pstrosu+Drazickeho+namesti+12+Prague",
+      "comoLlegar": "Desde Hlavní nádraží, tomar Metro C a Muzeum, transbordo al Metro A hasta Malostranská y caminar 5 minutos; también sirve el tranvía 15/22 hasta Malostranské náměstí.",
       "actividades": [
         {
-          "nombre": "Abadía de Montserrat",
-          "mapa": "https://maps.google.com/?q=Abadia+de+Montserrat"
+          "dia": 1,
+          "nombre": "Puente Carlos y Torre del Puente de Malá Strana",
+          "mapa": "https://maps.google.com/?q=Charles+Bridge+Prague"
         },
         {
-          "nombre": "Barrio Gótico y Sagrada Familia",
-          "mapa": "https://maps.google.com/?q=Basílica+de+la+Sagrada+Familia"
+          "dia": 1,
+          "nombre": "Castillo de Praga, Catedral de San Vito y Malá Strana",
+          "mapa": "https://maps.google.com/?q=Prague+Castle"
         }
       ],
       "gastronomia": [
         {
-          "nombre": "Tapas en Boquería",
-          "mapa": "https://maps.google.com/?q=Mercado+de+La+Boqueria"
+          "dia": 1,
+          "nombre": "Goulash checo y cerveza Pilsner Urquell",
+          "mapa": "https://maps.google.com/?q=Traditional+Czech+Restaurant+Mala+Strana+Prague"
         },
         {
-          "nombre": "Paella en Barceloneta",
-          "mapa": "https://maps.google.com/?q=La+Barceloneta+Barcelona"
+          "dia": 1,
+          "nombre": "Trdelník en puestos callejeros",
+          "mapa": "https://maps.google.com/?q=Trdelnik+Mala+Strana+Prague"
         }
       ]
     },
     {
-      "nombre": "Barcelona (Vuelta)",
-      "fechas": "08/01/2027 – 12/01/2027",
-      "hotel": "Barcelona Century Hotel",
-      "mapaHotelLink": "https://maps.google.com/?q=Barcelona+Century+Hotel",
-      "comoLlegar": "Aerobús A1/A2 a Plaça Universitat o Metro L9S+L5 a Hospital Clínic.",
+      "nombre": "Karlovy Vary",
+      "fechas": "05/01/2027 – 06/01/2027",
+      "hotel": "Vienna House Dvořák",
+      "mapaHotelLink": "https://maps.google.com/?q=Vienna+House+Dvorak+Nova+Louka+11+Karlovy+Vary",
+      "comoLlegar": "Desde la terminal de buses o trenes de Karlovy Vary, tomar el bus local 2 hasta Tržnice/Divadelní náměstí o un taxi directo al hotel.",
       "actividades": [
         {
-          "nombre": "Compras de último momento",
-          "mapa": ""
+          "dia": 1,
+          "nombre": "Paseo por las columnatas y fuentes termales",
+          "mapa": "https://maps.google.com/?q=Mill+Colonnade+Karlovy+Vary"
         },
         {
-          "nombre": "Passeig de Gràcia",
-          "mapa": "https://maps.google.com/?q=Passeig+de+Gracia+Barcelona"
+          "dia": 1,
+          "nombre": "Relax balneario y paseo junto al río Teplá",
+          "mapa": "https://maps.google.com/?q=Karlovy+Vary+Hot+Spring+Colonnade"
         }
       ],
       "gastronomia": [
         {
-          "nombre": "Churros en Petritxol",
-          "mapa": "https://maps.google.com/?q=Carrer+de+Petritxol+Barcelona"
+          "dia": 1,
+          "nombre": "Oplatky, las galletas termales tradicionales",
+          "mapa": "https://maps.google.com/?q=Oplatky+Karlovy+Vary"
+        },
+        {
+          "dia": 1,
+          "nombre": "Degustación de licor Becherovka",
+          "mapa": "https://maps.google.com/?q=Becherovka+Museum+Karlovy+Vary"
+        }
+      ]
+    },
+    {
+      "nombre": "Praga (Vuelta)",
+      "fechas": "06/01/2027 – 08/01/2027",
+      "hotel": "Prague Inn",
+      "mapaHotelLink": "https://maps.google.com/?q=Prague+Inn+28+rijna+15+Prague",
+      "comoLlegar": "Regreso desde Karlovy Vary; el hotel queda junto a la plaza Wenceslao y la estación Můstek, en 28. října 15.",
+      "actividades": [
+        {
+          "dia": 1,
+          "nombre": "Plaza de la Ciudad Vieja y Reloj Astronómico",
+          "mapa": "https://maps.google.com/?q=Old+Town+Square+Prague"
+        },
+        {
+          "dia": 1,
+          "nombre": "Barrio Judío (Josefov) y sinagogas históricas",
+          "mapa": "https://maps.google.com/?q=Jewish+Quarter+Prague"
+        }
+      ],
+      "gastronomia": [
+        {
+          "dia": 1,
+          "nombre": "Codillo de cerdo asado (Koleno)",
+          "mapa": "https://maps.google.com/?q=Czech+Koleno+Old+Town+Prague"
         }
       ]
     }

@@ -11,15 +11,19 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase-client.js';
 import { mergeCountryCatalog } from './country-catalog.mjs';
+import {
+  buildItinerarySnapshot,
+  diffDocuments,
+  INITIAL_COUNTRY_IDS
+} from './itinerary-sync.mjs';
 
-const INITIAL_COUNTRY_IDS = ['finland', 'sweden', 'belgium', 'germany', 'spain', 'czech'];
 const COUNTRY_IMAGES = {
-  finland: new URL('./img/finland.jpg', import.meta.url).href,
-  sweden: new URL('./img/sweden.jpg', import.meta.url).href,
-  belgium: new URL('./img/belgium.jpg', import.meta.url).href,
-  germany: new URL('./img/germany.jpg', import.meta.url).href,
-  spain: new URL('./img/spain.jpg', import.meta.url).href,
-  czech: new URL('./img/czech.jpg', import.meta.url).href
+  finland: 'img/finland.jpg',
+  sweden: 'img/sweden.jpg',
+  belgium: 'img/belgium.jpg',
+  germany: 'img/germany.jpg',
+  spain: 'img/spain.jpg',
+  czech: 'img/czech.jpg'
 };
 const VAULT_SCHEMAS = Object.freeze({
   Valija: ['id', 'nombre', 'cantidad', 'nota', 'estado', 'asignado_a', 'created_at', 'updated_at', 'updated_by'],
@@ -69,120 +73,136 @@ async function loadCountry(countryId) {
 
 async function loadRouteStops() {
   const snapshot = await getDocs(collection(db, 'routeStops'));
-  return orderedBy(snapshot.docs.map(stop => ({ id: stop.id, ...stop.data() })));
+  return orderedBy(snapshot.docs.map(stop => ({ id: stop.id, ...stop.data() })))
+    .filter(stop => Number.isFinite(Number(stop.latitude)) && Number.isFinite(Number(stop.longitude)));
 }
 
-function mapActivity(activity, category, order) {
-  const value = typeof activity === 'string' ? { nombre: activity } : activity || {};
+function documentsFrom(snapshot) {
+  return snapshot.docs.map(document => ({ id: document.id, data: document.data() }));
+}
+
+async function loadCountryCollectionsForSync(countryId) {
+  const [citySnapshot, serviceSnapshot] = await Promise.all([
+    getDocs(collection(db, 'countries', countryId, 'cities')),
+    getDocs(collection(db, 'countries', countryId, 'additionalData'))
+  ]);
+  const activityGroups = await Promise.all(citySnapshot.docs.map(async cityDocument => {
+    const activitySnapshot = await getDocs(collection(db, 'countries', countryId, 'cities', cityDocument.id, 'activities'));
+    return activitySnapshot.docs.map(activity => ({
+      id: activity.id,
+      key: `${countryId}/${cityDocument.id}/${activity.id}`,
+      countryId,
+      cityId: cityDocument.id,
+      data: activity.data()
+    }));
+  }));
+
   return {
-    category,
-    dia: Number.isFinite(Number(value.dia)) ? Number(value.dia) : null,
-    nombre: String(value.nombre || '').trim(),
-    mapa: String(value.mapa || ''),
-    order
+    cities: citySnapshot.docs.map(city => ({ id: city.id, countryId, data: city.data() })),
+    activities: activityGroups.flat(),
+    services: serviceSnapshot.docs.map(service => ({ id: service.id, countryId, data: service.data() }))
   };
 }
 
-function serviceLabel(category) {
-  const labels = {
-    consulados: 'Consulados',
-    farmacias: 'Farmacias',
-    lavanderias: 'Lavanderías',
-    supermercados: 'Supermercados'
-  };
-  return labels[category] || category;
+function addDiffOperations(operations, existingDocs, desiredDocs, refFor) {
+  const { upserts, deletes } = diffDocuments(existingDocs, desiredDocs);
+  upserts.forEach(item => operations.push({ type: 'set', ref: refFor(item), data: item.data }));
+  deletes.forEach(item => operations.push({ type: 'delete', ref: refFor(item) }));
 }
 
-async function seedInitialData({ countries = {}, route, updateExistingCountries = [] }) {
-  const countryIdsToSeed = INITIAL_COUNTRY_IDS.filter(countryId => Array.isArray(countries[countryId]?.ciudades));
-  if (!countryIdsToSeed.length) {
-    throw new Error('Seleccioná al menos un JSON de país y map-locations.json.');
-  }
-  countryIdsToSeed.forEach(countryId => {
-    if (countries[countryId].id !== countryId) {
-      throw new Error(`El archivo ${countryId}.json no coincide con su nombre.`);
-    }
-  });
-  if (countries.belgium && countries.belgium.pais !== 'Bélgica') {
-    throw new Error('El archivo belgium.json no contiene datos de Bélgica.');
-  }
-
-  const routeStops = (Array.isArray(route?.stops) ? route.stops : [])
-    .filter(stop => countryIdsToSeed.includes(stop.countryId));
-  const routeOrder = new Map(routeStops.map((stop, index) => [stop.countryId, index]));
-  const countryIds = [...countryIdsToSeed].sort((first, second) =>
-    (routeOrder.get(first) ?? Number.MAX_SAFE_INTEGER) - (routeOrder.get(second) ?? Number.MAX_SAFE_INTEGER));
-  const updateIds = new Set(updateExistingCountries);
-  const batch = writeBatch(db);
-  let writeCount = 0;
-
-  for (const countryId of countryIds) {
-    const countryRef = doc(db, 'countries', countryId);
-    const existingCountry = await getDoc(countryRef);
-    if (existingCountry.exists() && !updateIds.has(countryId)) continue;
-
-    const source = countries[countryId];
-    batch.set(countryRef, {
-      id: countryId,
-      pais: source.pais || countryId,
-      flag: source.flag || '',
-      spotifyUrl: source.spotifyUrl || '',
-      driveFolderUrl: source.driveFolderUrl || '',
-      bgImage: COUNTRY_IMAGES[countryId] || '',
-      order: routeOrder.get(countryId) ?? countryIds.indexOf(countryId)
-    }, { merge: true });
-    writeCount += 1;
-
-    for (const [cityIndex, sourceCity] of (source.ciudades || []).entries()) {
-      const cityId = `city-${String(cityIndex + 1).padStart(2, '0')}`;
-      const cityRef = doc(db, 'countries', countryId, 'cities', cityId);
-      const { actividades = [], gastronomia = [], ...cityFields } = sourceCity;
-      batch.set(cityRef, { ...cityFields, id: cityId, order: cityIndex }, { merge: true });
-      writeCount += 1;
-
-      const activityEntries = [
-        ...actividades.map(item => ['actividad', item]),
-        ...gastronomia.map(item => ['gastronomia', item])
-      ];
-      if (existingCountry.exists()) {
-        const existingActivities = await getDocs(collection(db, 'countries', countryId, 'cities', cityId, 'activities'));
-        const retainedActivityIds = new Set(activityEntries.map((_, index) => `activity-${String(index + 1).padStart(3, '0')}`));
-        existingActivities.docs
-          .filter(activity => !retainedActivityIds.has(activity.id))
-          .forEach(activity => {
-            batch.delete(activity.ref);
-            writeCount += 1;
-          });
-      }
-      activityEntries.forEach(([category, activity], activityIndex) => {
-        const activityRef = doc(db, 'countries', countryId, 'cities', cityId, 'activities', `activity-${String(activityIndex + 1).padStart(3, '0')}`);
-        batch.set(activityRef, mapActivity(activity, category, activityIndex));
-        writeCount += 1;
-      });
-    }
-
-    Object.entries(source.servicios || {}).forEach(([category, url], serviceIndex) => {
-      const serviceRef = doc(db, 'countries', countryId, 'additionalData', category);
-      batch.set(serviceRef, {
-        category,
-        label: serviceLabel(category),
-        url: String(url || ''),
-        order: serviceIndex
-      }, { merge: true });
-      writeCount += 1;
+async function commitWriteOperations(operations) {
+  const chunkSize = 400;
+  for (let start = 0; start < operations.length; start += chunkSize) {
+    const batch = writeBatch(db);
+    operations.slice(start, start + chunkSize).forEach(operation => {
+      if (operation.type === 'delete') batch.delete(operation.ref);
+      else batch.set(operation.ref, operation.data);
     });
+    await batch.commit();
   }
+}
 
-  const existingStops = await getDocs(collection(db, 'routeStops'));
-  const knownStopIds = new Set(existingStops.docs.map(stop => stop.id));
-  routeStops.forEach((stop, order) => {
-    if (knownStopIds.has(stop.id)) return;
-    batch.set(doc(db, 'routeStops', stop.id), { ...stop, order });
-    writeCount += 1;
+async function syncItineraryData({ countries = {}, route = {} }) {
+  const desired = buildItinerarySnapshot({ countries, route, countryImages: COUNTRY_IMAGES });
+  const [countrySnapshot, routeSnapshot] = await Promise.all([
+    getDocs(collection(db, 'countries')),
+    getDocs(collection(db, 'routeStops'))
+  ]);
+  const existingCountries = documentsFrom(countrySnapshot);
+  const existingCountryIds = new Set(existingCountries.map(country => country.id));
+  const targetCountryIds = new Set(desired.countries.map(country => country.id));
+  const legacyCountryIds = desired.legacyCountryIds.filter(countryId => existingCountryIds.has(countryId));
+  const countryIdsToInspect = [...targetCountryIds, ...legacyCountryIds];
+  const existingCountryData = new Map(await Promise.all(countryIdsToInspect.map(async countryId => [
+    countryId,
+    await loadCountryCollectionsForSync(countryId)
+  ])));
+  const operations = [];
+
+  addDiffOperations(
+    operations,
+    existingCountries.filter(country => targetCountryIds.has(country.id)),
+    desired.countries,
+    country => doc(db, 'countries', country.id)
+  );
+
+  desired.countries.forEach(country => {
+    const countryId = country.id;
+    const existing = existingCountryData.get(countryId) || { cities: [], activities: [], services: [] };
+    addDiffOperations(
+      operations,
+      existing.cities,
+      desired.cities.filter(city => city.countryId === countryId),
+      city => doc(db, 'countries', countryId, 'cities', city.id)
+    );
+    addDiffOperations(
+      operations,
+      existing.activities,
+      desired.activities.filter(activity => activity.countryId === countryId),
+      activity => doc(db, 'countries', countryId, 'cities', activity.cityId, 'activities', activity.id)
+    );
+    addDiffOperations(
+      operations,
+      existing.services,
+      desired.services.filter(service => service.countryId === countryId),
+      service => doc(db, 'countries', countryId, 'additionalData', service.id)
+    );
   });
 
-  if (writeCount) await batch.commit();
-  return { writeCount, countries: countryIds };
+  legacyCountryIds.forEach(countryId => {
+    const existing = existingCountryData.get(countryId);
+    operations.push({ type: 'delete', ref: doc(db, 'countries', countryId) });
+    existing.cities.forEach(city => operations.push({
+      type: 'delete',
+      ref: doc(db, 'countries', countryId, 'cities', city.id)
+    }));
+    existing.activities.forEach(activity => operations.push({
+      type: 'delete',
+      ref: doc(db, 'countries', countryId, 'cities', activity.cityId, 'activities', activity.id)
+    }));
+    existing.services.forEach(service => operations.push({
+      type: 'delete',
+      ref: doc(db, 'countries', countryId, 'additionalData', service.id)
+    }));
+  });
+
+  addDiffOperations(
+    operations,
+    documentsFrom(routeSnapshot),
+    desired.routeStops,
+    stop => doc(db, 'routeStops', stop.id)
+  );
+
+  await commitWriteOperations(operations);
+  return {
+    writeCount: operations.length,
+    countries: desired.countries.map(country => country.id),
+    routeStops: desired.routeStops.length
+  };
+}
+
+async function seedInitialData(options) {
+  return syncItineraryData(options);
 }
 
 async function getMember(uid) {
@@ -296,6 +316,7 @@ window.TravelFirestore = Object.freeze({
   loadCountries,
   loadCountry,
   loadRouteStops,
+  syncItineraryData,
   seedInitialData,
   getMember,
   submitAccessRequest,

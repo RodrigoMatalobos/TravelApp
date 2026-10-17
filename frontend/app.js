@@ -2,7 +2,6 @@ import {
   canManageTicketFiles,
   chooseLocalFolder,
   filesForCity,
-  filesForCountry,
   getTicketFiles,
   saveLocalFolderFiles,
   ticketButtonLabel
@@ -17,6 +16,10 @@ let signedInUser = null;
 let activeMember = null;
 let downloadedTicketFiles = [];
 let showTicketDownloadMenu = false;
+let itinerarySyncPromise = null;
+let itinerarySyncError = '';
+let authCallbackSequence = 0;
+let viewSequence = 0;
 
 if ('serviceWorker' in navigator && import.meta.env.DEV) {
   navigator.serviceWorker.getRegistrations()
@@ -30,7 +33,7 @@ if ('serviceWorker' in navigator && import.meta.env.DEV) {
     window.location.reload();
   });
 
-  navigator.serviceWorker.register('sw.js?v=1.0.20', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('sw.js?v=1.0.21', { updateViaCache: 'none' })
     .then(registration => registration.update())
     .catch(err => console.error('Service Worker error:', err));
 }
@@ -66,7 +69,31 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeFirebaseAccess();
 });
 
+function disposeHomeGlobe() {
+  disposeGlobe?.();
+  disposeGlobe = null;
+  focusedGlobeLocation = null;
+}
+
+function ensureItineraryDataSynced() {
+  if (!itinerarySyncPromise) {
+    itinerarySyncPromise = import('./itinerary-source.mjs')
+      .then(({ itinerarySource }) => window.TravelFirestore.syncItineraryData(itinerarySource))
+      .catch(error => {
+        itinerarySyncPromise = null;
+        throw error;
+      });
+  }
+  return itinerarySyncPromise;
+}
+
+function syncWarningMarkup(extraClass = '') {
+  if (!itinerarySyncError) return '';
+  return `<div class="rounded-lg border border-amber-500/40 bg-amber-950/40 px-3 py-2 text-xs text-amber-100 ${extraClass}" role="status">${escapeHtml(itinerarySyncError)}</div>`;
+}
+
 function renderSignIn(message = '') {
+  disposeHomeGlobe();
   updateHeader('🌍 Plan de Viaje', false);
   updateVaultNavigation();
   const container = document.getElementById('app');
@@ -85,6 +112,7 @@ function renderSignIn(message = '') {
     button.disabled = true;
     try {
       await window.TravelFirebase.signIn();
+      renderCheckingAccess('Verificando permisos…');
     } catch (error) {
       const status = container.querySelector('#firebase-auth-message');
       if (status) status.textContent = error.message || 'No se pudo iniciar sesión.';
@@ -93,16 +121,17 @@ function renderSignIn(message = '') {
   });
 }
 
-function renderCheckingAccess() {
+function renderCheckingAccess(message = 'Verificando permisos…') {
   updateHeader('Verificando acceso', false);
   updateVaultNavigation();
   const container = document.getElementById('app');
   if (!container) return;
   container.className = 'p-4 max-w-md mx-auto';
-  container.innerHTML = '<p class="py-8 text-center text-sm text-slate-300">Verificando permisos…</p>';
+  container.innerHTML = `<p class="py-8 text-center text-sm text-slate-300">${escapeHtml(message)}</p>`;
 }
 
 function renderPendingAccess(user, error = '') {
+  disposeHomeGlobe();
   updateHeader('Acceso pendiente', false);
   updateVaultNavigation();
   const container = document.getElementById('app');
@@ -125,6 +154,7 @@ function renderPendingAccess(user, error = '') {
 
 function renderTicketDownloadPrompt(message = '') {
   if (!canManageTicketFiles(activeMember)) return showPaisesView();
+  disposeHomeGlobe();
   updateHeader('Archivos del viaje', false);
   updateVaultNavigation();
   const container = document.getElementById('app');
@@ -189,25 +219,48 @@ function initializeFirebaseAccess() {
   }
 
   window.TravelFirebase.onAuthStateChanged(window.TravelFirebase.auth, async user => {
+    const callbackId = ++authCallbackSequence;
+    const isCurrentAuthState = () => callbackId === authCallbackSequence && signedInUser?.uid === user?.uid;
     signedInUser = user;
     activeMember = null;
     downloadedTicketFiles = [];
     showTicketDownloadMenu = false;
+    itinerarySyncError = '';
+    viewSequence += 1;
     updateVaultNavigation();
+
     if (!user) {
+      itinerarySyncPromise = null;
       renderSignIn();
       return;
     }
 
-    renderCheckingAccess();
+    renderCheckingAccess('Verificando permisos…');
     try {
       const member = await window.TravelFirestore.getMember(user.uid);
+      if (!isCurrentAuthState()) return;
       if (!member?.enabled) {
         await window.TravelFirestore.submitAccessRequest(user);
-        renderPendingAccess(user);
+        if (isCurrentAuthState()) renderPendingAccess(user);
         return;
       }
+
       activeMember = member;
+      if (member.role === 'admin') {
+        renderCheckingAccess('Actualizando itinerario…');
+        try {
+          const result = await ensureItineraryDataSynced();
+          if (!isCurrentAuthState()) return;
+          if (result.writeCount) {
+            console.info(`Itinerario sincronizado: ${result.writeCount} cambios, ${result.routeStops} paradas.`);
+          }
+        } catch (error) {
+          if (!isCurrentAuthState()) return;
+          console.error('No se pudo sincronizar el itinerario local:', error);
+          itinerarySyncError = 'No se pudo actualizar Firebase con el itinerario local. Se mostrarán los datos disponibles.';
+        }
+      }
+
       if (canManageTicketFiles(member)) {
         try {
           downloadedTicketFiles = await getTicketFiles();
@@ -215,17 +268,22 @@ function initializeFirebaseAccess() {
           console.warn('No se pudieron leer los archivos locales:', error);
           downloadedTicketFiles = [];
         }
+        if (!isCurrentAuthState()) return;
         showTicketDownloadMenu = downloadedTicketFiles.length === 0;
         updateVaultNavigation();
         if (downloadedTicketFiles.length) showPaisesView();
         else renderTicketDownloadPrompt();
         return;
       }
+
       downloadedTicketFiles = [];
+      if (!isCurrentAuthState()) return;
       updateVaultNavigation();
       showPaisesView();
     } catch (error) {
-      renderPendingAccess(user, error.message || 'No se pudo verificar la autorización.');
+      if (isCurrentAuthState()) {
+        renderPendingAccess(user, error.message || 'No se pudo verificar la autorización.');
+      }
     }
   });
 }
@@ -309,15 +367,6 @@ function renderGroupedActivities(activities, emptyMessage) {
   `).join('');
 }
 
-function getJson(url) {
-  return fetch(url).then(res => {
-    if (!res.ok) {
-      throw new Error(`No se pudo cargar ${url} (${res.status})`);
-    }
-    return res.json();
-  });
-}
-
 function normalizeCountryId(rawId) {
   const value = String(rawId || '').trim().toLowerCase();
   const aliases = {
@@ -351,10 +400,10 @@ function appendTicketFiles(container, files, title) {
     link.className = 'inline-flex max-w-full items-center gap-1.5 rounded-lg bg-slate-700 px-3 py-1.5 text-xs text-white transition-colors hover:bg-slate-600 active:scale-95';
     link.rel = 'noopener noreferrer';
     link.title = file.name;
-    link.setAttribute('aria-label', `${label}, ${canPreview ? 'Abrir' : 'Guardar'}`);
+    link.setAttribute('aria-label', label);
     if (canPreview) link.target = '_blank';
     else link.download = file.name;
-    link.innerHTML = `<span class="min-w-0 break-words">📄 ${escapeHtml(label)}</span><span class="shrink-0 text-emerald-300">${canPreview ? 'Abrir' : 'Guardar'} →</span>`;
+    link.innerHTML = `<span class="min-w-0 break-words">📄 ${escapeHtml(label)}</span>`;
     list.appendChild(link);
   });
   section.appendChild(list);
@@ -363,6 +412,8 @@ function appendTicketFiles(container, files, title) {
 
 // Nivel 1: Cargar la lista de países
 function showPaisesView() {
+  const requestId = ++viewSequence;
+  disposeHomeGlobe();
   currentViewState = { level: 'paises', paisId: null };
   updateHeader('🌍 Elegí un Destino', false);
 
@@ -373,6 +424,7 @@ function showPaisesView() {
 
   window.TravelFirestore.loadCountries()
     .then(paises => {
+      if (requestId !== viewSequence) return;
       if (!Array.isArray(paises) || !paises.length) {
         renderEmptyState('No se pudieron cargar los destinos.');
         return;
@@ -382,12 +434,15 @@ function showPaisesView() {
       renderHomeView();
     })
     .catch(err => {
+      if (requestId !== viewSequence) return;
       handleFetchError('No se pudo cargar la lista de países desde Firebase.', 'countries');
     });
 }
 
 // Nivel 2: Cargar dinámicamente el JSON del país seleccionado
 function showCiudadesView(paisId) {
+  const requestId = ++viewSequence;
+  disposeHomeGlobe();
   const canonicalPaisId = normalizeCountryId(paisId);
   currentViewState = { level: 'ciudades', paisId: canonicalPaisId };
 
@@ -397,7 +452,8 @@ function showCiudadesView(paisId) {
   container.innerHTML = '<p class="text-center text-slate-400 text-sm py-8">Cargando itinerario...</p>';
 
   window.TravelFirestore.loadCountry(canonicalPaisId)
-    .then(async pais => {
+    .then(pais => {
+      if (requestId !== viewSequence) return;
       if (!pais || !pais.pais) {
         const selectedCountry = homeCountries.find(country => country.id === canonicalPaisId);
         renderEmptyState(`El itinerario de ${escapeHtml(selectedCountry?.pais || 'este país')} todavía no está cargado.`);
@@ -466,6 +522,7 @@ function showCiudadesView(paisId) {
       }
     })
     .catch(err => {
+      if (requestId !== viewSequence) return;
       handleFetchError('No se pudo cargar el itinerario del país desde Firebase.', canonicalPaisId);
     });
 }
@@ -479,6 +536,8 @@ function showDetalleCiudadView(pais, ciudadIndex, paisIdOverride) {
 
   const ciudad = pais.ciudades[ciudadIndex];
   const statePaisId = normalizeCountryId(paisIdOverride || pais.id || currentViewState.paisId);
+  viewSequence += 1;
+  disposeHomeGlobe();
   currentViewState = { level: 'detalle', paisId: statePaisId };
   updateHeader(ciudad.nombre || 'Detalle', true);
 
@@ -546,6 +605,7 @@ function handleBack() {
 async function showAccessAdminView() {
   if (activeMember?.role !== 'admin') return showPaisesView();
 
+  disposeHomeGlobe();
   currentViewState = { level: 'admin', paisId: null };
   updateHeader('Administrar accesos', true);
   const container = document.getElementById('app');
@@ -657,13 +717,11 @@ function createHomeSwitch() {
 function renderHomeView() {
   const container = document.getElementById('app');
   if (!container) return;
-  disposeGlobe?.();
-  disposeGlobe = null;
-  focusedGlobeLocation = null;
+  disposeHomeGlobe();
 
   if (homeMode === 'list') {
     container.className = 'p-4 max-w-md mx-auto space-y-4';
-    container.innerHTML = '';
+    container.innerHTML = syncWarningMarkup();
     container.appendChild(createHomeSwitch());
     homeCountries.forEach(country => {
       const card = document.createElement('button');
@@ -690,6 +748,7 @@ function renderHomeView() {
       <p class="mt-1 text-[9px] text-slate-400">NASA Blue Marble</p>
     </div>
     <div id="home-switch-slot" class="absolute right-4 top-4 z-20"></div>
+    ${syncWarningMarkup('absolute left-4 top-24 z-20 max-w-md')}
     <section id="destination-toast" class="absolute bottom-5 left-4 right-4 z-20 mx-auto max-w-md rounded-xl border border-white/15 bg-[#12272dcc] p-4 text-white shadow-2xl backdrop-blur-md" aria-live="polite">
       <div class="flex items-start justify-between gap-4">
         <div class="min-w-0">
@@ -719,6 +778,10 @@ function renderHomeView() {
       openButton.onclick = async () => {
         try {
           const country = await window.TravelFirestore.loadCountry(location.countryId);
+          if (!country) {
+            renderEmptyState('El itinerario de este destino todavía no está disponible.');
+            return;
+          }
           const cities = Array.isArray(country.ciudades) ? country.ciudades : [];
           const hasSelectedCity = location.openMode === 'detail'
             && Number.isInteger(location.cityIndex)
@@ -787,17 +850,6 @@ function updateHeader(title, showBackBtn) {
   }
 }
 
-function showVaultView() {
-  currentViewState = { level: 'vault', paisId: null };
-  updateHeader('🔐 Configurar Vault', true);
-  const container = document.getElementById('app');
-  if (!container) return;
-  disposeGlobe?.();
-  disposeGlobe = null;
-  container.className = 'p-4 max-w-2xl mx-auto space-y-4';
-  window.TravelVault.render(container, 'Valija');
-}
-
 function showVaultListView(page) {
   const validPages = ['Valija', 'Compras', 'Gastos'];
   const vaultPage = validPages.includes(page) ? page : 'Valija';
@@ -806,8 +858,7 @@ function showVaultListView(page) {
   updateHeader(`${icons[vaultPage]} ${vaultPage}`, true);
   const container = document.getElementById('app');
   if (!container) return;
-  disposeGlobe?.();
-  disposeGlobe = null;
+  disposeHomeGlobe();
   container.className = 'p-4 max-w-2xl mx-auto space-y-4';
   window.TravelVault.render(container, vaultPage, updateVaultNavigation);
 }

@@ -1,6 +1,6 @@
 [
   {
-    "id": "espana",
+    "id": "spain",
     "pais": "España",
     "flag": "🇪🇸",
     "bgImage": "img/spain.jpg",
@@ -44,7 +44,7 @@
     ]
   },
   {
-    "id": "finlandia",
+    "id": "finland",
     "pais": "Finlandia",
     "flag": "🇫🇮",
     "bgImage": "img/finland.jpg",
@@ -103,7 +103,7 @@
     ]
   },
   {
-    "id": "suecia",
+    "id": "sweden",
     "pais": "Suecia",
     "flag": "🇸🇪",
     "bgImage": "img/sweden.jpg",
@@ -134,7 +134,7 @@
     ]
   },
   {
-    "id": "belgica",
+    "id": "belgium",
     "pais": "Bélgica",
     "flag": "🇧🇪",
     "bgImage": "img/belgium.jpg",
@@ -163,7 +163,7 @@
     ]
   },
   {
-    "id": "alemania",
+    "id": "germany",
     "pais": "Alemania",
     "flag": "🇩🇪",
     "bgImage": "img/germany.jpg",
@@ -225,7 +225,7 @@
     ]
   },
   {
-    "id": "rep_checa",
+    "id": "czech",
     "pais": "República Checa",
     "flag": "🇨🇿",
     "bgImage": "img/czech.jpg",
