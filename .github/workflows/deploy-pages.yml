@@ -31,7 +31,7 @@ jobs:
         run: npm ci
       - name: Build site
         run: |
-          for key in VITE_FIREBASE_API_KEY VITE_FIREBASE_AUTH_DOMAIN VITE_FIREBASE_PROJECT_ID VITE_FIREBASE_STORAGE_BUCKET VITE_FIREBASE_MESSAGING_SENDER_ID VITE_FIREBASE_APP_ID; do
+          for key in VITE_FIREBASE_API_KEY VITE_FIREBASE_AUTH_DOMAIN VITE_FIREBASE_PROJECT_ID VITE_FIREBASE_STORAGE_BUCKET VITE_FIREBASE_MESSAGING_SENDER_ID VITE_FIREBASE_APP_ID VITE_GOOGLE_PICKER_API_KEY; do
             if [ -z "${!key}" ]; then
               echo "::error::Missing GitHub Actions variable: $key"
               exit 1
@@ -45,6 +45,7 @@ jobs:
           VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.VITE_FIREBASE_STORAGE_BUCKET }}
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
+          VITE_GOOGLE_PICKER_API_KEY: ${{ vars.VITE_GOOGLE_PICKER_API_KEY }}
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

@@ -10,6 +10,7 @@ const firebaseConfig = {
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
+const googlePickerApiKey = import.meta.env.VITE_GOOGLE_PICKER_API_KEY;
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -25,6 +26,9 @@ async function requestDriveReadAccess() {
     || memberSnapshot.data().role !== 'admin') {
     throw new Error('Solo las cuentas administradoras pueden descargar tickets.');
   }
+  if (!googlePickerApiKey) {
+    throw new Error('Falta configurar VITE_GOOGLE_PICKER_API_KEY para usar Google Picker.');
+  }
 
   const driveProvider = new GoogleAuthProvider();
   driveProvider.addScope('https://www.googleapis.com/auth/drive.readonly');
@@ -34,7 +38,7 @@ async function requestDriveReadAccess() {
   if (!credential?.accessToken) throw new Error('Google no concedió acceso de lectura a Drive.');
 
   const projectNumber = String(firebaseConfig.appId || '').match(/^1:(\d+):/)?.[1];
-  return { accessToken: credential.accessToken, apiKey: firebaseConfig.apiKey, projectNumber };
+  return { accessToken: credential.accessToken, apiKey: googlePickerApiKey, projectNumber };
 }
 
 window.TravelFirebase = Object.freeze({
