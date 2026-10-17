@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   canManageTicketFiles,
+  driveRequest,
   filesForCity,
   filesForCountry,
   findCityIndex,
@@ -50,4 +51,36 @@ test('ticket files are grouped under the matching country and city', () => {
   assert.deepEqual(filesForCity(files, country, country.ciudades[0]).map(file => file.id), ['ida']);
   assert.deepEqual(filesForCity(files, country, country.ciudades[1]).map(file => file.id), ['return']);
   assert.deepEqual(filesForCity(files, country, country.ciudades[2]).map(file => file.id), ['inari']);
+});
+
+test('Drive requests retry transient server errors and report the operation on failure', async () => {
+  let attempts = 0;
+  const successfulResponse = { ok: true, status: 200 };
+  const retryResponse = {
+    ok: false,
+    status: 500,
+    headers: { get: () => null },
+    json: async () => ({ error: { message: 'Backend error' } })
+  };
+  const response = await driveRequest(
+    'https://www.googleapis.com/drive/v3/files',
+    'test-token',
+    'No se pudo listar una carpeta',
+    async () => (++attempts === 1 ? retryResponse : successfulResponse),
+    async () => {}
+  );
+
+  assert.equal(response, successfulResponse);
+  assert.equal(attempts, 2);
+
+  await assert.rejects(
+    driveRequest(
+      'https://www.googleapis.com/drive/v3/files',
+      'test-token',
+      'No se pudo descargar "ticket.pdf"',
+      async () => retryResponse,
+      async () => {}
+    ),
+    /No se pudo descargar "ticket\.pdf": Google Drive respondió 500 \(Backend error\)/
+  );
 });

@@ -6,6 +6,8 @@ const GOOGLE_EXPORTS = new Map([
   ['application/vnd.google-apps.spreadsheet', 'application/pdf'],
   ['application/vnd.google-apps.presentation', 'application/pdf']
 ]);
+const RETRYABLE_DRIVE_STATUSES = new Set([429, 500, 502, 503, 504]);
+const MAX_DRIVE_ATTEMPTS = 4;
 const COUNTRY_ALIASES = {
   alemania: 'germany',
   belgica: 'belgium',
@@ -205,20 +207,44 @@ export async function chooseDriveFolder({ accessToken, apiKey, projectNumber }) 
   });
 }
 
-async function driveRequest(url, accessToken) {
-  const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${accessToken}` }
-  });
-  if (!response.ok) {
-    let message = '';
+const wait = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
+
+export async function driveRequest(url, accessToken, action, fetcher = fetch, pause = wait) {
+  for (let attempt = 0; attempt < MAX_DRIVE_ATTEMPTS; attempt += 1) {
+    let response;
     try {
-      message = (await response.json()).error?.message || '';
-    } catch {
-      message = '';
+      response = await fetcher(url, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+    } catch (error) {
+      if (attempt === MAX_DRIVE_ATTEMPTS - 1) {
+        throw new Error(`${action}: no se pudo conectar con Google Drive (${error.message}).`);
+      }
+      await pause(500 * (2 ** attempt));
+      continue;
     }
-    throw new Error(message || `Google Drive respondió ${response.status}.`);
+
+    if (response.ok) return response;
+
+    let details = '';
+    try {
+      const payload = await response.json();
+      details = payload.error?.message || payload.error?.status || '';
+    } catch {
+      details = '';
+    }
+
+    if (RETRYABLE_DRIVE_STATUSES.has(response.status) && attempt < MAX_DRIVE_ATTEMPTS - 1) {
+      const retryAfter = Number(response.headers?.get('Retry-After'));
+      await pause(Number.isFinite(retryAfter) && retryAfter > 0
+        ? Math.min(retryAfter * 1000, 10000)
+        : 500 * (2 ** attempt));
+      continue;
+    }
+
+    const status = `Google Drive respondió ${response.status}`;
+    throw new Error(`${action}: ${status}${details ? ` (${details})` : ''}.`);
   }
-  return response;
 }
 
 async function listFolderContents(folderId, accessToken) {
@@ -233,7 +259,11 @@ async function listFolderContents(folderId, accessToken) {
       supportsAllDrives: 'true'
     });
     if (pageToken) params.set('pageToken', pageToken);
-    const response = await driveRequest(`https://www.googleapis.com/drive/v3/files?${params}`, accessToken);
+    const response = await driveRequest(
+      `https://www.googleapis.com/drive/v3/files?${params}`,
+      accessToken,
+      'No se pudo listar el contenido de una carpeta'
+    );
     const result = await response.json();
     files.push(...(result.files || []));
     pageToken = result.nextPageToken || '';
@@ -248,7 +278,7 @@ async function downloadDriveFile(file, accessToken) {
   const endpoint = googleExportType
     ? `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(targetId)}/export?mimeType=${encodeURIComponent(googleExportType)}`
     : `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(targetId)}?alt=media`;
-  const response = await driveRequest(endpoint, accessToken);
+  const response = await driveRequest(endpoint, accessToken, `No se pudo descargar "${file.name}"`);
   const blob = await response.blob();
   const name = googleExportType && !/\.pdf$/i.test(file.name) ? `${file.name}.pdf` : file.name;
   return { id: file.id, name, mimeType: blob.type || googleExportType || mimeType, blob };
