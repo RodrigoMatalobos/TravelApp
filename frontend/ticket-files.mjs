@@ -10,6 +10,11 @@ const COUNTRY_ALIASES = {
   'republica checa': 'czech',
   suecia: 'sweden'
 };
+const CITY_ALIASES = {
+  brussels: 'bruselas',
+  bruxelles: 'bruselas',
+  stockholm: 'estocolmo'
+};
 
 let databasePromise;
 
@@ -96,10 +101,11 @@ function tripStage(value) {
 }
 
 function cityBase(value) {
-  return normalizeFolderName(value)
+  const base = normalizeFolderName(value)
     .replace(/(^| )(ida|salida|outbound|vuelta|regreso|return|1|2)( |$)/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+  return CITY_ALIASES[base] || base;
 }
 
 export function findCityIndex(folderName, cities = []) {

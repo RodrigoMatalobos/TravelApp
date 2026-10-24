@@ -57,6 +57,26 @@ test('ticket files are grouped under the matching country and city', () => {
   assert.deepEqual(filesForCity(files, country, country.ciudades[2]).map(file => file.id), ['inari-ida', 'inari-vuelta']);
 });
 
+test('English city folder names match the Belgium and Sweden itinerary cities', () => {
+  const belgium = {
+    id: 'belgium',
+    pais: 'Bélgica',
+    ciudades: [{ id: 'bruselas', nombre: 'Bruselas' }]
+  };
+  const sweden = {
+    id: 'sweden',
+    pais: 'Suecia',
+    ciudades: [{ id: 'estocolmo', nombre: 'Estocolmo' }]
+  };
+  const files = [
+    { id: 'brussels-ticket', relativePath: 'Belgium/Brussels/voucher.pdf' },
+    { id: 'stockholm-ticket', relativePath: 'Sweden/Stockholm/voucher.pdf' }
+  ];
+
+  assert.deepEqual(filesForCity(files, belgium, belgium.ciudades[0]).map(file => file.id), ['brussels-ticket']);
+  assert.deepEqual(filesForCity(files, sweden, sweden.ciudades[0]).map(file => file.id), ['stockholm-ticket']);
+});
+
 test('local folder selection removes the selected root and preserves country/city paths', () => {
   const sourceFile = {
     name: 'Hotel AX-es.pdf',
