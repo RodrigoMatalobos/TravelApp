@@ -1,15 +1,21 @@
+const SHARED_PLAYLIST = { nombre: 'Europa 2026', url: 'https://open.spotify.com/playlist/4RnXEi2McMcnsT3vInD03n' };
+
 export const COUNTRY_CATALOG = Object.freeze([
-  { id: 'spain', pais: 'España', flag: '🇪🇸' },
-  { id: 'finland', pais: 'Finlandia', flag: '🇫🇮' },
-  { id: 'sweden', pais: 'Suecia', flag: '🇸🇪' },
-  { id: 'belgium', pais: 'Bélgica', flag: '🇧🇪' },
+  { id: 'spain', pais: 'España', flag: '🇪🇸', playlists: [SHARED_PLAYLIST] },
+  { id: 'finland', pais: 'Finlandia', flag: '🇫🇮', playlists: [SHARED_PLAYLIST] },
+  { id: 'sweden', pais: 'Suecia', flag: '🇸🇪', playlists: [SHARED_PLAYLIST] },
+  { id: 'belgium', pais: 'Bélgica', flag: '🇧🇪', playlists: [SHARED_PLAYLIST] },
   {
     id: 'germany',
     pais: 'Alemania',
     flag: '🇩🇪',
-    spotifyUrl: 'https://open.spotify.com/playlist/65Pm1szZCEc6uFMEXx2oqW'
+    spotifyUrl: 'https://open.spotify.com/playlist/65Pm1szZCEc6uFMEXx2oqW',
+    playlists: [
+      { nombre: 'Alemania', url: 'https://open.spotify.com/playlist/65Pm1szZCEc6uFMEXx2oqW' },
+      SHARED_PLAYLIST
+    ]
   },
-  { id: 'czech', pais: 'República Checa', flag: '🇨🇿' }
+  { id: 'czech', pais: 'República Checa', flag: '🇨🇿', playlists: [SHARED_PLAYLIST] }
 ]);
 
 export function mergeCountryCatalog(storedCountries, countryImages = {}) {
@@ -24,6 +30,9 @@ export function mergeCountryCatalog(storedCountries, countryImages = {}) {
       pais: stored.pais || country.pais,
       flag: stored.flag || country.flag,
       spotifyUrl: country.spotifyUrl || stored.spotifyUrl || '',
+      playlists: (Array.isArray(stored.playlists) && stored.playlists.length)
+        ? stored.playlists
+        : (country.playlists || []),
       bgImage: countryImages[country.id] || stored.bgImage || '',
       order
     };

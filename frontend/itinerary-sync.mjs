@@ -12,6 +12,33 @@ function text(value) {
   return String(value || '').trim();
 }
 
+// Una playlist es { nombre, url }. Se admiten N listas por país.
+// También se acepta el campo viejo `spotifyUrl` (string) y se convierte a lista.
+export function normalizePlaylists(source) {
+  const fromList = Array.isArray(source?.playlists) ? source.playlists : [];
+  const normalized = fromList
+    .map(item => ({ nombre: text(item?.nombre) || 'Playlist', url: text(item?.url) }))
+    .filter(item => item.url);
+  const legacyUrl = text(source?.spotifyUrl);
+  if (legacyUrl && !normalized.some(item => item.url === legacyUrl)) {
+    normalized.unshift({ nombre: 'Playlist del viaje', url: legacyUrl });
+  }
+  return normalized;
+}
+
+// Un transporte es { tipo, descripcion, fecha, salida, llegada }.
+// "tipo" puede ser: vuelo, tren, bus, ferry u otro texto libre.
+function normalizeTransportes(value) {
+  if (!Array.isArray(value)) return [];
+  return value.map(item => ({
+    tipo: text(item?.tipo) || 'transporte',
+    descripcion: text(item?.descripcion),
+    fecha: text(item?.fecha),
+    salida: text(item?.salida),
+    llegada: text(item?.llegada)
+  })).filter(item => item.descripcion);
+}
+
 function mapActivity(activity, category, order) {
   const value = typeof activity === 'string' ? { nombre: activity } : activity || {};
   return {
@@ -136,13 +163,15 @@ export function buildItinerarySnapshot({ countries = {}, route = {}, countryImag
 
   countryIds.forEach((countryId, countryIndex) => {
     const source = countries[countryId];
+    const playlists = normalizePlaylists(source);
     snapshot.countries.push({
       id: countryId,
       data: {
         id: countryId,
         pais: text(source.pais) || countryId,
         flag: text(source.flag),
-        spotifyUrl: text(source.spotifyUrl),
+        playlists,
+        spotifyUrl: playlists[0]?.url || '',
         bgImage: countryImages[countryId] || text(source.bgImage),
         order: countryIndex
       }
@@ -160,6 +189,9 @@ export function buildItinerarySnapshot({ countries = {}, route = {}, countryImag
           hotel: text(city.hotel),
           mapaHotelLink: text(city.mapaHotelLink),
           comoLlegar: text(city.comoLlegar),
+          transportes: normalizeTransportes(city.transportes),
+          transportePublico: text(city.transportePublico),
+          guardaequipaje: text(city.guardaequipaje),
           mapaGastroLink: text(city.mapaGastroLink),
           order: cityIndex
         }

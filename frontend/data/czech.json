@@ -2,7 +2,9 @@
   "id": "czech",
   "pais": "República Checa",
   "flag": "🇨🇿",
-  "spotifyUrl": "https://open.spotify.com/playlist/4RnXEi2McMcnsT3vInD03n",
+  "playlists": [
+    { "nombre": "Europa 2026", "url": "https://open.spotify.com/playlist/4RnXEi2McMcnsT3vInD03n" }
+  ],
   "servicios": {
     "consulados": "https://maps.google.com/?q=Embajada+Argentina+en+Praga",
     "farmacias": "https://maps.google.com/?q=Lekarna+Prague",
@@ -11,90 +13,69 @@
   "ciudades": [
     {
       "nombre": "Praga (Ida)",
-      "fechas": "03/01/2027 – 05/01/2027",
+      "fechas": "03/01/2027 – 06/01/2027",
       "hotel": "U 3 Pštrosů",
       "mapaHotelLink": "https://maps.google.com/?q=U+3+Pstrosu+Drazickeho+namesti+12+Prague",
-      "comoLlegar": "Desde Hlavní nádraží, tomar Metro C a Muzeum, transbordo al Metro A hasta Malostranská y caminar 5 minutos; también sirve el tranvía 15/22 hasta Malostranské náměstí.",
+      "comoLlegar": "Llegada 03/01 a las 17:25 en tren desde Berlín. Desde Hlavní nádraží, Metro C a Muzeum, transbordo al Metro A hasta Malostranská y 5 min a pie; también sirve el tranvía 15/22 hasta Malostranské náměstí.",
+      "transportes": [
+        { "tipo": "tren", "descripcion": "Tren DB: Berlín → Praga", "fecha": "03/01/2027", "salida": "13:28", "llegada": "17:25" },
+        { "tipo": "tren", "descripcion": "Praga → Karlovy Vary (sin ticket todavía)", "fecha": "06/01/2027", "salida": "por confirmar", "llegada": "por confirmar" }
+      ],
+      "transportePublico": "App PID Lítačka o ticket de papel de 24/72 h en máquinas amarillas (el de papel se valida troquelándolo solo la primera vez). El funicular de Petřín acepta el mismo ticket común.",
+      "guardaequipaje": "El 06/01 se sale hacia Karlovy Vary: el hotel puede guardar el equipaje grande si se vuelve a Praga, o consignas en Hlavní nádraží.",
       "actividades": [
-        {
-          "dia": 1,
-          "nombre": "Puente Carlos y Torre del Puente de Malá Strana",
-          "mapa": "https://maps.google.com/?q=Charles+Bridge+Prague"
-        },
-        {
-          "dia": 1,
-          "nombre": "Castillo de Praga, Catedral de San Vito y Malá Strana",
-          "mapa": "https://maps.google.com/?q=Prague+Castle"
-        }
+        { "dia": 1, "nombre": "Tarde/noche de llegada: Torre de la Pólvora, Casa Municipal (art nouveau), Ciudad Vieja, Plaza Wenceslao y Pasaje Lucerna", "mapa": "https://maps.google.com/?q=Powder+Tower+Prague" },
+        { "dia": 1, "nombre": "Museo del Comunismo (todos los días 9-19 h) [Opcional]", "mapa": "https://maps.google.com/?q=Museum+of+Communism+Prague" },
+        { "dia": 2, "nombre": "Castillo de Praga, Catedral de San Vito y Malá Strana; cruce del Puente Carlos", "mapa": "https://maps.google.com/?q=Prague+Castle" },
+        { "dia": 2, "nombre": "Clementinum (tour guiado en inglés, 1 h, 10-18 h) e Iglesia de San Nicolás (9-17 h)", "mapa": "https://maps.google.com/?q=Clementinum+Prague" },
+        { "dia": 2, "nombre": "Funicular de Petřín desde Újezd (vale ticket común): torre mirador y laberinto de espejos; Monasterio de Strahov", "mapa": "https://maps.google.com/?q=Petrin+Funicular+Prague" },
+        { "dia": 2, "nombre": "Estación Náměstí Míru: la escalera mecánica más larga de la UE (87 m), ideal de noche", "mapa": "https://maps.google.com/?q=Namesti+Miru+Prague" },
+        { "dia": 3, "nombre": "Tour de un día a Pilsen: fábrica Pilsner Urquell (prazdrojvisit.cz), Catedral de San Bartolomé (se puede subir a la torre), Plaza de la República y Ayuntamiento, Gran Sinagoga y Pilsen subterránea", "mapa": "https://maps.google.com/?q=Pilsner+Urquell+Brewery+Plzen" }
       ],
       "gastronomia": [
-        {
-          "dia": 1,
-          "nombre": "Goulash checo y cerveza Pilsner Urquell",
-          "mapa": "https://maps.google.com/?q=Traditional+Czech+Restaurant+Mala+Strana+Prague"
-        },
-        {
-          "dia": 1,
-          "nombre": "Trdelník en puestos callejeros",
-          "mapa": "https://maps.google.com/?q=Trdelnik+Mala+Strana+Prague"
-        }
+        { "dia": 1, "nombre": "U Kunštátů: craft beer bar con jardín en el centro", "mapa": "https://maps.google.com/?q=U+Kunstatu+Prague" },
+        { "dia": 2, "nombre": "Goulash checo y cerveza Pilsner Urquell; Trdelník callejero", "mapa": "https://maps.google.com/?q=Traditional+Czech+Restaurant+Mala+Strana+Prague" },
+        { "dia": 3, "nombre": "Pilsen: cerveza sin pasteurizar en Hospoda Na Spilce, Parkan o Lokál Pod Divadlem", "mapa": "https://maps.google.com/?q=Hospoda+Na+Spilce+Plzen" }
       ]
     },
     {
       "nombre": "Karlovy Vary",
-      "fechas": "05/01/2027 – 06/01/2027",
+      "fechas": "06/01/2027 – 07/01/2027",
       "hotel": "Vienna House Dvořák",
       "mapaHotelLink": "https://maps.google.com/?q=Vienna+House+Dvorak+Nova+Louka+11+Karlovy+Vary",
-      "comoLlegar": "Desde la terminal de buses o trenes de Karlovy Vary, tomar el bus local 2 hasta Tržnice/Divadelní náměstí o un taxi directo al hotel.",
+      "comoLlegar": "Tren desde Praga el 06/01 (horario por confirmar, sin ticket todavía). Desde la terminal de buses/trenes de Karlovy Vary, bus local 2 hasta Tržnice/Divadelní náměstí o taxi directo al hotel.",
+      "transportes": [
+        { "tipo": "tren", "descripcion": "Karlovy Vary → Praga (sin ticket todavía)", "fecha": "07/01/2027", "salida": "por confirmar", "llegada": "por confirmar" }
+      ],
+      "transportePublico": "Bus local 2 conecta la terminal con el centro termal.",
+      "guardaequipaje": "Si el tren de regreso sale tarde, consultar consigna en la estación o dejar las valijas en recepción del hotel.",
       "actividades": [
-        {
-          "dia": 1,
-          "nombre": "Paseo por las columnatas y fuentes termales",
-          "mapa": "https://maps.google.com/?q=Mill+Colonnade+Karlovy+Vary"
-        },
-        {
-          "dia": 1,
-          "nombre": "Relax balneario y paseo junto al río Teplá",
-          "mapa": "https://maps.google.com/?q=Karlovy+Vary+Hot+Spring+Colonnade"
-        }
+        { "dia": 1, "nombre": "Paseo por las columnatas y fuentes termales (Mill Colonnade y Hot Spring Colonnade)", "mapa": "https://maps.google.com/?q=Mill+Colonnade+Karlovy+Vary" },
+        { "dia": 1, "nombre": "Relax balneario y paseo junto al río Teplá", "mapa": "https://maps.google.com/?q=Karlovy+Vary+Hot+Spring+Colonnade" }
       ],
       "gastronomia": [
-        {
-          "dia": 1,
-          "nombre": "Oplatky, las galletas termales tradicionales",
-          "mapa": "https://maps.google.com/?q=Oplatky+Karlovy+Vary"
-        },
-        {
-          "dia": 1,
-          "nombre": "Degustación de licor Becherovka",
-          "mapa": "https://maps.google.com/?q=Becherovka+Museum+Karlovy+Vary"
-        }
+        { "dia": 1, "nombre": "Oplatky, las galletas termales tradicionales", "mapa": "https://maps.google.com/?q=Oplatky+Karlovy+Vary" },
+        { "dia": 1, "nombre": "Degustación de licor Becherovka (museo)", "mapa": "https://maps.google.com/?q=Becherovka+Museum+Karlovy+Vary" }
       ]
     },
     {
       "nombre": "Praga (Vuelta)",
-      "fechas": "06/01/2027 – 08/01/2027",
+      "fechas": "07/01/2027 – 08/01/2027",
       "hotel": "Prague Inn",
       "mapaHotelLink": "https://maps.google.com/?q=Prague+Inn+28+rijna+15+Prague",
-      "comoLlegar": "Regreso desde Karlovy Vary; el hotel queda junto a la plaza Wenceslao y la estación Můstek, en 28. října 15.",
+      "comoLlegar": "Regreso en tren desde Karlovy Vary el 07/01 (horario por confirmar). El hotel queda junto a la plaza Wenceslao y la estación Můstek (28. října 15). El 08/01 sale el vuelo a Barcelona 11:05.",
+      "transportes": [
+        { "tipo": "vuelo", "descripcion": "Praga → Barcelona", "fecha": "08/01/2027", "salida": "11:05", "llegada": "13:30" }
+      ],
+      "transportePublico": "App PID Lítačka; al aeropuerto, tranvía/metro + bus 119 o Airport Express.",
+      "guardaequipaje": "El 08/01 el vuelo sale 11:05: salida directa al aeropuerto; si se necesita, recepción del hotel o consignas de Hlavní nádraží.",
       "actividades": [
-        {
-          "dia": 1,
-          "nombre": "Plaza de la Ciudad Vieja y Reloj Astronómico",
-          "mapa": "https://maps.google.com/?q=Old+Town+Square+Prague"
-        },
-        {
-          "dia": 1,
-          "nombre": "Barrio Judío (Josefov) y sinagogas históricas",
-          "mapa": "https://maps.google.com/?q=Jewish+Quarter+Prague"
-        }
+        { "dia": 1, "nombre": "Plaza de la Ciudad Vieja y Reloj Astronómico", "mapa": "https://maps.google.com/?q=Old+Town+Square+Prague" },
+        { "dia": 1, "nombre": "Barrio Judío (Josefov) y sinagogas históricas", "mapa": "https://maps.google.com/?q=Jewish+Quarter+Prague" },
+        { "dia": 1, "nombre": "Castillo de Vyšehrad y cementerio (10-17 h), Casa Danzante y atardecer en Parque Letná [Opcional según horario del tren]", "mapa": "https://maps.google.com/?q=Vysehrad+Prague" }
       ],
       "gastronomia": [
-        {
-          "dia": 1,
-          "nombre": "Codillo de cerdo asado (Koleno)",
-          "mapa": "https://maps.google.com/?q=Czech+Koleno+Old+Town+Prague"
-        }
+        { "dia": 1, "nombre": "Codillo de cerdo asado (Koleno)", "mapa": "https://maps.google.com/?q=Czech+Koleno+Old+Town+Prague" }
       ]
     }
   ]

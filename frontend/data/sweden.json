@@ -2,7 +2,10 @@
   "id": "sweden",
   "pais": "Suecia",
   "flag": "🇸🇪",
-  "spotifyUrl": "https://open.spotify.com/playlist/4LGniOlWCWRPnWO4zDhIwX",
+  "playlists": [
+    { "nombre": "Europa 2026", "url": "https://open.spotify.com/playlist/4RnXEi2McMcnsT3vInD03n" },
+    { "nombre": "Eurodance", "url": "" }
+  ],
   "servicios": {
     "consulados": "https://maps.google.com/?q=Embajada+de+la+Republica+Argentina+en+Estocolmo",
     "farmacias": "https://maps.google.com/?q=Apotek+Stockholm",
@@ -11,88 +14,33 @@
   "ciudades": [
     {
       "nombre": "Estocolmo",
-      "fechas": "15/12/2026 – 19/12/2026",
+      "fechas": "16/12/2026 – 19/12/2026",
       "hotel": "Mälardrottningen Yacht Hotel",
       "mapaHotelLink": "https://maps.google.com/?q=Malardrottningen+Yacht+Hotel+Stockholm",
-      "comoLlegar": "Llegada en Ferry Viking Line M/S Gabriella (16/12 a las 10:10 hs). Desde el puerto Stadsgården, caminar 10-12 min a Slussen, tomar Metro Línea Roja/Verde hasta Gamla Stan (o caminar) y cruzar a la isla de Riddarholmen. El hotel está amarrado en el muelle oeste.",
+      "comoLlegar": "Llegada en ferry Viking Line el 16/12 a las 10:00 (puerto Stadsgården). Caminar 10-12 min a Slussen, Metro línea Roja/Verde a Gamla Stan (o a pie) y cruzar a la isla de Riddarholmen; el hotel está amarrado en el muelle oeste. El 19/12 a las 07:30 sale el vuelo a Bruselas.",
+      "transportes": [
+        { "tipo": "ferry", "descripcion": "Ferry Viking Line: Helsinki → Estocolmo", "fecha": "15/12/2026", "salida": "17:00", "llegada": "10:00 (+1)" },
+        { "tipo": "vuelo", "descripcion": "Estocolmo → Bruselas", "fecha": "19/12/2026", "salida": "07:30", "llegada": "" }
+      ],
+      "transportePublico": "Pase SL de 72 horas en la app SL (cubre el tour nocturno de estaciones de metro). Alternativa: tarjeta contactless directa en el molinete.",
+      "guardaequipaje": "El ferry llega 10:00, antes del check-in: consignas en Stockholm Central / Cityterminalen. El 19/12 el vuelo sale 07:30: salida directa al aeropuerto.",
       "actividades": [
-        {
-          "dia": 1,
-          "nombre": "Isla Riddarholmen (Evert Taubes Terrass e Iglesia)",
-          "mapa": "https://maps.google.com/?q=Riddarholmen+Stockholm"
-        },
-        {
-          "dia": 1,
-          "nombre": "Gamla Stan (Stortorget, Mårten Trotzigs Gränd y Catedral de San Nicolás)",
-          "mapa": "https://maps.google.com/?q=Stortorget+Gamla+Stan+Stockholm"
-        },
-        {
-          "dia": 1,
-          "nombre": "Palacio Real, Parlamento y Kungsträdgården",
-          "mapa": "https://maps.google.com/?q=Kungstradgarden+Stockholm"
-        },
-        {
-          "dia": 1,
-          "nombre": "Museo Vasa (Isla de Djurgården)",
-          "mapa": "https://maps.google.com/?q=Vasa+Museum+Stockholm"
-        },
-        {
-          "dia": 2,
-          "nombre": "Visita interior del Ayuntamiento de Estocolmo",
-          "mapa": "https://maps.google.com/?q=Stockholm+City+Hall"
-        },
-        {
-          "dia": 2,
-          "nombre": "Barrio Södermalm (Ascensor Katarina y Götgatan)",
-          "mapa": "https://maps.google.com/?q=Katarinahissen+Stockholm"
-        },
-        {
-          "dia": 2,
-          "nombre": "Museo Fotografiska",
-          "mapa": "https://maps.google.com/?q=Fotografiska+Stockholm"
-        },
-        {
-          "dia": 2,
-          "nombre": "Tour de Arte por el Metro (Línea Azul y Roja) y Sergels Torg",
-          "mapa": "https://maps.google.com/?q=Kungstradgarden+Metro+Station"
-        },
-        {
-          "dia": 3,
-          "nombre": "Biblioteca Pública de Estocolmo (Stockholms stadsbibliotek)",
-          "mapa": "https://maps.google.com/?q=Stockholm+Public+Library"
-        },
-        {
-          "dia": 3,
-          "nombre": "Palacio de Drottningholm",
-          "mapa": "https://maps.google.com/?q=Drottningholm+Palace"
-        },
-        {
-          "dia": 3,
-          "nombre": "Museo Nacional o Mercado Navideño de Skansen",
-          "mapa": "https://maps.google.com/?q=Nationalmuseum+Stockholm"
-        }
+        { "dia": 1, "nombre": "Mié 16 tarde (13:00-15:00): Isla Riddarholmen (Evert Taubes Terrass e Iglesia, cerrada en invierno) y Gamla Stan (Stortorget, Mårten Trotzigs Gränd, Catedral hasta las 16:00)", "mapa": "https://maps.google.com/?q=Riddarholmen+Stockholm" },
+        { "dia": 1, "nombre": "Mié 16 atardecer: Palacio Real, Parlamento (Helgeandsholmen) y Kungsträdgården iluminados", "mapa": "https://maps.google.com/?q=Kungstradgarden+Stockholm" },
+        { "dia": 1, "nombre": "Mié 16 noche (17:00-19:30): Museo Vasa, abierto hasta las 20:00 los miércoles", "mapa": "https://maps.google.com/?q=Vasa+Museum+Stockholm" },
+        { "dia": 2, "nombre": "Jue 17 mañana (10:00): Ayuntamiento de Estocolmo (la torre cierra en invierno; visita guiada de salones del banquete Nobel)", "mapa": "https://maps.google.com/?q=Stockholm+City+Hall" },
+        { "dia": 2, "nombre": "Jue 17 mediodía: Södermalm (Ascensor Katarina con luz, Götgatan, Medborgarplatsen)", "mapa": "https://maps.google.com/?q=Katarinahissen+Stockholm" },
+        { "dia": 2, "nombre": "Jue 17 tarde (15:00+): Museo Fotografiska (abierto hasta tarde)", "mapa": "https://maps.google.com/?q=Fotografiska+Stockholm" },
+        { "dia": 2, "nombre": "Jue 17 noche (18:00): Tour de Arte por el Metro — Línea Azul: Kungsträdgården, T-Centralen, Rådhuset, Solna Centrum; Línea Roja: Stadium, Tekniska Högskolan, Mörby Centrum; Línea Verde: Thorildsplan (mosaicos 8 bits)", "mapa": "https://maps.google.com/?q=Kungstradgarden+Metro+Station" },
+        { "dia": 3, "nombre": "Vie 18 mañana (10:00): Biblioteca Pública de Estocolmo (rotonda interior)", "mapa": "https://maps.google.com/?q=Stockholm+Public+Library" },
+        { "dia": 3, "nombre": "Vie 18 mediodía: Östermalms Saluhall (mercado gastronómico, ideal para almorzar)", "mapa": "https://maps.google.com/?q=Ostermalm+Market+Hall" },
+        { "dia": 3, "nombre": "Vie 18 tarde [Opcional 13:00-15:30]: Palacio de Drottningholm (franja de invierno 12:00-15:30) o Museo Nacional / mercado navideño de Skansen", "mapa": "https://maps.google.com/?q=Drottningholm+Palace" }
       ],
       "gastronomia": [
-        {
-          "dia": 0,
-          "nombre": "Almuerzo en Östermalms Saluhall (Mercado Gastronómico)",
-          "mapa": "https://maps.google.com/?q=Ostermalm+Market+Hall"
-        },
-        {
-          "dia": 0,
-          "nombre": "Platos Típicos: Albóndigas suecas (Köttbullar) y Arenques (Sill)",
-          "mapa": "https://maps.google.com/?q=Restaurang+Prinsen+Stockholm"
-        },
-        {
-          "dia": 0,
-          "nombre": "Platos Típicos: Toast Skagen (Gamba, mayonesa y eneldo) y Salmón curado (Gravlax)",
-          "mapa": "https://maps.google.com/?q=Gamla+Stan+Restaurants+Stockholm"
-        },
-        {
-          "dia": 0,
-          "nombre": "Paso por Supermercado (Probar Yogurth Skyr / Norrmejerier)",
-          "mapa": "https://maps.google.com/?q=ICA+Supermarket+Stockholm"
-        }
+        { "dia": 3, "nombre": "Almuerzo en Östermalms Saluhall (Mercado Gastronómico)", "mapa": "https://maps.google.com/?q=Ostermalm+Market+Hall" },
+        { "dia": 0, "nombre": "Platos típicos: albóndigas suecas (Köttbullar) y arenques (Sill)", "mapa": "https://maps.google.com/?q=Restaurang+Prinsen+Stockholm" },
+        { "dia": 0, "nombre": "Toast Skagen (gamba, mayonesa y eneldo) y salmón curado (Gravlax)", "mapa": "https://maps.google.com/?q=Gamla+Stan+Restaurants+Stockholm" },
+        { "dia": 0, "nombre": "Supermercado: probar yogur Skyr / Norrmejerier", "mapa": "https://maps.google.com/?q=ICA+Supermarket+Stockholm" }
       ]
     }
   ]

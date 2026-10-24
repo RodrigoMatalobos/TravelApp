@@ -2,7 +2,9 @@
   "id": "finland",
   "pais": "Finlandia",
   "flag": "🇫🇮",
-  "spotifyUrl": "https://open.spotify.com/playlist/4LGniOlWCWRPnWO4zDhIwX",
+  "playlists": [
+    { "nombre": "Europa 2026", "url": "https://open.spotify.com/playlist/4RnXEi2McMcnsT3vInD03n" }
+  ],
   "servicios": {
     "consulados": "https://maps.google.com/?q=Embajada+de+la+Republica+Argentina+en+Helsinki",
     "farmacias": "https://maps.google.com/?q=Apteekki+Helsinki",
@@ -14,7 +16,13 @@
       "fechas": "08/12/2026 – 09/12/2026",
       "hotel": "Hotel AX",
       "mapaHotelLink": "https://maps.google.com/?q=Hotel+AX+Helsinki",
-      "comoLlegar": "Vuelo Finnair AY1654 (10:05 - 15:10 hs). Desde el Aeropuerto Vantaa tomar Tren I o P a la Estación Central. Transbordo al Tranvía 9 dirección Jätkäsaari hasta la parada Huutokonttori / Välimerenkatu (frente al hotel).",
+      "comoLlegar": "Vuelo Finnair (10:05 - 15:10). Desde el Aeropuerto Vantaa, tren I o P a la Estación Central y transbordo al Tranvía 9 dirección Jätkäsaari (parada Huutokonttori / Välimerenkatu, frente al hotel). Un solo ticket HSL cubre tren + tranvía; conviene bajar la app HSL antes de viajar.",
+      "transportes": [
+        { "tipo": "vuelo", "descripcion": "Barcelona → Helsinki", "fecha": "08/12/2026", "salida": "10:05", "llegada": "15:10" },
+        { "tipo": "tren", "descripcion": "Tren nocturno VR 267: Helsinki → Rovaniemi", "fecha": "09/12/2026", "salida": "21:19", "llegada": "09:00 (+1)" }
+      ],
+      "transportePublico": "App HSL: pase de 1 a 3 días, zonas AB (cubre ciudad, aeropuerto y puerto de Viking Line). Se compra y activa en el teléfono.",
+      "guardaequipaje": "El 09/12 el tren sale 21:19: tras el checkout, dejar las valijas en las consignas de la Estación Central y aprovechar el día.",
       "actividades": [
         {
           "dia": 1,
@@ -54,10 +62,17 @@
     },
     {
       "nombre": "Inari y Rovaniemi (Laponia)",
-      "fechas": "09/12/2026 – 13/12/2026",
+      "fechas": "10/12/2026 – 13/12/2026",
       "hotel": "Inari Camping Resort",
       "mapaHotelLink": "https://maps.google.com/?q=Inari+Camping+Resort",
-      "comoLlegar": "09/12 Tren Nocturno VR 267 (Helsinki 21:19 hs ➔ Rovaniemi 09:58 hs del 10/12). 10/12 Bus Matkahuolto (Rovaniemi 11:45 hs ➔ Inari 17:10 hs). Descender en parada principal de Inari y caminar 500m al norte.",
+      "comoLlegar": "10/12: bus Matkahuolto Rovaniemi 11:45 → Inari 17:10 (estar 1-2 h antes en la estación). Descender en la parada principal de Inari y caminar 500 m al norte. El 13/12: bus Inari 07:15 → Rovaniemi 12:15 y a la noche tren nocturno VR 274 a Helsinki (21:00).",
+      "transportes": [
+        { "tipo": "bus", "descripcion": "Bus Matkahuolto: Rovaniemi → Inari", "fecha": "10/12/2026", "salida": "11:45", "llegada": "17:10" },
+        { "tipo": "bus", "descripcion": "Bus Matkahuolto: Inari → Rovaniemi", "fecha": "13/12/2026", "salida": "07:15", "llegada": "12:15" },
+        { "tipo": "tren", "descripcion": "Tren nocturno VR 274: Rovaniemi → Helsinki", "fecha": "13/12/2026", "salida": "21:00", "llegada": "09:30 (+1)" }
+      ],
+      "transportePublico": "En Laponia todo es bus/tren VR: llegar con 1-2 h de anticipación a las terminales, como indica el pasaje.",
+      "guardaequipaje": "El 13/12 hay tarde libre en Rovaniemi entre el bus (12:15) y el tren (21:00): consignas en la estación de tren de Rovaniemi.",
       "actividades": [
         {
           "dia": 1,
@@ -93,10 +108,15 @@
     },
     {
       "nombre": "Helsinki (Vuelta)",
-      "fechas": "13/12/2026 – 15/12/2026",
+      "fechas": "14/12/2026 – 15/12/2026",
       "hotel": "Töölö Towers",
       "mapaHotelLink": "https://maps.google.com/?q=Toolo+Towers+Helsinki",
-      "comoLlegar": "13/12 Tren Nocturno VR 274 (Rovaniemi 21:00 hs ➔ Helsinki 09:15 hs del 14/12). Desde Estación Central, tomar Tranvía 1 o 2 a Töölö, bajar en Apollonkatu / Töölöntori y caminar 2 min.",
+      "comoLlegar": "14/12: llegada 09:30 en el tren nocturno desde Rovaniemi. Desde la Estación Central, Tranvía 1 o 2 a Töölö (Apollonkatu / Töölöntori) y 2 min a pie. El 15/12 a las 17:00 sale el ferry Viking Line a Estocolmo.",
+      "transportes": [
+        { "tipo": "ferry", "descripcion": "Ferry Viking Line: Helsinki → Estocolmo", "fecha": "15/12/2026", "salida": "17:00", "llegada": "10:00 (+1)" }
+      ],
+      "transportePublico": "App HSL, zonas AB: cubre la ciudad y el puerto de Viking Line.",
+      "guardaequipaje": "El 15/12 el ferry sale 17:00: tras el checkout, consignas de la Estación Central y paseo final por el centro.",
       "actividades": [
         {
           "dia": 2,

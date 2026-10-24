@@ -2,9 +2,10 @@
   "id": "germany",
   "pais": "Alemania",
   "flag": "🇩🇪",
-  "spotifyUrl": "https://open.spotify.com/playlist/65Pm1szZCEc6uFMEXx2oqW",
-  "driveFolderUrl": "",
-  "bgImage": "img/germany.jpg",
+  "playlists": [
+    { "nombre": "Alemania", "url": "https://open.spotify.com/playlist/65Pm1szZCEc6uFMEXx2oqW" },
+    { "nombre": "Europa 2026", "url": "https://open.spotify.com/playlist/4RnXEi2McMcnsT3vInD03n" }
+  ],
   "servicios": {
     "consulados": "https://maps.google.com/?q=Embajada+Argentina+Berlin",
     "farmacias": "https://maps.google.com/?q=Farmacias+Colonia+Alemania",
@@ -14,10 +15,16 @@
   "ciudades": [
     {
       "nombre": "Colonia",
-      "fechas": "2 días en Colonia + excursión de día a Aquisgrán · fechas por confirmar",
+      "fechas": "22/12/2026 – 25/12/2026 (incluye excursión de día a Aquisgrán)",
       "hotel": "Premier Inn Köln City Süd",
       "mapaHotelLink": "https://maps.google.com/?q=Premier+Inn+K%C3%B6ln+City+S%C3%BCd",
-      "comoLlegar": "",
+      "comoLlegar": "Llegada 22/12 a las 14:15 en tren DB desde Bruselas (12:25). Desde Köln Hauptbahnhof, Stadtbahn 16 o 18 a Poststraße o Severinstraße y 3-5 min a pie.",
+      "transportes": [
+        { "tipo": "tren", "descripcion": "Tren DB: Bruselas → Colonia", "fecha": "22/12/2026", "salida": "12:25", "llegada": "14:15" },
+        { "tipo": "tren", "descripcion": "Tren DB: Colonia → Dresde (transbordo)", "fecha": "25/12/2026", "salida": "07:55", "llegada": "13:42" }
+      ],
+      "transportePublico": "KölnCard 48 h (~18 €): transporte ilimitado en la zona urbana y ~20 % de descuento en Museo Ludwig, Wallraf-Richartz y KölnTriangle.",
+      "guardaequipaje": "El 25/12 el tren sale 07:55: el hotel guarda las valijas hasta la salida.",
       "actividades": [
         {
           "dia": 1,
@@ -100,10 +107,16 @@
     },
     {
       "nombre": "Dresde",
-      "fechas": "3 días · fechas por confirmar",
+      "fechas": "25/12/2026 – 28/12/2026",
       "hotel": "Premier Inn Dresden City Centre",
       "mapaHotelLink": "https://maps.google.com/?q=Premier+Inn+Dresden+City+Centre",
-      "comoLlegar": "Llegada desde Colonia. El primer recorrido probablemente empiece alrededor de las 14:00. Itinerario pensado para Navidad.",
+      "comoLlegar": "Llegada 25/12 a las 13:42 (tren DB desde Colonia con transbordo). El primer recorrido empieza cerca de las 14:00. Itinerario pensado para Navidad. Salida 28/12 a las 10:53 hacia Berlín.",
+      "transportes": [
+        { "tipo": "tren", "descripcion": "Tren DB: Colonia → Dresde (transbordo 09:02)", "fecha": "25/12/2026", "salida": "07:55", "llegada": "13:42" },
+        { "tipo": "tren", "descripcion": "Tren DB: Dresde → Berlín", "fecha": "28/12/2026", "salida": "10:53", "llegada": "12:28" }
+      ],
+      "transportePublico": "Tranvías DVB para Neustadt y el casco; la mayoría del casco histórico se hace a pie.",
+      "guardaequipaje": "La llegada (13:42) puede ser antes del check-in: consignas en Dresden Hauptbahnhof.",
       "actividades": [
         {
           "dia": 1,
@@ -181,10 +194,16 @@
     },
     {
       "nombre": "Berlín",
-      "fechas": "28/12/2026 – 02/01/2027",
+      "fechas": "28/12/2026 – 03/01/2027",
       "hotel": "Hampton by Hilton Berlin City West",
       "mapaHotelLink": "https://maps.google.com/?q=Hampton+by+Hilton+Berlin+City+West",
-      "comoLlegar": "Llegada prevista el 28/12; instalarse en el alojamiento antes del primer paseo.",
+      "comoLlegar": "Llegada 28/12 a las 12:28 (tren DB desde Dresde); instalarse en el alojamiento antes del primer paseo (~14:30). Salida 03/01 a las 13:28 hacia Praga.",
+      "transportes": [
+        { "tipo": "tren", "descripcion": "Tren DB: Dresde → Berlín", "fecha": "28/12/2026", "salida": "10:53", "llegada": "12:28" },
+        { "tipo": "tren", "descripcion": "Tren DB: Berlín → Praga", "fecha": "03/01/2027", "salida": "13:28", "llegada": "17:25" }
+      ],
+      "transportePublico": "App BVG Tickets: billete de 24 h si el día es intenso o bono de 4 viajes (zonas AB). No suele convenir la WelcomeCard salvo muchos museos de pago.",
+      "guardaequipaje": "El 03/01 el tren sale 13:28: tras el checkout, consignas de Berlin Hauptbahnhof.",
       "actividades": [
         {
           "dia": 1,
@@ -203,6 +222,11 @@
         },
         {
           "dia": 2,
+          "nombre": "Potsdamer Platz y subida opcional al Panoramapunkt; recorrido por la Topografía del Terror.",
+          "mapa": "https://maps.google.com/?q=Topography+of+Terror+Berlin"
+        },
+        {
+          "dia": 2,
           "nombre": "Paseo por Nikolaiviertel, el barrio medieval más antiguo, y el Ayuntamiento Rojo (Rotes Rathaus).",
           "mapa": "https://maps.google.com/?q=Nikolaiviertel+Berlin"
         },
@@ -213,12 +237,12 @@
         },
         {
           "dia": 3,
-          "nombre": "Recorrido por la zona comercial e histórica del oeste de Berlín.",
+          "nombre": "Oeste: Iglesia Memorial Kaiser Wilhelm, avenida Kurfürstendamm (Ku'damm) y centro comercial KaDeWe.",
           "mapa": "https://maps.google.com/?q=Kurfurstendamm+Berlin"
         },
         {
           "dia": 4,
-          "nombre": "31/12 · Deutsches Spionagemuseum y recorrido a pie por el Barrio Judío de Mitte.",
+          "nombre": "31/12 · Deutsches Spionagemuseum (tarifa dinámica) y recorrido a pie por el Barrio Judío de Mitte: Rosenstraße, Hackesche Höfe, Dead Chicken Alley, Stolpersteine y Nueva Sinagoga.",
           "mapa": "https://maps.google.com/?q=Deutsches+Spionagemuseum+Berlin"
         },
         {
@@ -232,6 +256,11 @@
           "mapa": "https://maps.google.com/?q=Alte+Nationalgalerie+Berlin"
         },
         {
+          "dia": 5,
+          "nombre": "Paseo por Karl-Marx-Allee (arquitectura de la RDA) y Berlin Wall Memorial en Bernauer Straße (gratuito).",
+          "mapa": "https://maps.google.com/?q=Berlin+Wall+Memorial"
+        },
+        {
           "dia": 6,
           "nombre": "02/01 · East Side Gallery y cruce por el histórico puente Oberbaumbrücke.",
           "mapa": "https://maps.google.com/?q=East+Side+Gallery+Berlin"
@@ -240,6 +269,11 @@
           "dia": 6,
           "nombre": "Paseo por Kreuzberg para ver los murales Astronaut Cosmonaut y el Mural del Elefante.",
           "mapa": "https://maps.google.com/?q=Astronaut+Cosmonaut+Mural+Berlin"
+        },
+        {
+          "dia": 6,
+          "nombre": "Escultura Molecule Men sobre el Spree y memorial soviético de Treptower Park (cierre del viaje).",
+          "mapa": "https://maps.google.com/?q=Treptower+Park+Berlin"
         }
       ],
       "gastronomia": [

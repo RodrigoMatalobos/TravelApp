@@ -2,6 +2,9 @@
   "id": "belgium",
   "pais": "Bélgica",
   "flag": "🇧🇪",
+  "playlists": [
+    { "nombre": "Europa 2026", "url": "https://open.spotify.com/playlist/4RnXEi2McMcnsT3vInD03n" }
+  ],
   "servicios": {
     "consulados": "https://maps.google.com/?q=Embajada+Argentina+Avenue+Louise+283+Bruxelles",
     "farmacias": "https://maps.google.com/?q=Pharmacie+Bruxelles",
@@ -14,13 +17,26 @@
       "hotel": "B&B Marianne",
       "comoLlegar": "Desde Gare du Midi / Gare Central, tomar Metro Línea 6 dirección Roi Baudouin hasta la estación Stuyvenbergh. Caminar 3 min.",
       "mapaHotelLink": "https://maps.google.com/?q=BB+Marianne+Rue+Stuyvenbergh+46+Laeken",
+      "transportes": [
+        { "tipo": "vuelo", "descripcion": "Estocolmo → Bruselas", "fecha": "19/12/2026", "salida": "07:30", "llegada": "" },
+        { "tipo": "tren", "descripcion": "Bruselas → Colonia (DB)", "fecha": "22/12/2026", "salida": "12:25", "llegada": "14:15" }
+      ],
+      "transportePublico": "Tap & Go: apoyar tarjeta de crédito/débito o el móvil directo en el lector de metro, tranvía o bus. Tope diario aproximado de 7,50 €; no hace falta tarjeta física ni pase turístico.",
+      "guardaequipaje": "El 22/12 el tren sale 12:25: dejar las valijas en el B&B o en las consignas de Bruselas-Midi antes de ir a la estación.",
       "actividades": [
-        "Día 1: Parque de Bruselas, Palacio Real, MIM, Petit Sablon, Palacio de Justicia, Marolles, Manneken Pis, Grand Place, Galerías Saint-Hubert, Delirium Café.",
-        "Día 2: Barrio Europeo (Cincuentenario, Parlamento Europeo), Atomium, Ruta de murales de cómic (Tintín, Los Pitufos), Les Halles de Saint-Géry."
+        { "dia": 1, "nombre": "Zona alta: Parque de Bruselas, Palacio Real, Museo de los Instrumentos (MIM, edificio Old England) y Petit Sablon", "mapa": "https://maps.google.com/?q=Mont+des+Arts+Brussels" },
+        { "dia": 1, "nombre": "Palacio de Justicia y ascensor panorámico gratuito hacia Marolles", "mapa": "https://maps.google.com/?q=Palais+de+Justice+Brussels" },
+        { "dia": 1, "nombre": "Manneken Pis, Grand Place iluminada y Galerías Saint-Hubert; cierre en Delirium Café", "mapa": "https://maps.google.com/?q=Grand+Place+Brussels" },
+        { "dia": 2, "nombre": "Barrio Europeo y Parque del Cincuentenario por la mañana", "mapa": "https://maps.google.com/?q=Parc+du+Cinquantenaire+Brussels" },
+        { "dia": 2, "nombre": "Atomium (metro Heysel): verlo de día y esperar el atardecer (~16:30) para verlo iluminado", "mapa": "https://maps.google.com/?q=Atomium+Brussels" },
+        { "dia": 2, "nombre": "Ruta del cómic express: mural de Tintín (Rue de l'Étuve), Broussaille (Plattesteen), Los Pitufos (cerca de Central) y Le jeune Albert (Rue des Alexiens 49); noche en Saint-Géry", "mapa": "https://maps.google.com/?q=Halles+Saint-Gery+Brussels" },
+        { "dia": 3, "nombre": "Excursión de un día a Gante: tren a Gent-Sint-Pieters, tranvía 1 al centro; Castillo de los Condes (Gravensteen), muelles de Graslei, Korenmarkt, Belfort, callejón del grafiti Werregarenstraat, Vrijdagmarkt y cerveza Max en Taberna Dulle Griet", "mapa": "https://maps.google.com/?q=Gravensteen+Ghent" }
       ],
       "gastronomia": [
-        "Papas fritas en Maison Antoine (Place Jourdan) o Fritland",
-        "Waffles belgas, chocolates artesanales y degustación de cerveza"
+        { "dia": 1, "nombre": "Papas fritas en Fritland o Friterie Tabora (zona Bolsa)", "mapa": "https://maps.google.com/?q=Fritland+Brussels" },
+        { "dia": 2, "nombre": "Cono de papas en Maison Antoine (Place Jourdan, desde 1948): los bares de la plaza permiten comerlas con una cerveza", "mapa": "https://maps.google.com/?q=Maison+Antoine+Place+Jourdan+Bruxelles" },
+        { "dia": 3, "nombre": "Gante: cerveza Max de la casa en Dulle Griet (se deja un zapato como fianza)", "mapa": "https://maps.google.com/?q=Dulle+Griet+Ghent" },
+        { "dia": 0, "nombre": "Waffles belgas y chocolates artesanales; Frit Flagey junto a los estanques de Ixelles si se pasa por ahí", "mapa": "https://maps.google.com/?q=Place+Flagey+Brussels" }
       ],
       "mapaGastroLink": "https://maps.google.com/?q=Maison+Antoine+Place+Jourdan+Bruxelles"
     }

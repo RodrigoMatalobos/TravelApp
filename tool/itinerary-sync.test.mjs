@@ -38,6 +38,33 @@ test('la instantánea incluye Alemania, todas las paradas y referencias válidas
   assert.ok(snapshot.activities.length > 0);
 });
 
+test('la instantánea expone playlists múltiples y transportes con fecha y horarios', () => {
+  const snapshot = buildItinerarySnapshot({ countries, route });
+  const germany = snapshot.countries.find(country => country.id === 'germany');
+  const colonia = snapshot.cities.find(city => city.countryId === 'germany' && city.data.nombre === 'Colonia');
+
+  assert.ok(Array.isArray(germany.data.playlists));
+  assert.ok(germany.data.playlists.length >= 2);
+  assert.ok(germany.data.playlists.every(playlist => playlist.url));
+  assert.ok(Array.isArray(colonia.data.transportes));
+  assert.equal(colonia.data.transportes[0].fecha, '22/12/2026');
+  assert.equal(colonia.data.transportes[0].salida, '12:25');
+});
+
+test('una playlist sin URL se descarta y el campo viejo spotifyUrl sigue funcionando', () => {
+  const snapshot = buildItinerarySnapshot({
+    countries: Object.fromEntries(INITIAL_COUNTRY_IDS.map(id => [id, {
+      ...countries[id],
+      playlists: id === 'sweden' ? [{ nombre: 'Sin URL', url: '' }] : countries[id].playlists,
+      spotifyUrl: id === 'sweden' ? 'https://spotify.test/suecia' : countries[id].spotifyUrl
+    }])),
+    route
+  });
+  const sweden = snapshot.countries.find(country => country.id === 'sweden');
+
+  assert.deepEqual(sweden.data.playlists, [{ nombre: 'Playlist del viaje', url: 'https://spotify.test/suecia' }]);
+});
+
 test('la comparación detecta campos heredados y evita escrituras repetidas', () => {
   const desired = [{ id: 'germany', data: { id: 'germany', pais: 'Alemania', order: 4 } }];
   const existing = [{ id: 'germany', data: { id: 'germany', pais: 'Alemania', order: 4, voucherEsUrl: 'old' } }];

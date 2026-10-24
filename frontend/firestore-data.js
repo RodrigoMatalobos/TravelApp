@@ -2,7 +2,11 @@ import {
   collection,
   doc,
   getDoc,
+  getDocFromCache,
+  getDocFromServer,
   getDocs,
+  getDocsFromCache,
+  getDocsFromServer,
   runTransaction,
   serverTimestamp,
   setDoc,
@@ -35,46 +39,195 @@ function orderedBy(data, field = 'order') {
   return data.sort((first, second) => Number(first[field] || 0) - Number(second[field] || 0));
 }
 
-async function loadCountries() {
-  const snapshot = await getDocs(collection(db, 'countries'));
+// --- Caché diaria ------------------------------------------------------------
+// Los datos del itinerario se piden a Firebase UNA VEZ AL DÍA por dispositivo.
+// - sessionCache: memoria de la pestaña actual (respuesta inmediata).
+// - localStorage: persiste entre pestañas y aperturas durante 24 horas.
+// - Si no hay internet, las lecturas caen a la caché persistente de Firestore.
+// - El botón "Actualizar datos" del menú fuerza una descarga en el momento.
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const STORAGE_PREFIX = 'travelapp-itinerary-v1:';
+const sessionCache = new Map();
+let revalidationPromise = null;
+
+function readPersistentCache(cacheKey) {
+  try {
+    const raw = localStorage.getItem(STORAGE_PREFIX + cacheKey);
+    if (!raw) return null;
+    const { timestamp, value } = JSON.parse(raw);
+    if (Date.now() - timestamp > CACHE_TTL_MS) return null;
+    return value;
+  } catch {
+    return null;
+  }
+}
+
+function writePersistentCache(cacheKey, value) {
+  try {
+    localStorage.setItem(STORAGE_PREFIX + cacheKey, JSON.stringify({ timestamp: Date.now(), value }));
+  } catch {
+    // Sin localStorage (modo privado, cuota llena): queda solo la memoria.
+  }
+}
+
+function deletePersistentCache(cacheKey) {
+  try {
+    localStorage.removeItem(STORAGE_PREFIX + cacheKey);
+  } catch {
+    // Ignorado: no hay almacenamiento disponible.
+  }
+}
+
+async function cachedLoad(cacheKey, loader) {
+  if (sessionCache.has(cacheKey)) return sessionCache.get(cacheKey);
+  const persisted = readPersistentCache(cacheKey);
+  if (persisted !== null) {
+    sessionCache.set(cacheKey, persisted);
+    return persisted;
+  }
+  const value = await loader();
+  sessionCache.set(cacheKey, value);
+  writePersistentCache(cacheKey, value);
+  return value;
+}
+
+function invalidateItineraryCache() {
+  sessionCache.clear();
+  try {
+    Object.keys(localStorage)
+      .filter(key => key.startsWith(STORAGE_PREFIX))
+      .forEach(key => localStorage.removeItem(key));
+  } catch {
+    // Ignorado: no hay almacenamiento disponible.
+  }
+  revalidationPromise = null;
+}
+
+// Intenta leer del servidor; si falla (offline), usa la caché persistente.
+async function getDocsSmart(query) {
+  try {
+    return await getDocsFromServer(query);
+  } catch {
+    return getDocsFromCache(query);
+  }
+}
+
+async function getDocSmart(ref) {
+  try {
+    return await getDocFromServer(ref);
+  } catch {
+    return getDocFromCache(ref);
+  }
+}
+
+function sameData(first, second) {
+  return JSON.stringify(first) === JSON.stringify(second);
+}
+
+async function fetchCountriesFresh() {
+  const snapshot = await getDocsFromServer(collection(db, 'countries'));
   const storedCountries = snapshot.docs.map(country => ({ id: country.id, ...country.data() }));
   return mergeCountryCatalog(storedCountries, COUNTRY_IMAGES);
 }
 
-async function loadCountry(countryId) {
-  const countrySnapshot = await getDoc(doc(db, 'countries', countryId));
-  if (!countrySnapshot.exists()) return null;
+async function fetchRouteFresh() {
+  const snapshot = await getDocsFromServer(collection(db, 'routeStops'));
+  return orderedBy(snapshot.docs.map(stop => ({ id: stop.id, ...stop.data() })))
+    .filter(stop => Number.isFinite(Number(stop.latitude)) && Number.isFinite(Number(stop.longitude)));
+}
 
-  const [citySnapshot, serviceSnapshot] = await Promise.all([
-    getDocs(collection(db, 'countries', countryId, 'cities')),
-    getDocs(collection(db, 'countries', countryId, 'additionalData'))
+// Compara lo mostrado con Firebase como máximo una vez al día.
+// Devuelve qué cambió para que la pantalla se redibuje solo si hace falta.
+async function revalidateItinerary() {
+  if (revalidationPromise) return revalidationPromise;
+  if (readPersistentCache('lastRevalidation')) return [];
+  revalidationPromise = (async () => {
+    const changed = [];
+    try {
+      const [freshCountries, freshRoute] = await Promise.all([fetchCountriesFresh(), fetchRouteFresh()]);
+      if (!sameData(freshCountries, sessionCache.get('countries'))) {
+        sessionCache.set('countries', freshCountries);
+        writePersistentCache('countries', freshCountries);
+        // Si cambió la lista, los detalles guardados pueden estar viejos.
+        [...sessionCache.keys()].filter(key => key.startsWith('country:')).forEach(key => {
+          sessionCache.delete(key);
+          deletePersistentCache(key);
+        });
+        changed.push('countries');
+      }
+      if (!sameData(freshRoute, sessionCache.get('route'))) {
+        sessionCache.set('route', freshRoute);
+        writePersistentCache('route', freshRoute);
+        changed.push('route');
+      }
+      writePersistentCache('lastRevalidation', true);
+    } catch (error) {
+      console.warn('Sin conexión o sin permisos: se conserva la caché local.', error);
+    } finally {
+      revalidationPromise = null;
+    }
+    return changed;
+  })();
+  return revalidationPromise;
+}
+
+// Botón "Actualizar datos" del menú: descarta la caché del día y descarga todo.
+async function refreshItineraryNow() {
+  invalidateItineraryCache();
+  const [countriesValue, routeValue] = await Promise.all([
+    loadCountries(),
+    loadRouteStops()
   ]);
-  const cities = await Promise.all(citySnapshot.docs.map(async cityDocument => {
-    const city = { id: cityDocument.id, ...cityDocument.data() };
-    const activitySnapshot = await getDocs(collection(db, 'countries', countryId, 'cities', cityDocument.id, 'activities'));
-    const activities = orderedBy(activitySnapshot.docs.map(activity => activity.data()));
-    return {
-      ...city,
-      actividades: activities.filter(activity => activity.category === 'actividad'),
-      gastronomia: activities.filter(activity => activity.category === 'gastronomia')
-    };
-  }));
-  const additionalData = orderedBy(serviceSnapshot.docs.map(service => ({ id: service.id, ...service.data() })));
-  const services = Object.fromEntries(additionalData.map(data => [data.category, data.url]));
+  writePersistentCache('lastRevalidation', true);
+  return { countries: countriesValue.length, routeStops: routeValue.length };
+}
 
-  return {
-    id: countrySnapshot.id,
-    ...countrySnapshot.data(),
-    ciudades: orderedBy(cities),
-    servicios: services,
-    datosAdicionales: additionalData
-  };
+async function loadCountries() {
+  return cachedLoad('countries', async () => {
+    const snapshot = await getDocsSmart(collection(db, 'countries'));
+    const storedCountries = snapshot.docs.map(country => ({ id: country.id, ...country.data() }));
+    return mergeCountryCatalog(storedCountries, COUNTRY_IMAGES);
+  });
+}
+
+async function loadCountry(countryId) {
+  return cachedLoad(`country:${countryId}`, async () => {
+    const countrySnapshot = await getDocSmart(doc(db, 'countries', countryId));
+    if (!countrySnapshot.exists()) return null;
+
+    const [citySnapshot, serviceSnapshot] = await Promise.all([
+      getDocsSmart(collection(db, 'countries', countryId, 'cities')),
+      getDocsSmart(collection(db, 'countries', countryId, 'additionalData'))
+    ]);
+    const cities = await Promise.all(citySnapshot.docs.map(async cityDocument => {
+      const city = { id: cityDocument.id, ...cityDocument.data() };
+      const activitySnapshot = await getDocsSmart(collection(db, 'countries', countryId, 'cities', cityDocument.id, 'activities'));
+      const activities = orderedBy(activitySnapshot.docs.map(activity => activity.data()));
+      return {
+        ...city,
+        actividades: activities.filter(activity => activity.category === 'actividad'),
+        gastronomia: activities.filter(activity => activity.category === 'gastronomia')
+      };
+    }));
+    const additionalData = orderedBy(serviceSnapshot.docs.map(service => ({ id: service.id, ...service.data() })));
+    const services = Object.fromEntries(additionalData.map(data => [data.category, data.url]));
+
+    return {
+      id: countrySnapshot.id,
+      ...countrySnapshot.data(),
+      ciudades: orderedBy(cities),
+      servicios: services,
+      datosAdicionales: additionalData
+    };
+  });
 }
 
 async function loadRouteStops() {
-  const snapshot = await getDocs(collection(db, 'routeStops'));
-  return orderedBy(snapshot.docs.map(stop => ({ id: stop.id, ...stop.data() })))
-    .filter(stop => Number.isFinite(Number(stop.latitude)) && Number.isFinite(Number(stop.longitude)));
+  return cachedLoad('route', async () => {
+    const snapshot = await getDocsSmart(collection(db, 'routeStops'));
+    return orderedBy(snapshot.docs.map(stop => ({ id: stop.id, ...stop.data() })))
+      .filter(stop => Number.isFinite(Number(stop.latitude)) && Number.isFinite(Number(stop.longitude)));
+  });
 }
 
 function documentsFrom(snapshot) {
@@ -194,6 +347,7 @@ async function syncItineraryData({ countries = {}, route = {} }) {
   );
 
   await commitWriteOperations(operations);
+  invalidateItineraryCache();
   return {
     writeCount: operations.length,
     countries: desired.countries.map(country => country.id),
@@ -316,6 +470,9 @@ window.TravelFirestore = Object.freeze({
   loadCountries,
   loadCountry,
   loadRouteStops,
+  revalidateItinerary,
+  refreshItineraryNow,
+  invalidateItineraryCache,
   syncItineraryData,
   seedInitialData,
   getMember,
