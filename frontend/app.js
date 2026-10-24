@@ -15,7 +15,8 @@ let focusedGlobeLocation = null;
 let signedInUser = null;
 let activeMember = null;
 let downloadedTicketFiles = [];
-let showTicketDownloadMenu = false;
+let ticketImportContext = null;
+let ticketImportDismissTimer = null;
 let itinerarySyncPromise = null;
 let itinerarySyncError = '';
 let authCallbackSequence = 0;
@@ -33,7 +34,7 @@ if ('serviceWorker' in navigator && import.meta.env.DEV) {
     window.location.reload();
   });
 
-  navigator.serviceWorker.register('sw.js?v=1.0.24', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('sw.js?v=1.0.25', { updateViaCache: 'none' })
     .then(registration => registration.update())
     .catch(err => console.error('Service Worker error:', err));
 }
@@ -61,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setVaultMenuOpen(false);
     startTicketFolderDownload(event.currentTarget);
   });
+  document.getElementById('ticketImportDismiss')?.addEventListener('click', () => setTicketImportStatus({ visible: false }));
   document.querySelector('[data-sign-out]')?.addEventListener('click', () => {
     setVaultMenuOpen(false);
     window.TravelFirebase.signOut();
@@ -196,9 +198,9 @@ function renderTicketDownloadPrompt(message = '') {
   container.innerHTML = `
     <section class="w-full rounded-xl border border-slate-700 bg-slate-800 p-5 text-center">
       <h2 class="text-lg font-semibold text-white">Archivos del viaje</h2>
-      <p class="mt-2 text-sm text-slate-300">Elegí la carpeta TravelApp desde Mis archivos. Se guardará en este dispositivo y podrás abrir sus documentos desde el itinerario.</p>
+      <p class="mt-2 text-sm text-slate-300">Elegí la carpeta TravelApp desde Mis archivos. En el teléfono también podés elegir archivos sueltos de Descargas si abriste antes su ciudad en el itinerario.</p>
       ${message ? `<p class="mt-3 text-sm text-amber-200" role="status">${escapeHtml(message)}</p>` : ''}
-      <button id="download-ticket-folder" type="button" class="mt-5 w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-500">Elegir carpeta en Mis archivos</button>
+      <button id="download-ticket-folder" type="button" class="mt-5 w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-500">Cargar archivos</button>
       <button id="skip-ticket-download" type="button" class="mt-2 w-full rounded-lg border border-slate-600 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-white/5">Ahora no</button>
     </section>
   `;
@@ -206,7 +208,6 @@ function renderTicketDownloadPrompt(message = '') {
     startTicketFolderDownload(event.currentTarget);
   });
   container.querySelector('#skip-ticket-download')?.addEventListener('click', () => {
-    showTicketDownloadMenu = downloadedTicketFiles.length === 0;
     updateVaultNavigation();
     showPaisesView();
   });
@@ -214,32 +215,75 @@ function renderTicketDownloadPrompt(message = '') {
 
 async function startTicketFolderDownload(button) {
   if (!canManageTicketFiles(activeMember)) return showPaisesView();
+  const originalLabel = button.textContent;
   button.disabled = true;
-  button.textContent = 'Abriendo Mis archivos…';
+  button.textContent = 'Cargar archivos';
+  setTicketImportStatus({ message: 'Esperando selección de archivos…', current: 0, total: 0 });
   try {
     const files = await chooseLocalFolder();
     if (!files.length) {
-      showTicketDownloadMenu = downloadedTicketFiles.length === 0;
-      updateVaultNavigation();
-      if (downloadedTicketFiles.length) showPaisesView();
-      else renderTicketDownloadPrompt('No seleccionaste una carpeta.');
+      setTicketImportStatus({ message: 'No se seleccionaron archivos.', variant: 'complete' });
       return;
     }
 
+    const fallbackPath = ticketImportContext
+      ? `${ticketImportContext.country.id || ticketImportContext.country.pais}/${ticketImportContext.country.ciudades[ticketImportContext.cityIndex].nombre}`
+      : '';
+    setTicketImportStatus({ message: `Guardando ${files.length} archivos…`, current: 0, total: files.length });
     await saveLocalFolderFiles(files, {
-      onProgress: (count, name) => {
-        button.textContent = `Guardando ${count}: ${name}`;
-      }
+      fallbackPath,
+      onProgress: (count, name, total) => setTicketImportStatus({
+        message: `Guardando ${name} (${count}/${total})…`,
+        current: count,
+        total
+      })
     });
     downloadedTicketFiles = await getTicketFiles();
-    showTicketDownloadMenu = false;
     updateVaultNavigation();
-    showPaisesView();
+    setTicketImportStatus({
+      message: `${files.length} archivos guardados en este dispositivo.`,
+      current: files.length,
+      total: files.length,
+      variant: 'complete'
+    });
+    if (ticketImportContext) {
+      showDetalleCiudadView(ticketImportContext.country, ticketImportContext.cityIndex, ticketImportContext.country.id);
+    } else {
+      showPaisesView();
+    }
   } catch (error) {
-    showTicketDownloadMenu = downloadedTicketFiles.length === 0;
-    updateVaultNavigation();
-    if (downloadedTicketFiles.length) showPaisesView();
-    else renderTicketDownloadPrompt(error.message || 'No se pudo descargar la carpeta.');
+    setTicketImportStatus({ message: error.message || 'No se pudieron cargar los archivos.', variant: 'error' });
+  } finally {
+    button.disabled = false;
+    button.textContent = originalLabel;
+  }
+}
+
+function setTicketImportStatus({ message = '', current = 0, total = 0, variant = 'loading', visible = true } = {}) {
+  const panel = document.getElementById('ticketImportStatus');
+  const label = document.getElementById('ticketImportMessage');
+  const track = document.getElementById('ticketImportTrack');
+  const bar = document.getElementById('ticketImportBar');
+  if (!panel || !label || !track || !bar) return;
+  clearTimeout(ticketImportDismissTimer);
+  panel.classList.toggle('hidden', !visible);
+  label.textContent = message;
+  track.classList.toggle('hidden', !visible || !message || variant === 'error');
+  bar.classList.remove('animate-[top-loading_1s_ease-in-out_infinite]');
+  if (visible && variant === 'loading' && total === 0) {
+    bar.style.width = '35%';
+    bar.classList.add('animate-[top-loading_1s_ease-in-out_infinite]');
+    track.removeAttribute('aria-valuenow');
+    track.setAttribute('aria-label', 'Esperando selección de archivos');
+  } else if (total > 0) {
+    const percentage = Math.round((current / total) * 100);
+    bar.style.width = `${percentage}%`;
+    track.setAttribute('aria-valuenow', String(current));
+    track.setAttribute('aria-valuemax', String(total));
+    track.setAttribute('aria-label', 'Progreso de guardado de archivos');
+  }
+  if (visible && variant !== 'loading') {
+    ticketImportDismissTimer = setTimeout(() => setTicketImportStatus({ visible: false }), 5000);
   }
 }
 
@@ -257,7 +301,7 @@ function initializeFirebaseAccess() {
     signedInUser = user;
     activeMember = null;
     downloadedTicketFiles = [];
-    showTicketDownloadMenu = false;
+    ticketImportContext = null;
     itinerarySyncError = '';
     viewSequence += 1;
     updateVaultNavigation();
@@ -302,7 +346,6 @@ function initializeFirebaseAccess() {
           downloadedTicketFiles = [];
         }
         if (!isCurrentAuthState()) return;
-        showTicketDownloadMenu = downloadedTicketFiles.length === 0;
         updateVaultNavigation();
         if (downloadedTicketFiles.length) showPaisesView();
         else renderTicketDownloadPrompt();
@@ -449,6 +492,7 @@ function appendTicketFiles(container, files, title) {
 function showPaisesView() {
   const requestId = ++viewSequence;
   disposeHomeGlobe();
+  ticketImportContext = null;
   currentViewState = { level: 'paises', paisId: null };
   updateHeader('🌍 Elegí un Destino', false);
 
@@ -481,6 +525,7 @@ function showPaisesView() {
 function showCiudadesView(paisId) {
   const requestId = ++viewSequence;
   disposeHomeGlobe();
+  ticketImportContext = null;
   const canonicalPaisId = normalizeCountryId(paisId);
   currentViewState = { level: 'ciudades', paisId: canonicalPaisId };
 
@@ -582,6 +627,7 @@ function showDetalleCiudadView(pais, ciudadIndex, paisIdOverride) {
 
   const ciudad = pais.ciudades[ciudadIndex];
   const statePaisId = normalizeCountryId(paisIdOverride || pais.id || currentViewState.paisId);
+  ticketImportContext = { country: pais, cityIndex: ciudadIndex };
   viewSequence += 1;
   disposeHomeGlobe();
   currentViewState = { level: 'detalle', paisId: statePaisId };
@@ -764,7 +810,7 @@ function updateVaultNavigation() {
   document.querySelector('[data-admin-access]')?.classList.toggle('hidden', !enabled || activeMember?.role !== 'admin');
   document.querySelector('[data-download-ticket-files]')?.classList.toggle(
     'hidden',
-    !canManageFiles || downloadedTicketFiles.length > 0 || !showTicketDownloadMenu
+    !canManageFiles
   );
 }
 

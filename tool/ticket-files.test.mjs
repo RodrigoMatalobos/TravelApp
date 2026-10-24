@@ -81,6 +81,15 @@ test('local folder selection rejects files without preserved folder structure', 
   );
 });
 
+test('files selected without folder paths can be associated with the open city', () => {
+  const sourceFile = { name: 'ticket.pdf', type: 'application/pdf' };
+  const [file] = normalizeSelectedFolderFiles([sourceFile], { fallbackPath: 'Finland/Helsinki Ida' });
+
+  assert.equal(file.relativePath, 'Finland/Helsinki Ida/ticket.pdf');
+  assert.equal(file.blob, sourceFile);
+  assert.deepEqual(filesForCity([file], country, country.ciudades[0]), [file]);
+});
+
 test('voucher language pairs use the previous button labels while other tickets keep their names', () => {
   const files = [
     { name: 'Hotel AX-es.pdf' },

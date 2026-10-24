@@ -26,11 +26,23 @@ export function canManageTicketFiles(member) {
   return member?.enabled === true && member.role === 'admin';
 }
 
-export function normalizeSelectedFolderFiles(files) {
+export function normalizeSelectedFolderFiles(files, { fallbackPath = '' } = {}) {
   return Array.from(files || []).map(file => {
     const parts = String(file.webkitRelativePath || '').replace(/\\/g, '/').split('/').filter(Boolean);
     if (parts.length < 2) {
-      throw new Error('El navegador no conservó las carpetas. Elegí la carpeta raíz TravelApp desde Mis archivos.');
+      if (!fallbackPath) {
+        throw new Error('El teléfono no conservó las carpetas. Abrí la ciudad del itinerario y elegí sus archivos desde Descargas.');
+      }
+      const relativePath = `${fallbackPath}/${file.name}`;
+      return {
+        id: relativePath,
+        name: file.name,
+        mimeType: file.type || 'application/octet-stream',
+        blob: file,
+        relativePath,
+        modifiedTime: file.lastModified ? new Date(file.lastModified).toISOString() : '',
+        downloadedAt: Date.now()
+      };
     }
 
     const relativePath = parts.slice(1).join('/');
@@ -158,15 +170,15 @@ export async function getTicketFiles() {
   });
 }
 
-async function replaceTicketFiles(files, onProgress = () => {}) {
+async function replaceTicketFiles(files, onProgress = () => {}, { merge = false } = {}) {
   const database = await openDatabase();
   await new Promise((resolve, reject) => {
     const transaction = database.transaction(STORE_NAME, 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
-    store.clear();
+    if (!merge) store.clear();
     files.forEach((file, index) => {
-      store.put(file);
-      onProgress(index + 1, file.name);
+      const request = store.put(file);
+      request.onsuccess = () => onProgress(index + 1, file.name, files.length);
     });
     transaction.oncomplete = resolve;
     transaction.onerror = () => reject(transaction.error || new Error('No se pudieron guardar los archivos en el teléfono.'));
@@ -199,10 +211,10 @@ export function chooseLocalFolder() {
   });
 }
 
-export async function saveLocalFolderFiles(files, { onProgress = () => {} } = {}) {
-  const downloadedFiles = normalizeSelectedFolderFiles(files);
+export async function saveLocalFolderFiles(files, { onProgress = () => {}, fallbackPath = '' } = {}) {
+  const downloadedFiles = normalizeSelectedFolderFiles(files, { fallbackPath });
   if (!downloadedFiles.length) throw new Error('La carpeta seleccionada no contiene archivos.');
   await globalThis.navigator?.storage?.persist?.();
-  await replaceTicketFiles(downloadedFiles, onProgress);
+  await replaceTicketFiles(downloadedFiles, onProgress, { merge: Boolean(fallbackPath) });
   return downloadedFiles.length;
 }
