@@ -103,20 +103,36 @@ function invalidateItineraryCache() {
   revalidationPromise = null;
 }
 
-// Intenta leer del servidor; si falla (offline), usa la caché persistente.
+// Estrategia cache-first: leer de la caché persistente es instantáneo y
+// funciona sin internet. Solo se toca la red cuando la caché está vacía
+// (primera instalación) o en la revalidación diaria. El timeout evita que
+// una mala conexión deje la pantalla cargando por siempre.
+const NETWORK_TIMEOUT_MS = 12000;
+
+function withTimeout(promise, message) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(message)), NETWORK_TIMEOUT_MS);
+    })
+  ]);
+}
+
 async function getDocsSmart(query) {
   try {
-    return await getDocsFromServer(query);
+    const snapshot = await getDocsFromCache(query);
+    if (!snapshot.empty) return snapshot;
   } catch {
-    return getDocsFromCache(query);
+    // La caché todavía no tiene esa colección: se intenta la red.
   }
+  return withTimeout(getDocsFromServer(query), 'Firebase tardó demasiado en responder.');
 }
 
 async function getDocSmart(ref) {
   try {
-    return await getDocFromServer(ref);
+    return await getDocFromCache(ref);
   } catch {
-    return getDocFromCache(ref);
+    return withTimeout(getDocFromServer(ref), 'Firebase tardó demasiado en responder.');
   }
 }
 
@@ -137,14 +153,18 @@ async function fetchRouteFresh() {
 }
 
 // Compara lo mostrado con Firebase como máximo una vez al día.
-// Devuelve qué cambió para que la pantalla se redibuje solo si hace falta.
+// Sin conexión se omite directamente: la caché local ya está al día para uso.
 async function revalidateItinerary() {
   if (revalidationPromise) return revalidationPromise;
   if (readPersistentCache('lastRevalidation')) return [];
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return [];
   revalidationPromise = (async () => {
     const changed = [];
     try {
-      const [freshCountries, freshRoute] = await Promise.all([fetchCountriesFresh(), fetchRouteFresh()]);
+      const [freshCountries, freshRoute] = await withTimeout(
+        Promise.all([fetchCountriesFresh(), fetchRouteFresh()]),
+        'Firebase tardó demasiado en responder.'
+      );
       if (!sameData(freshCountries, sessionCache.get('countries'))) {
         sessionCache.set('countries', freshCountries);
         writePersistentCache('countries', freshCountries);
@@ -360,7 +380,7 @@ async function seedInitialData(options) {
 }
 
 async function getMember(uid) {
-  const snapshot = await getDoc(doc(db, 'members', uid));
+  const snapshot = await getDocSmart(doc(db, 'members', uid));
   return snapshot.exists() ? { uid: snapshot.id, ...snapshot.data() } : null;
 }
 
