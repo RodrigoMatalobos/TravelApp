@@ -72,7 +72,7 @@ Los tickets pueden contener datos personales. Mantené las carpetas restringidas
 
 ## Completar paradas del globo
 
-El recorrido y sus coordenadas están en `frontend/data/map-locations.json`. Las paradas de ciudades usan `countryId` y `cityIndex` para enlazarse con los JSON del itinerario; respetá el orden de `stops`, ya que define la ruta dibujada.
+El recorrido y sus coordenadas están en `frontend/data/map-locations.json`. Las paradas con una sección oficial en el JSON del país usan `hasItinerary: true`, `countryId` y `cityIndex` para enlazarse con esa sección. Las excursiones sin sección propia solo necesitan nombre y coordenadas. Los tramos hacia itinerarios oficiales se dibujan en azul; los de llegada a una parada sin sección propia, en verde. `animatedTrips` indica el vehículo y la fecha local en que se mueve por cada trayecto; `celebrationDates` contiene los días en que se muestra confeti. Respetá el orden de `stops`, ya que define la ruta dibujada y sus tramos.
 
 Cuando termines de completar los JSON de países, comprobá si falta alguna ciudad o si hay índices todavía sin datos:
 
@@ -90,7 +90,7 @@ El script pide latitud y longitud decimales, una etiqueta opcional y dónde inse
 
 ## Mantener las paradas del globo
 
-El recorrido editable está en `frontend/data/map-locations.json`. Cada ciudad usa `countryId` y `cityIndex` para vincularse con su entrada en `frontend/data/<countryId>.json`; las coordenadas son decimales de latitud y longitud. Conservá el orden de `stops`, porque determina la línea del viaje.
+El recorrido editable está en `frontend/data/map-locations.json`. Cada destino con itinerario oficial usa `hasItinerary: true`, `countryId` y `cityIndex` para vincularse con su sección en `frontend/data/<countryId>.json`; las excursiones sin sección propia se muestran solo como paradas. Las coordenadas son decimales de latitud y longitud. Conservá el orden de `stops`, porque determina la línea del viaje.
 
 Cuando termines de completar los JSON de países, revisá qué ciudades faltan en el mapa:
 

@@ -67,6 +67,7 @@ function buildMapStop({ country, city, cityIndex, latitude, longitude, stage, ex
   const stop = {
     id: makeStopId(country.id, city.nombre, existingIds),
     name: city.nombre,
+    hasItinerary: true,
     countryId: country.id,
     countryName: country.pais,
     flag: country.flag || '',

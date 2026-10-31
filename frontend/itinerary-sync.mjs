@@ -113,11 +113,15 @@ function buildRouteStops(route, countries) {
     }
 
     const countryId = text(stop.countryId);
+    if (stop.hasItinerary === true && !countryId) {
+      throw new Error(`La parada ${id} indica un itinerario, pero no tiene país asociado.`);
+    }
     const data = {
       id,
       name: text(stop.name),
       countryName: text(stop.countryName),
       flag: text(stop.flag),
+      hasItinerary: stop.hasItinerary === true,
       latitude,
       longitude,
       order

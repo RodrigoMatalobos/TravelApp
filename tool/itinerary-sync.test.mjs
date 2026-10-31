@@ -31,10 +31,18 @@ test('la instantánea incluye Alemania, todas las paradas y referencias válidas
 
   assert.equal(snapshot.countries.length, 6);
   assert.ok(snapshot.countries.some(country => country.id === 'germany'));
-  assert.equal(snapshot.routeStops.length, 15);
+  assert.equal(snapshot.routeStops.length, 31);
   assert.ok(snapshot.routeStops.some(stop => stop.id === 'berlin' && stop.data.countryId === 'germany'));
   assert.ok(snapshot.routeStops.some(stop => stop.id === 'dresde' && stop.data.name === 'Dresde'));
   assert.ok(snapshot.routeStops.some(stop => stop.id === 'praga-vuelta' && stop.data.cityIndex === 2));
+  ['girona', 'gante', 'aquisgran', 'bastei', 'pilsen', 'loket'].forEach(stopId => {
+    assert.ok(snapshot.routeStops.some(stop => stop.id === stopId), `falta la parada ${stopId}`);
+  });
+  ['barcelona-girona-regreso', 'bruselas-regreso', 'colonia-regreso', 'dresde-regreso', 'praga-regreso-pilsen', 'karlovy-vary-regreso']
+    .forEach(stopId => assert.ok(snapshot.routeStops.some(stop => stop.id === stopId), `falta el regreso ${stopId}`));
+  assert.equal(snapshot.routeStops.find(stop => stop.id === 'barcelona-ida').data.hasItinerary, true);
+  assert.equal(snapshot.routeStops.find(stop => stop.id === 'girona').data.hasItinerary, false);
+  assert.equal(snapshot.routeStops.find(stop => stop.id === 'girona').data.countryId, undefined);
   assert.ok(snapshot.activities.length > 0);
 });
 

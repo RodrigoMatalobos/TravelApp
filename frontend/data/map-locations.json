@@ -12,6 +12,7 @@
     },
     {
       "id": "barcelona-ida",
+      "hasItinerary": true,
       "name": "Barcelona",
       "countryId": "spain",
       "countryName": "España",
@@ -22,7 +23,50 @@
       "longitude": 2.1686
     },
     {
+      "id": "montserrat",
+      "name": "Montserrat",
+      "countryName": "España",
+      "flag": "🇪🇸",
+      "stage": "Excursión opcional desde Barcelona",
+      "latitude": 41.5931,
+      "longitude": 1.8292
+    },
+    {
+      "id": "barcelona-montserrat-regreso",
+      "hasItinerary": true,
+      "name": "Barcelona",
+      "countryId": "spain",
+      "countryName": "España",
+      "flag": "🇪🇸",
+      "stage": "Regreso de Montserrat",
+      "cityIndex": 0,
+      "latitude": 41.3874,
+      "longitude": 2.1686
+    },
+    {
+      "id": "girona",
+      "name": "Girona",
+      "countryName": "España",
+      "flag": "🇪🇸",
+      "stage": "Excursión desde Barcelona",
+      "latitude": 41.9794,
+      "longitude": 2.8214
+    },
+    {
+      "id": "barcelona-girona-regreso",
+      "hasItinerary": true,
+      "name": "Barcelona",
+      "countryId": "spain",
+      "countryName": "España",
+      "flag": "🇪🇸",
+      "stage": "Regreso de Girona",
+      "cityIndex": 0,
+      "latitude": 41.3874,
+      "longitude": 2.1686
+    },
+    {
       "id": "helsinki-ida",
+      "hasItinerary": true,
       "name": "Helsinki",
       "countryId": "finland",
       "countryName": "Finlandia",
@@ -33,7 +77,20 @@
       "longitude": 24.9384
     },
     {
+      "id": "rovaniemi-ida",
+      "hasItinerary": true,
+      "name": "Rovaniemi",
+      "countryId": "finland",
+      "countryName": "Finlandia",
+      "flag": "🇫🇮",
+      "stage": "Laponia · ida",
+      "cityIndex": 1,
+      "latitude": 66.5039,
+      "longitude": 25.7294
+    },
+    {
       "id": "inari",
+      "hasItinerary": true,
       "name": "Inari",
       "countryId": "finland",
       "countryName": "Finlandia",
@@ -45,7 +102,20 @@
       "longitude": 27.0288
     },
     {
+      "id": "rovaniemi-vuelta",
+      "hasItinerary": true,
+      "name": "Rovaniemi",
+      "countryId": "finland",
+      "countryName": "Finlandia",
+      "flag": "🇫🇮",
+      "stage": "Laponia · regreso",
+      "cityIndex": 1,
+      "latitude": 66.5039,
+      "longitude": 25.7294
+    },
+    {
       "id": "helsinki-vuelta",
+      "hasItinerary": true,
       "name": "Helsinki",
       "countryId": "finland",
       "countryName": "Finlandia",
@@ -57,6 +127,7 @@
     },
     {
       "id": "estocolmo",
+      "hasItinerary": true,
       "name": "Estocolmo",
       "countryId": "sweden",
       "countryName": "Suecia",
@@ -67,6 +138,7 @@
     },
     {
       "id": "bruselas",
+      "hasItinerary": true,
       "name": "Bruselas",
       "countryId": "belgium",
       "countryName": "Bélgica",
@@ -76,7 +148,29 @@
       "longitude": 4.3517
     },
     {
+      "id": "gante",
+      "name": "Gante",
+      "countryName": "Bélgica",
+      "flag": "🇧🇪",
+      "stage": "Excursión desde Bruselas",
+      "latitude": 51.0543,
+      "longitude": 3.7174
+    },
+    {
+      "id": "bruselas-regreso",
+      "hasItinerary": true,
+      "name": "Bruselas",
+      "countryId": "belgium",
+      "countryName": "Bélgica",
+      "flag": "🇧🇪",
+      "stage": "Regreso de Gante",
+      "cityIndex": 0,
+      "latitude": 50.8503,
+      "longitude": 4.3517
+    },
+    {
       "id": "colonia",
+      "hasItinerary": true,
       "name": "Colonia",
       "countryId": "germany",
       "countryName": "Alemania",
@@ -86,7 +180,29 @@
       "longitude": 6.9603
     },
     {
+      "id": "aquisgran",
+      "name": "Aquisgrán",
+      "countryName": "Alemania",
+      "flag": "🇩🇪",
+      "stage": "Excursión desde Colonia",
+      "latitude": 50.7753,
+      "longitude": 6.0839
+    },
+    {
+      "id": "colonia-regreso",
+      "hasItinerary": true,
+      "name": "Colonia",
+      "countryId": "germany",
+      "countryName": "Alemania",
+      "flag": "🇩🇪",
+      "stage": "Regreso de Aquisgrán",
+      "cityIndex": 0,
+      "latitude": 50.9375,
+      "longitude": 6.9603
+    },
+    {
       "id": "dresde",
+      "hasItinerary": true,
       "name": "Dresde",
       "countryId": "germany",
       "countryName": "Alemania",
@@ -96,7 +212,29 @@
       "longitude": 13.7373
     },
     {
+      "id": "bastei",
+      "name": "Bastei · Kurort Rathen",
+      "countryName": "Alemania",
+      "flag": "🇩🇪",
+      "stage": "Excursión desde Dresde",
+      "latitude": 50.9622,
+      "longitude": 14.0725
+    },
+    {
+      "id": "dresde-regreso",
+      "hasItinerary": true,
+      "name": "Dresde",
+      "countryId": "germany",
+      "countryName": "Alemania",
+      "flag": "🇩🇪",
+      "stage": "Regreso de Bastei",
+      "cityIndex": 1,
+      "latitude": 51.0504,
+      "longitude": 13.7373
+    },
+    {
       "id": "berlin",
+      "hasItinerary": true,
       "name": "Berlín",
       "countryId": "germany",
       "countryName": "Alemania",
@@ -107,6 +245,7 @@
     },
     {
       "id": "praga",
+      "hasItinerary": true,
       "name": "Praga",
       "countryId": "czech",
       "countryName": "República Checa",
@@ -116,7 +255,29 @@
       "longitude": 14.4378
     },
     {
+      "id": "pilsen",
+      "name": "Pilsen",
+      "countryName": "República Checa",
+      "flag": "🇨🇿",
+      "stage": "Excursión desde Praga",
+      "latitude": 49.7384,
+      "longitude": 13.3736
+    },
+    {
+      "id": "praga-regreso-pilsen",
+      "hasItinerary": true,
+      "name": "Praga",
+      "countryId": "czech",
+      "countryName": "República Checa",
+      "flag": "🇨🇿",
+      "stage": "Regreso de Pilsen",
+      "cityIndex": 0,
+      "latitude": 50.0755,
+      "longitude": 14.4378
+    },
+    {
       "id": "karlovy-vary",
+      "hasItinerary": true,
       "name": "Karlovy Vary",
       "countryId": "czech",
       "countryName": "República Checa",
@@ -126,7 +287,29 @@
       "longitude": 12.8719
     },
     {
+      "id": "loket",
+      "name": "Loket",
+      "countryName": "República Checa",
+      "flag": "🇨🇿",
+      "stage": "Excursión desde Karlovy Vary",
+      "latitude": 50.1861,
+      "longitude": 12.7542
+    },
+    {
+      "id": "karlovy-vary-regreso",
+      "hasItinerary": true,
+      "name": "Karlovy Vary",
+      "countryId": "czech",
+      "countryName": "República Checa",
+      "flag": "🇨🇿",
+      "stage": "Regreso de Loket",
+      "cityIndex": 1,
+      "latitude": 50.2319,
+      "longitude": 12.8719
+    },
+    {
       "id": "praga-vuelta",
+      "hasItinerary": true,
       "name": "Praga",
       "countryId": "czech",
       "countryName": "República Checa",
@@ -138,6 +321,7 @@
     },
     {
       "id": "barcelona-vuelta",
+      "hasItinerary": true,
       "name": "Barcelona",
       "countryId": "spain",
       "countryName": "España",
@@ -156,5 +340,28 @@
       "latitude": -34.6037,
       "longitude": -58.3816
     }
+  ],
+  "animatedTrips": [
+    { "date": "2026-10-31", "from": "colonia-regreso", "to": "dresde", "type": "train" },
+    { "date": "2026-11-29", "from": "buenos-aires-salida", "to": "barcelona-ida", "type": "plane" },
+    { "date": "2026-12-08", "from": "barcelona-girona-regreso", "to": "helsinki-ida", "type": "plane" },
+    { "date": "2026-12-15", "from": "helsinki-vuelta", "to": "estocolmo", "type": "ship" },
+    { "date": "2026-12-19", "from": "estocolmo", "to": "bruselas", "type": "plane" },
+    { "date": "2026-12-22", "from": "bruselas-regreso", "to": "colonia", "type": "train" },
+    { "date": "2026-12-25", "from": "colonia-regreso", "to": "dresde", "type": "train" },
+    { "date": "2026-12-28", "from": "dresde-regreso", "to": "berlin", "type": "train" },
+    { "date": "2027-01-03", "from": "berlin", "to": "praga", "type": "train" },
+    { "date": "2027-01-06", "from": "praga-regreso-pilsen", "to": "karlovy-vary", "type": "bus" },
+    { "date": "2027-01-07", "from": "karlovy-vary-regreso", "to": "praga-vuelta", "type": "bus" },
+    { "date": "2027-01-08", "from": "praga-vuelta", "to": "barcelona-vuelta", "type": "plane" }
+  ],
+  "celebrationDates": [
+    "2026-10-31",
+    "2026-12-19",
+    "2026-12-24",
+    "2026-12-25",
+    "2026-12-31",
+    "2027-01-01",
+    "2027-01-02"
   ]
 }

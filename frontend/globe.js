@@ -26,7 +26,78 @@ function pointOnGlobe(latitude, longitude, radius) {
   );
 }
 
-export function mountTravelGlobe(container, locations, onFocus, onSelect) {
+function makeRouteArc(start, end, segment) {
+  const angle = start.angleTo(end);
+  if (angle < 0.001) return null;
+
+  const sampleCount = Math.max(18, Math.ceil(angle * 42));
+  const arcHeight = 0.16 + (segment % 2) * 0.1;
+  const points = [];
+  for (let sample = 0; sample <= sampleCount; sample += 1) {
+    const amount = sample / sampleCount;
+    const direction = start.clone().multiplyScalar(Math.sin((1 - amount) * angle) / Math.sin(angle))
+      .add(end.clone().multiplyScalar(Math.sin(amount * angle) / Math.sin(angle)))
+      .normalize();
+    const lift = 0.025 + Math.sin(Math.PI * amount) * arcHeight;
+    points.push(direction.multiplyScalar(RADIUS + lift));
+  }
+  return { curve: new THREE.CatmullRomCurve3(points), points, sampleCount };
+}
+
+function localDateKey() {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function makeVehicleTexture(type) {
+  const icons = { plane: '✈️', ship: '⛴️', train: '🚆', bus: '🚌' };
+  const colors = { plane: '#2563eb', ship: '#0e7490', train: '#7c3aed', bus: '#059669' };
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 128;
+  const context = canvas.getContext('2d');
+  context.beginPath();
+  context.arc(64, 64, 58, 0, Math.PI * 2);
+  context.fillStyle = '#0b1720';
+  context.fill();
+  context.lineWidth = 7;
+  context.strokeStyle = colors[type] || '#38a9ff';
+  context.stroke();
+  context.font = '68px system-ui, Apple Color Emoji, Segoe UI Emoji, sans-serif';
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.fillText(icons[type] || '🚆', 64, 68);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+function makeRouteBadgeTexture(label, color) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 128;
+  const context = canvas.getContext('2d');
+  context.beginPath();
+  context.arc(64, 64, 55, 0, Math.PI * 2);
+  context.fillStyle = '#12272d';
+  context.fill();
+  context.lineWidth = 8;
+  context.strokeStyle = color;
+  context.stroke();
+  context.fillStyle = '#fff8ef';
+  context.font = `bold ${label.length > 3 ? 32 : 42}px system-ui, sans-serif`;
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.fillText(label, 64, 67, 102);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+export function mountTravelGlobe(container, locations, animatedTrips = [], celebrationDates = [], onFocus = () => {}, onSelect = () => {}) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
   camera.position.z = 8.7;
@@ -37,6 +108,12 @@ export function mountTravelGlobe(container, locations, onFocus, onSelect) {
   renderer.domElement.setAttribute('role', 'img');
   renderer.domElement.style.cssText = 'display:block;width:100%;height:100%;touch-action:none;cursor:grab';
   container.appendChild(renderer.domElement);
+  const confettiCanvas = document.createElement('canvas');
+  confettiCanvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none';
+  container.appendChild(confettiCanvas);
+  const confettiContext = confettiCanvas.getContext('2d');
+  let canvasWidth = 1;
+  let canvasHeight = 1;
 
   scene.add(new THREE.AmbientLight(0xb8d2ce, 1.9));
   const sunlight = new THREE.DirectionalLight(0xffe1b0, 2.4);
@@ -69,30 +146,51 @@ export function mountTravelGlobe(container, locations, onFocus, onSelect) {
     if (existingMarker) {
       const stages = new Set([existingMarker.userData.location.stage, location.stage].filter(Boolean));
       existingMarker.userData.location.stage = Array.from(stages).join(' y ');
+      existingMarker.userData.location.routeNumbers.push(location.routeIndex + 1);
+      const badge = existingMarker.userData.routeBadge;
+      const previousTexture = badge.material.map;
+      const badgeColor = existingMarker.userData.location.hasItinerary === true ? '#38a9ff' : '#36d990';
+      badge.material.map = makeRouteBadgeTexture(
+        existingMarker.userData.location.routeNumbers.join('·'),
+        badgeColor
+      );
+      badge.material.needsUpdate = true;
+      previousTexture?.dispose();
       return;
     }
 
     const normal = pointOnGlobe(location.lat, location.lon, 1).normalize();
+    const markerColor = location.hasItinerary === true ? 0x38a9ff : 0x36d990;
+    const markerColorHex = location.hasItinerary === true ? '#38a9ff' : '#36d990';
     const pin = new THREE.Group();
     pin.position.copy(normal.clone().multiplyScalar(RADIUS + 0.006));
     pin.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal);
     globe.add(pin);
 
     const stem = new THREE.Mesh(
-      new THREE.ConeGeometry(0.018, 0.085, 8),
-      new THREE.MeshBasicMaterial({ color: 0xf3a86d })
+      new THREE.ConeGeometry(0.025, 0.1, 8),
+      new THREE.MeshBasicMaterial({ color: markerColor })
     );
-    stem.position.y = 0.038;
+    stem.position.y = 0.045;
     pin.add(stem);
 
     const head = new THREE.Mesh(
-      new THREE.SphereGeometry(0.027, 12, 10),
-      new THREE.MeshBasicMaterial({ color: 0xffd39b })
+      new THREE.SphereGeometry(0.036, 14, 12),
+      new THREE.MeshBasicMaterial({ color: markerColor })
     );
-    head.position.y = 0.083;
-    const markerLocation = { ...location };
+    head.position.y = 0.095;
+    const markerLocation = { ...location, routeNumbers: [location.routeIndex + 1] };
     head.userData.location = markerLocation;
     pin.add(head);
+
+    const badge = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: makeRouteBadgeTexture(String(location.routeIndex + 1), markerColorHex),
+      transparent: true,
+      depthTest: true
+    }));
+    badge.position.y = 0.22;
+    badge.scale.set(0.22, 0.22, 1);
+    pin.add(badge);
 
     const hitArea = new THREE.Mesh(
       new THREE.SphereGeometry(0.16, 12, 10),
@@ -100,36 +198,39 @@ export function mountTravelGlobe(container, locations, onFocus, onSelect) {
     );
     hitArea.position.y = 0.065;
     hitArea.userData.location = markerLocation;
+    hitArea.userData.routeBadge = badge;
     pin.add(hitArea);
     markers.push(hitArea);
     markerByPlace.set(placeKey, hitArea);
   });
 
   if (routePoints.length > 1) {
-    const routeVertices = [];
     for (let segment = 0; segment < routePoints.length - 1; segment += 1) {
       const start = routePoints[segment];
       const end = routePoints[segment + 1];
-      const angle = start.angleTo(end);
-      const sampleCount = Math.max(2, Math.ceil(angle * 36));
-      for (let sample = 0; sample <= sampleCount; sample += 1) {
-        const amount = sample / sampleCount;
-        let point;
-        if (angle < 0.0001) {
-          point = start.clone();
-        } else {
-          point = start.clone().multiplyScalar(Math.sin((1 - amount) * angle) / Math.sin(angle))
-            .add(end.clone().multiplyScalar(Math.sin(amount * angle) / Math.sin(angle)))
-            .normalize();
-        }
-        routeVertices.push(point.multiplyScalar(RADIUS + 0.012));
-      }
+      const arcData = makeRouteArc(start, end, segment);
+      if (!arcData) continue;
+      const hasItinerary = locations[segment + 1].hasItinerary === true;
+      const routeColor = hasItinerary ? 0x38a9ff : 0x36d990;
+      globe.add(new THREE.Mesh(
+        new THREE.TubeGeometry(arcData.curve, arcData.sampleCount, 0.022, 7, false),
+        new THREE.MeshBasicMaterial({ color: routeColor, transparent: true, opacity: 0.96 })
+      ));
+      globe.add(new THREE.Mesh(
+        new THREE.TubeGeometry(arcData.curve, arcData.sampleCount, 0.006, 6, false),
+        new THREE.MeshBasicMaterial({ color: 0xe9f7ff, transparent: true, opacity: 0.78 })
+      ));
+
+      const arrowIndex = Math.floor(arcData.sampleCount * 0.68);
+      const arrowDirection = arcData.points[arrowIndex + 1].clone().sub(arcData.points[arrowIndex - 1]).normalize();
+      const arrow = new THREE.Mesh(
+        new THREE.ConeGeometry(0.042, 0.15, 9),
+        new THREE.MeshBasicMaterial({ color: routeColor })
+      );
+      arrow.position.copy(arcData.points[arrowIndex]);
+      arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), arrowDirection);
+      globe.add(arrow);
     }
-    const line = new THREE.Line(
-      new THREE.BufferGeometry().setFromPoints(routeVertices),
-      new THREE.LineBasicMaterial({ color: 0xffbd87, transparent: true, opacity: 0.88 })
-    );
-    globe.add(line);
   }
 
   const starPositions = [];
@@ -155,14 +256,84 @@ export function mountTravelGlobe(container, locations, onFocus, onSelect) {
   let hovered = null;
   let frame = 0;
   let disposed = false;
-  const resizeObserver = new ResizeObserver(() => {
+  const resizeScene = () => {
     const width = Math.max(container.clientWidth, 1);
     const height = Math.max(container.clientHeight, 1);
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+    canvasWidth = width;
+    canvasHeight = height;
+    confettiCanvas.width = Math.round(width * pixelRatio);
+    confettiCanvas.height = Math.round(height * pixelRatio);
+    confettiContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     renderer.setSize(width, height, false);
-  });
+  };
+  const resizeObserver = new ResizeObserver(resizeScene);
   resizeObserver.observe(container);
+  resizeScene();
+
+  const stopIndexById = new Map(locations.map((location, index) => [location.id, index]));
+  const validTrips = animatedTrips.flatMap(trip => {
+    const fromIndex = stopIndexById.get(trip.from);
+    const toIndex = stopIndexById.get(trip.to);
+    if (!Number.isInteger(fromIndex) || toIndex !== fromIndex + 1) {
+      console.error(`El trayecto animado ${trip.from} → ${trip.to} no conecta paradas consecutivas del globo.`);
+      return [];
+    }
+    const arc = makeRouteArc(routePoints[fromIndex], routePoints[toIndex], fromIndex);
+    return arc ? [{ trip, arc }] : [];
+  });
+  const confettiColors = ['#38bdf8', '#4ade80', '#facc15', '#fb7185', '#c084fc', '#fb923c'];
+  let activeDate = '';
+  let activeVehicles = [];
+  let confettiEnabled = false;
+  let confettiParticles = [];
+
+  function updateDailyAnimations() {
+    const today = localDateKey();
+    if (today === activeDate) return;
+    activeDate = today;
+
+    activeVehicles.forEach(vehicle => {
+      globe.remove(vehicle.sprite);
+      vehicle.sprite.material.map?.dispose();
+      vehicle.sprite.material.dispose();
+    });
+    activeVehicles = [];
+    validTrips.filter(({ trip }) => trip.date === today).forEach(({ trip, arc }) => {
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: makeVehicleTexture(trip.type),
+        transparent: true,
+        depthTest: true
+      }));
+      sprite.scale.set(0.34, 0.34, 1);
+      sprite.renderOrder = 2;
+      globe.add(sprite);
+      activeVehicles.push({ sprite, curve: arc.curve, startedAt: performance.now(), duration: 7000 });
+    });
+
+    confettiEnabled = celebrationDates.includes(today);
+    confettiParticles = confettiEnabled
+      ? Array.from({ length: 90 }, () => ({
+        x: Math.random() * canvasWidth,
+        y: Math.random() * canvasHeight,
+        width: 4 + Math.random() * 5,
+        height: 7 + Math.random() * 7,
+        speed: 0.8 + Math.random() * 2.2,
+        rotation: Math.random() * Math.PI,
+        spin: (Math.random() - 0.5) * 0.12,
+        drift: Math.random() * Math.PI * 2,
+        color: confettiColors[Math.floor(Math.random() * confettiColors.length)]
+      }))
+      : [];
+  }
+  updateDailyAnimations();
+  const dailyAnimationTimer = window.setInterval(updateDailyAnimations, 60_000);
+  const onVisibilityChange = () => {
+    if (!document.hidden) updateDailyAnimations();
+  };
+  document.addEventListener('visibilitychange', onVisibilityChange);
 
   function hitMarker(event) {
     const rect = renderer.domElement.getBoundingClientRect();
@@ -249,6 +420,32 @@ export function mountTravelGlobe(container, locations, onFocus, onSelect) {
   function animate() {
     if (disposed) return;
     frame = window.requestAnimationFrame(animate);
+    const now = performance.now();
+    activeVehicles.forEach(vehicle => {
+      const progress = (now - vehicle.startedAt) % vehicle.duration / vehicle.duration;
+      vehicle.sprite.position.copy(vehicle.curve.getPointAt(progress));
+      const pulse = 0.34 + Math.sin(progress * Math.PI * 2) * 0.025;
+      vehicle.sprite.scale.set(pulse, pulse, 1);
+      vehicle.sprite.material.rotation = Math.sin(progress * Math.PI * 2) * 0.08;
+    });
+    confettiContext.clearRect(0, 0, canvasWidth, canvasHeight);
+    if (confettiEnabled) {
+      confettiParticles.forEach(particle => {
+        particle.y += particle.speed;
+        particle.x += Math.sin(now * 0.001 + particle.drift) * 0.45;
+        particle.rotation += particle.spin;
+        if (particle.y > canvasHeight + particle.height) {
+          particle.y = -particle.height;
+          particle.x = Math.random() * canvasWidth;
+        }
+        confettiContext.save();
+        confettiContext.translate(particle.x, particle.y);
+        confettiContext.rotate(particle.rotation);
+        confettiContext.fillStyle = particle.color;
+        confettiContext.fillRect(-particle.width / 2, -particle.height / 2, particle.width, particle.height);
+        confettiContext.restore();
+      });
+    }
     renderer.render(scene, camera);
   }
   animate();
@@ -256,6 +453,8 @@ export function mountTravelGlobe(container, locations, onFocus, onSelect) {
   return () => {
     disposed = true;
     window.cancelAnimationFrame(frame);
+    window.clearInterval(dailyAnimationTimer);
+    document.removeEventListener('visibilitychange', onVisibilityChange);
     resizeObserver.disconnect();
     renderer.domElement.removeEventListener('pointerdown', pointerDown);
     renderer.domElement.removeEventListener('pointermove', pointerMove);
@@ -270,5 +469,6 @@ export function mountTravelGlobe(container, locations, onFocus, onSelect) {
     });
     renderer.dispose();
     renderer.domElement.remove();
+    confettiCanvas.remove();
   };
 }

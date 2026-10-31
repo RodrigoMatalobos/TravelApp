@@ -48,6 +48,7 @@ test('buildMapStop genera ids estables y conserva coordenadas y ciudad', () => {
 
   assert.equal(stop.id, 'germany-dresden-2');
   assert.equal(stop.name, 'Dresden');
+  assert.equal(stop.hasItinerary, true);
   assert.equal(stop.cityIndex, 1);
   assert.equal(stop.stage, 'Ida');
 });

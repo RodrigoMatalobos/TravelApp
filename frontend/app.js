@@ -6,9 +6,10 @@ import {
   saveLocalFolderFiles,
   ticketButtonLabel
 } from './ticket-files.mjs';
+import routeCatalog from './route-catalog.mjs';
 
 let currentViewState = { level: 'paises', paisId: null };
-let homeMode = 'globe';
+let homeMode = 'list';
 let homeCountries = [];
 let disposeGlobe = null;
 let focusedGlobeLocation = null;
@@ -40,6 +41,15 @@ if ('serviceWorker' in navigator && import.meta.env.DEV) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  window.history.replaceState(
+    { ...(window.history.state || {}), travelAppView: currentViewState },
+    '',
+    window.location.href
+  );
+  window.addEventListener('popstate', event => {
+    restoreAppView(event.state?.travelAppView);
+  });
+
   const backButton = document.getElementById('btnBack');
   if (backButton) {
     backButton.addEventListener('click', handleBack);
@@ -489,11 +499,24 @@ function appendTicketFiles(container, files, title) {
 }
 
 // Nivel 1: Cargar la lista de países
-function showPaisesView() {
+function setCurrentViewState(nextState, recordHistory = true) {
+  const isSameView = Object.keys(nextState).every(key => currentViewState[key] === nextState[key])
+    && Object.keys(currentViewState).every(key => nextState[key] === currentViewState[key]);
+  if (!isSameView && recordHistory) {
+    window.history.pushState(
+      { ...(window.history.state || {}), travelAppView: nextState },
+      '',
+      window.location.href
+    );
+  }
+  currentViewState = nextState;
+}
+
+function showPaisesView(recordHistory = true) {
   const requestId = ++viewSequence;
   disposeHomeGlobe();
   ticketImportContext = null;
-  currentViewState = { level: 'paises', paisId: null };
+  setCurrentViewState({ level: 'paises', paisId: null }, recordHistory);
   updateHeader('🌍 Elegí un Destino', false);
 
   const container = document.getElementById('app');
@@ -522,12 +545,12 @@ function showPaisesView() {
 }
 
 // Nivel 2: Cargar dinámicamente el JSON del país seleccionado
-function showCiudadesView(paisId) {
+function showCiudadesView(paisId, recordHistory = true) {
   const requestId = ++viewSequence;
   disposeHomeGlobe();
   ticketImportContext = null;
   const canonicalPaisId = normalizeCountryId(paisId);
-  currentViewState = { level: 'ciudades', paisId: canonicalPaisId };
+  setCurrentViewState({ level: 'ciudades', paisId: canonicalPaisId }, recordHistory);
 
   const container = document.getElementById('app');
   if (!container) return;
@@ -619,7 +642,7 @@ function showCiudadesView(paisId) {
 }
 
 // Nivel 3: Vista de Detalle de Ciudad
-function showDetalleCiudadView(pais, ciudadIndex, paisIdOverride) {
+function showDetalleCiudadView(pais, ciudadIndex, paisIdOverride, recordHistory = true) {
   if (!pais || !Array.isArray(pais.ciudades) || !pais.ciudades[ciudadIndex]) {
     renderEmptyState('La ciudad seleccionada no existe.');
     return;
@@ -630,7 +653,7 @@ function showDetalleCiudadView(pais, ciudadIndex, paisIdOverride) {
   ticketImportContext = { country: pais, cityIndex: ciudadIndex };
   viewSequence += 1;
   disposeHomeGlobe();
-  currentViewState = { level: 'detalle', paisId: statePaisId };
+  setCurrentViewState({ level: 'detalle', paisId: statePaisId, ciudadIndex }, recordHistory);
   updateHeader(ciudad.nombre || 'Detalle', true);
 
   const container = document.getElementById('app');
@@ -710,22 +733,62 @@ function showDetalleCiudadView(pais, ciudadIndex, paisIdOverride) {
 }
 
 function handleBack() {
-  if (currentViewState.level === 'vault') {
-    showPaisesView();
-  } else if (currentViewState.level === 'admin') {
-    showPaisesView();
+  if (currentViewState.level === 'paises') return;
+  if (window.history.state?.travelAppView) {
+    window.history.back();
   } else if (currentViewState.level === 'detalle') {
-    showCiudadesView(currentViewState.paisId);
-  } else if (currentViewState.level === 'ciudades') {
-    showPaisesView();
+    showCiudadesView(currentViewState.paisId, false);
+  } else {
+    showPaisesView(false);
   }
 }
 
-async function showAccessAdminView() {
-  if (activeMember?.role !== 'admin') return showPaisesView();
+async function restoreAppView(view) {
+  if (!view || view.level === 'paises') {
+    showPaisesView(false);
+    return;
+  }
+  if (view.level === 'ciudades') {
+    showCiudadesView(view.paisId, false);
+    return;
+  }
+  if (view.level === 'detalle') {
+    const requestId = ++viewSequence;
+    setTopLoading(true);
+    try {
+      const country = await window.TravelFirestore.loadCountry(view.paisId);
+      if (requestId !== viewSequence) return;
+      if (!country) {
+        showCiudadesView(view.paisId, false);
+        return;
+      }
+      showDetalleCiudadView(country, view.ciudadIndex, view.paisId, false);
+    } catch (error) {
+      if (requestId === viewSequence) {
+        console.error('No se pudo restaurar el detalle anterior:', error);
+        showCiudadesView(view.paisId, false);
+      }
+    } finally {
+      setTopLoading(false);
+    }
+    return;
+  }
+  if (view.level === 'vault') {
+    showVaultListView(view.vaultPage, false);
+    return;
+  }
+  if (view.level === 'admin') {
+    showAccessAdminView(false);
+    return;
+  }
+  showPaisesView(false);
+}
+
+async function showAccessAdminView(recordHistory = true) {
+  if (activeMember?.role !== 'admin') return showPaisesView(recordHistory);
 
   disposeHomeGlobe();
-  currentViewState = { level: 'admin', paisId: null };
+  setCurrentViewState({ level: 'admin', paisId: null }, recordHistory);
   updateHeader('Administrar accesos', true);
   const container = document.getElementById('app');
   if (!container) return;
@@ -867,7 +930,17 @@ function renderHomeView() {
       <h2 class="mt-1 text-lg font-semibold text-white md:text-xl">Europa <span class="text-[#e7a66e]">2026</span></h2>
       <p class="mt-1 text-[9px] text-slate-400">NASA Blue Marble</p>
     </div>
+    <p class="pointer-events-none absolute left-5 top-[68px] z-10 text-[9px] text-slate-200">
+      <span class="text-sky-400">●</span> Con itinerario
+      <span class="ml-2 text-emerald-400">●</span> Solo parada
+    </p>
     <div id="home-switch-slot" class="absolute right-4 top-4 z-20"></div>
+    <details class="absolute left-3 top-[100px] z-20 max-h-[60svh] w-[min(15rem,68vw)] overflow-hidden rounded-xl border border-white/15 bg-[#10252be8] text-white shadow-xl backdrop-blur-md" aria-label="Orden del recorrido">
+      <summary id="route-sequence-title" class="cursor-pointer list-none px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#f3b77f]">Recorrido · cargando</summary>
+      <ol id="route-sequence-list" class="max-h-[52svh] space-y-1 overflow-y-auto border-t border-white/10 p-2 text-[10px]">
+        <li class="px-2 py-2 text-slate-300">Cargando las paradas…</li>
+      </ol>
+    </details>
     ${syncWarningMarkup('absolute left-4 top-24 z-20 max-w-md')}
     <section id="destination-toast" class="absolute bottom-5 left-4 right-4 z-20 mx-auto max-w-md rounded-xl border border-white/15 bg-[#12272dcc] p-4 text-white shadow-2xl backdrop-blur-md" aria-live="polite">
       <div class="flex items-start justify-between gap-4">
@@ -889,11 +962,21 @@ function renderHomeView() {
     focusedGlobeLocation = location;
     const toast = container.querySelector('#destination-toast');
     const openButton = container.querySelector('#destination-open');
-    container.querySelector('#destination-country').textContent = `${location.flag || ''} ${location.countryName}`;
+    container.querySelectorAll('[data-route-stop]').forEach(button => {
+      const active = button.dataset.routeStop === location.id;
+      button.classList.toggle('bg-[#e7a66e]/20', active);
+      button.classList.toggle('border-[#e7a66e]/50', active);
+      button.setAttribute('aria-current', active ? 'step' : 'false');
+    });
+    container.querySelector('#destination-country').textContent = location.hasItinerary
+      ? `${location.flag || ''} ${location.countryName || ''}`.trim()
+      : '';
     container.querySelector('#destination-title').textContent = location.name;
     const stage = location.stage ? ` · ${location.stage}` : '';
-    container.querySelector('#destination-date').textContent = `Etapa ${location.routeIndex + 1} de ${location.routeLength}${stage}`;
-    if (location.countryId) {
+    container.querySelector('#destination-date').textContent = location.hasItinerary
+      ? `Etapa ${location.routeIndex + 1} de ${location.routeLength}${stage}`
+      : '';
+    if (location.hasItinerary && location.countryId) {
       openButton.classList.remove('hidden');
       openButton.onclick = async () => {
         try {
@@ -903,7 +986,7 @@ function renderHomeView() {
             return;
           }
           const cities = Array.isArray(country.ciudades) ? country.ciudades : [];
-          const hasSelectedCity = location.openMode === 'detail'
+          const hasSelectedCity = location.hasItinerary
             && Number.isInteger(location.cityIndex)
             && cities[location.cityIndex];
           const cityIndex = hasSelectedCity ? location.cityIndex : cities.length === 1 ? 0 : null;
@@ -929,16 +1012,51 @@ function renderHomeView() {
       if (!container.isConnected || homeMode !== 'globe') return;
       const canvasContainer = container.querySelector('#globe-scene');
       if (!canvasContainer) return;
-      const locations = (Array.isArray(route) ? route : []).map((stop, index, stops) => ({
-        ...stop,
-        lat: stop.latitude,
-        lon: stop.longitude,
-        routeIndex: index,
-        routeLength: stops.length
-      }));
+      const metadataById = new Map(routeCatalog.stops.map(stop => [stop.id, stop]));
+      const locations = (Array.isArray(route) ? route : []).map((stop, index, stops) => {
+        const sourceStop = metadataById.get(stop.id);
+        return {
+          ...stop,
+          hasItinerary: sourceStop
+            ? sourceStop.hasItinerary === true
+            : stop.hasItinerary === true,
+          lat: stop.latitude,
+          lon: stop.longitude,
+          routeIndex: index,
+          routeLength: stops.length
+        };
+      });
+      const routeList = container.querySelector('#route-sequence-list');
+      const routeTitle = container.querySelector('#route-sequence-title');
+      if (routeTitle) routeTitle.textContent = `Recorrido · ${locations.length} paradas`;
+      if (routeList) {
+        routeList.replaceChildren();
+        locations.forEach(location => {
+          const item = document.createElement('li');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.dataset.routeStop = location.id;
+          button.className = 'flex w-full items-start gap-2 rounded-lg border border-transparent px-2 py-2 text-left transition-colors hover:bg-white/10';
+          button.setAttribute('aria-label', `Parada ${location.routeIndex + 1}: ${location.name}, ${location.countryName}${location.stage ? `, ${location.stage}` : ''}`);
+          const markerColor = location.hasItinerary
+            ? 'border-sky-400/70 bg-sky-500/20 text-sky-100'
+            : 'border-emerald-400/70 bg-emerald-500/20 text-emerald-100';
+          button.innerHTML = `
+            <span class="grid h-5 w-5 shrink-0 place-items-center rounded-full border text-[9px] font-bold ${markerColor}">${location.routeIndex + 1}</span>
+            <span class="min-w-0">
+              <span class="block truncate font-semibold">${escapeHtml(location.flag || '')} ${escapeHtml(location.name || 'Parada')}</span>
+              <span class="block truncate text-[9px] text-slate-400">${escapeHtml(location.stage || location.countryName || '')}</span>
+            </span>`;
+          button.addEventListener('click', () => showDestination(location));
+          item.appendChild(button);
+          routeList.appendChild(item);
+        });
+      }
       disposeGlobe = mountTravelGlobe(
         canvasContainer,
         locations,
+        routeCatalog.animatedTrips,
+        routeCatalog.celebrationDates,
         location => {
           if (location) showDestination(location);
           else if (!focusedGlobeLocation) {
@@ -970,11 +1088,11 @@ function updateHeader(title, showBackBtn) {
   }
 }
 
-function showVaultListView(page) {
+function showVaultListView(page, recordHistory = true) {
   const validPages = ['Valija', 'Compras', 'Gastos'];
   const vaultPage = validPages.includes(page) ? page : 'Valija';
   const icons = { Valija: '🧳', Compras: '🛒', Gastos: '💶' };
-  currentViewState = { level: 'vault', paisId: null, vaultPage };
+  setCurrentViewState({ level: 'vault', paisId: null, vaultPage }, recordHistory);
   updateHeader(`${icons[vaultPage]} ${vaultPage}`, true);
   const container = document.getElementById('app');
   if (!container) return;
