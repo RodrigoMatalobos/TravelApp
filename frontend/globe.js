@@ -75,32 +75,10 @@ function makeVehicleTexture(type) {
   return texture;
 }
 
-function makeRouteBadgeTexture(label, color) {
-  const canvas = document.createElement('canvas');
-  canvas.width = 128;
-  canvas.height = 128;
-  const context = canvas.getContext('2d');
-  context.beginPath();
-  context.arc(64, 64, 55, 0, Math.PI * 2);
-  context.fillStyle = '#12272d';
-  context.fill();
-  context.lineWidth = 8;
-  context.strokeStyle = color;
-  context.stroke();
-  context.fillStyle = '#fff8ef';
-  context.font = `bold ${label.length > 3 ? 32 : 42}px system-ui, sans-serif`;
-  context.textAlign = 'center';
-  context.textBaseline = 'middle';
-  context.fillText(label, 64, 67, 102);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  return texture;
-}
-
 export function mountTravelGlobe(container, locations, animatedTrips = [], celebrationDates = [], onFocus = () => {}, onSelect = () => {}) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
-  camera.position.z = 8.7;
+  camera.position.z = 7.6;
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -146,59 +124,31 @@ export function mountTravelGlobe(container, locations, animatedTrips = [], celeb
     if (existingMarker) {
       const stages = new Set([existingMarker.userData.location.stage, location.stage].filter(Boolean));
       existingMarker.userData.location.stage = Array.from(stages).join(' y ');
-      existingMarker.userData.location.routeNumbers.push(location.routeIndex + 1);
-      const badge = existingMarker.userData.routeBadge;
-      const previousTexture = badge.material.map;
-      const badgeColor = existingMarker.userData.location.hasItinerary === true ? '#38a9ff' : '#36d990';
-      badge.material.map = makeRouteBadgeTexture(
-        existingMarker.userData.location.routeNumbers.join('·'),
-        badgeColor
-      );
-      badge.material.needsUpdate = true;
-      previousTexture?.dispose();
       return;
     }
 
     const normal = pointOnGlobe(location.lat, location.lon, 1).normalize();
     const markerColor = location.hasItinerary === true ? 0x38a9ff : 0x36d990;
-    const markerColorHex = location.hasItinerary === true ? '#38a9ff' : '#36d990';
     const pin = new THREE.Group();
     pin.position.copy(normal.clone().multiplyScalar(RADIUS + 0.006));
     pin.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal);
     globe.add(pin);
 
-    const stem = new THREE.Mesh(
-      new THREE.ConeGeometry(0.025, 0.1, 8),
+    const dot = new THREE.Mesh(
+      new THREE.SphereGeometry(0.035, 12, 10),
       new THREE.MeshBasicMaterial({ color: markerColor })
     );
-    stem.position.y = 0.045;
-    pin.add(stem);
-
-    const head = new THREE.Mesh(
-      new THREE.SphereGeometry(0.036, 14, 12),
-      new THREE.MeshBasicMaterial({ color: markerColor })
-    );
-    head.position.y = 0.095;
-    const markerLocation = { ...location, routeNumbers: [location.routeIndex + 1] };
-    head.userData.location = markerLocation;
-    pin.add(head);
-
-    const badge = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: makeRouteBadgeTexture(String(location.routeIndex + 1), markerColorHex),
-      transparent: true,
-      depthTest: true
-    }));
-    badge.position.y = 0.22;
-    badge.scale.set(0.22, 0.22, 1);
-    pin.add(badge);
+    dot.position.y = 0.02;
+    const markerLocation = { ...location };
+    dot.userData.location = markerLocation;
+    pin.add(dot);
 
     const hitArea = new THREE.Mesh(
       new THREE.SphereGeometry(0.16, 12, 10),
       new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, colorWrite: false, depthWrite: false })
     );
-    hitArea.position.y = 0.065;
+    hitArea.position.y = 0.05;
     hitArea.userData.location = markerLocation;
-    hitArea.userData.routeBadge = badge;
     pin.add(hitArea);
     markers.push(hitArea);
     markerByPlace.set(placeKey, hitArea);
@@ -213,18 +163,18 @@ export function mountTravelGlobe(container, locations, animatedTrips = [], celeb
       const hasItinerary = locations[segment + 1].hasItinerary === true;
       const routeColor = hasItinerary ? 0x38a9ff : 0x36d990;
       globe.add(new THREE.Mesh(
-        new THREE.TubeGeometry(arcData.curve, arcData.sampleCount, 0.022, 7, false),
+        new THREE.TubeGeometry(arcData.curve, arcData.sampleCount, 0.009, 7, false),
         new THREE.MeshBasicMaterial({ color: routeColor, transparent: true, opacity: 0.96 })
       ));
       globe.add(new THREE.Mesh(
-        new THREE.TubeGeometry(arcData.curve, arcData.sampleCount, 0.006, 6, false),
+        new THREE.TubeGeometry(arcData.curve, arcData.sampleCount, 0.003, 6, false),
         new THREE.MeshBasicMaterial({ color: 0xe9f7ff, transparent: true, opacity: 0.78 })
       ));
 
       const arrowIndex = Math.floor(arcData.sampleCount * 0.68);
       const arrowDirection = arcData.points[arrowIndex + 1].clone().sub(arcData.points[arrowIndex - 1]).normalize();
       const arrow = new THREE.Mesh(
-        new THREE.ConeGeometry(0.042, 0.15, 9),
+        new THREE.ConeGeometry(0.025, 0.09, 9),
         new THREE.MeshBasicMaterial({ color: routeColor })
       );
       arrow.position.copy(arcData.points[arrowIndex]);
@@ -364,7 +314,7 @@ export function mountTravelGlobe(container, locations, animatedTrips = [], celeb
       activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
       const [first, second] = Array.from(activePointers.values());
       const distance = Math.hypot(first.x - second.x, first.y - second.y);
-      if (pinchDistance) camera.position.z = THREE.MathUtils.clamp(camera.position.z - (distance - pinchDistance) * 0.012, 5.2, 10.5);
+      if (pinchDistance) camera.position.z = THREE.MathUtils.clamp(camera.position.z - (distance - pinchDistance) * 0.012, 4.8, 12.5);
       pinchDistance = distance;
       dragged = true;
       return;
@@ -409,7 +359,7 @@ export function mountTravelGlobe(container, locations, animatedTrips = [], celeb
   }
   function wheel(event) {
     event.preventDefault();
-    camera.position.z = THREE.MathUtils.clamp(camera.position.z + event.deltaY * 0.004, 5.2, 10.5);
+    camera.position.z = THREE.MathUtils.clamp(camera.position.z + event.deltaY * 0.004, 4.8, 12.5);
   }
   renderer.domElement.addEventListener('pointerdown', pointerDown);
   renderer.domElement.addEventListener('pointermove', pointerMove);
