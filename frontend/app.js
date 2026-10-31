@@ -34,7 +34,7 @@ if ('serviceWorker' in navigator && import.meta.env.DEV) {
     window.location.reload();
   });
 
-  navigator.serviceWorker.register('sw.js?v=1.0.27', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('sw.js?v=1.0.28', { updateViaCache: 'none' })
     .then(registration => registration.update())
     .catch(err => console.error('Service Worker error:', err));
 }
@@ -108,22 +108,10 @@ function disposeHomeMap() {
       console.warn('No se pudo restaurar la orientación de la pantalla:', error);
     }
   }
-  if (document.fullscreenElement) {
-    document.exitFullscreen().catch(error => {
-      console.warn('No se pudo salir del modo de pantalla completa:', error);
-    });
-  }
 }
 
 async function enterMapMode() {
   setVaultMenuOpen(false);
-  if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-    try {
-      await document.documentElement.requestFullscreen();
-    } catch (error) {
-      console.warn('No se pudo activar pantalla completa para el mapa:', error);
-    }
-  }
   if (screen.orientation?.lock) {
     try {
       await screen.orientation.lock('landscape');

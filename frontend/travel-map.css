@@ -47,19 +47,26 @@ body.map-mode > #app.travel-map-screen {
 
 .travel-map-city-icon span {
   display: block;
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   border: 3px solid #f8fafc;
   border-radius: 50%;
-  box-shadow: 0 1px 5px #07141ccc;
+  box-shadow: 0 0 0 4px #07141c88, 0 0 12px #07141caa;
+  transition: transform 120ms ease, box-shadow 120ms ease;
 }
 
 .travel-map-city-official span {
   background: #38a9ff;
+  box-shadow: 0 0 0 4px #38a9ff66, 0 0 14px #38a9ffdd;
 }
 
 .travel-map-city-stop span {
   background: #36d990;
+  box-shadow: 0 0 0 4px #36d99066, 0 0 14px #36d990dd;
+}
+
+.travel-map-city-icon:hover span {
+  transform: scale(1.2);
 }
 
 .travel-map-vehicle-icon {

@@ -55,7 +55,7 @@ export function mountTravelMap(container, locations, animatedTrips = [], celebra
     maxBounds: EUROPE_PAN_BOUNDS,
     maxBoundsViscosity: 0.8,
     maxZoom: 12,
-    minZoom: 4.25,
+    minZoom: 3,
     preferCanvas: true,
     scrollWheelZoom: true,
     zoomControl: false,
@@ -96,6 +96,16 @@ export function mountTravelMap(container, locations, animatedTrips = [], celebra
     return false;
   });
   const locationsById = new Map(validLocations.map(location => [location.id, location]));
+  const europeanLocations = validLocations.filter(location => location.countryName !== 'Argentina');
+  if (!europeanLocations.length) {
+    map.remove();
+    throw new Error('El catálogo no contiene ciudades europeas para centrar el mapa.');
+  }
+  map.fitBounds(L.latLngBounds(europeanLocations.map(location => [location.lat, location.lon])), {
+    maxZoom: 4.5,
+    paddingTopLeft: [72, 72],
+    paddingBottomRight: [72, 96]
+  });
   for (let index = 0; index < validLocations.length - 1; index += 1) {
     const start = validLocations[index];
     const end = validLocations[index + 1];
