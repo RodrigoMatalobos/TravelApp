@@ -50,8 +50,11 @@
       "transportePublico": "Bus local 2 conecta la terminal con el centro termal.",
       "guardaequipaje": "Si el tren de regreso sale tarde, consultar consigna en la estación o dejar las valijas en recepción del hotel.",
       "actividades": [
-        { "dia": 1, "nombre": "Paseo por las columnatas y fuentes termales (Mill Colonnade y Hot Spring Colonnade)", "mapa": "https://maps.google.com/?q=Mill+Colonnade+Karlovy+Vary" },
-        { "dia": 1, "nombre": "Relax balneario y paseo junto al río Teplá", "mapa": "https://maps.google.com/?q=Karlovy+Vary+Hot+Spring+Colonnade" }
+        { "dia": 1, "nombre": "Columnatas techadas (ideales para el invierno): Sadová (del Parque), Mlýnská (del Molino), Tržní (del Mercado) y Vřídelní (Termal, con su gran géiser)", "mapa": "https://maps.google.com/?q=Mill+Colonnade+Karlovy+Vary" },
+        { "dia": 1, "nombre": "Torre del Castillo, Iglesia de Santa María Magdalena y Grandhotel Pupp", "mapa": "https://maps.google.com/?q=Grandhotel+Pupp+Karlovy+Vary" },
+        { "dia": 1, "nombre": "Funicular Diana a la Torre de Observación e Iglesia Ortodoxa de los Santos Pedro y Pablo (cúpulas doradas, 9-18 h)", "mapa": "https://maps.google.com/?q=Diana+Funicular+Karlovy+Vary" },
+        { "dia": 2, "nombre": "Calle principal T. G. Masaryka, Balneario Imperial (Císařské lázně) y Baños de Elizabeth", "mapa": "https://maps.google.com/?q=Cisarske+Lazne+Karlovy+Vary" },
+        { "dia": 2, "nombre": "Excursión al Castillo de Loket (fortaleza gótica del siglo XII sobre el río; hradloket.cz) y regreso en bus a Praga", "mapa": "https://maps.google.com/?q=Hrad+Loket" }
       ],
       "gastronomia": [
         { "dia": 1, "nombre": "Oplatky, las galletas termales tradicionales", "mapa": "https://maps.google.com/?q=Oplatky+Karlovy+Vary" },
@@ -72,7 +75,8 @@
       "actividades": [
         { "dia": 1, "nombre": "Plaza de la Ciudad Vieja y Reloj Astronómico", "mapa": "https://maps.google.com/?q=Old+Town+Square+Prague" },
         { "dia": 1, "nombre": "Barrio Judío (Josefov) y sinagogas históricas", "mapa": "https://maps.google.com/?q=Jewish+Quarter+Prague" },
-        { "dia": 1, "nombre": "Castillo de Vyšehrad y cementerio (10-17 h), Casa Danzante y atardecer en Parque Letná [Opcional según horario del tren]", "mapa": "https://maps.google.com/?q=Vysehrad+Prague" }
+        { "dia": 1, "nombre": "Castillo de Vyšehrad y cementerio (10-17 h), Casa Danzante y atardecer en Parque Letná [Opcional según horario del tren]", "mapa": "https://maps.google.com/?q=Vysehrad+Prague" },
+        { "dia": 1, "nombre": "Malá Strana, Isla de Kampa y Muro de John Lennon (día libre sin apuros, ideal para la despedida)", "mapa": "https://maps.google.com/?q=Lennon+Wall+Prague" }
       ],
       "gastronomia": [
         { "dia": 1, "nombre": "Codillo de cerdo asado (Koleno)", "mapa": "https://maps.google.com/?q=Czech+Koleno+Old+Town+Prague" }

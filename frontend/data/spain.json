@@ -21,17 +21,32 @@
         { "tipo": "vuelo", "descripcion": "Llegada a Barcelona", "fecha": "30/11/2026", "salida": "", "llegada": "" },
         { "tipo": "vuelo", "descripcion": "Barcelona → Helsinki", "fecha": "08/12/2026", "salida": "10:05", "llegada": "15:10" }
       ],
-      "transportePublico": "T-Casual: bono de 10 viajes, más barato que el ticket suelto. Es unipersonal (cada quien necesita la suya). Se compra en las máquinas del metro.",
+      "transportePublico": "T-Casual: bono de 10 viajes, más barato que el ticket suelto. Es unipersonal (cada quien necesita la suya). Se compra en las máquinas del metro. No cubre la L9 al aeropuerto; sí el tren Rodalies y el bus urbano, que también conectan con el aeropuerto.",
       "guardaequipaje": "El 08/12 el vuelo sale 10:05: salida directa al aeropuerto. Si sobra tiempo, consignas en Sants Estació.",
       "actividades": [
-        { "dia": 1, "nombre": "Abadía de Montserrat (reservas en montserratvisita.com)", "mapa": "https://maps.google.com/?q=Abadia+de+Montserrat" },
-        { "dia": 1, "nombre": "Sagrada Familia", "mapa": "https://maps.google.com/?q=Basílica+de+la+Sagrada+Familia" },
-        { "dia": 1, "nombre": "Barrio Gótico", "mapa": "https://maps.google.com/?q=barrio-gotico" }
+        { "dia": 1, "nombre": "Ir de compras por ropa abrigada para el tramo nórdico", "mapa": "https://maps.google.com/?q=Plaça+de+Catalunya+Barcelona" },
+        { "dia": 2, "nombre": "Plaza Pío XII, Camp Nou, L'Illa Diagonal y Avenida Diagonal hasta la Estación de Sants", "mapa": "https://maps.google.com/?q=Camp+Nou+Barcelona" },
+        { "dia": 2, "nombre": "Monasterio de Pedralbes y Parque del Laberinto de Horta", "mapa": "https://maps.google.com/?q=Parc+del+Laberint+d'Horta+Barcelona" },
+        { "dia": 3, "nombre": "Montjuïc cultural: Poble Espanyol, CaixaForum, Pabellón Mies van der Rohe, MNAC (edificio y mirador), Plaza España y Arenas", "mapa": "https://maps.google.com/?q=Museu+Nacional+d'Art+de+Catalunya" },
+        { "dia": 3, "nombre": "Anella Olímpica, Palau Sant Jordi, Jardín Botánico, Fundación Joan Miró (prioridad: exposición de Miró), Jardins de Miramar y Castell de Montjuïc; bajar por Passeig de Colom", "mapa": "https://maps.google.com/?q=Fundació+Joan+Miró+Barcelona" },
+        { "dia": 4, "nombre": "Día de playas: Barceloneta, Port Olímpic, playa del Bogatell, Nova Mar Bella y Parc Diagonal Mar / Fórum", "mapa": "https://maps.google.com/?q=La+Barceloneta+Barcelona" },
+        { "dia": 5, "nombre": "Pla de Palau, Palau Güell, MEAM (Museu Europeu d'Art Modern), El Born, Parc de la Ciutadella, Arc de Triomf y Estació del Nord", "mapa": "https://maps.google.com/?q=Palau+Güell+Barcelona" },
+        { "dia": 5, "nombre": "Torre Glòries, Plaza de Toros Monumental, Hospital de Sant Pau (1er domingo del mes, entrada gratis) y Casa Vicens", "mapa": "https://maps.google.com/?q=Hospital+de+Sant+Pau+Barcelona" },
+        { "dia": 6, "nombre": "Excursión a Girona: Pont de Pedra, Plaça del Vi, Pujada de Sant Domènec (Escalinata de Sant Martí), El Call (barrio judío), Catedral y Portal de Sobreportes", "mapa": "https://maps.google.com/?q=Girona+Spain" },
+        { "dia": 6, "nombre": "Girona: Baños Árabes, recorrido de la muralla (Passeig Arqueològic), Basílica de Sant Feliu, Jardines de la Devesa y Puente del Galligants", "mapa": "https://maps.google.com/?q=Banys+Arabs+Girona" },
+        { "dia": 7, "nombre": "Passeig de Gràcia (fachadas de Gaudí por fuera), Catedral de Barcelona, Mercado del Born, Passeig de Born, Capilla Marcus, Iglesia de Sant Pere de les Puelles y Estación de Francia", "mapa": "https://maps.google.com/?q=Passeig+de+Gracia+Barcelona" },
+        { "dia": 0, "nombre": "Sagrada Familia (ver por fuera; los interiores de Gaudí ya se conocen)", "mapa": "https://maps.google.com/?q=Basílica+de+la+Sagrada+Familia" },
+        { "dia": 0, "nombre": "Barrio Gótico", "mapa": "https://maps.google.com/?q=barrio-gotico" },
+        { "dia": 0, "nombre": "Extra de noche: Jardines de Laribal y Font Mágica (gratis de noche) [Opcional]", "mapa": "https://maps.google.com/?q=Font+Màgica+de+Montjuïc" },
+        { "dia": 0, "nombre": "Abadía de Montserrat (reservas en montserratvisita.com) [Opcional]", "mapa": "https://maps.google.com/?q=Abadia+de+Montserrat" },
+        { "dia": 0, "nombre": "Tax Free: guardar los tickets de compras, tramitar con Diva y llevar el pasaporte de Ro", "mapa": "" }
       ],
       "gastronomia": [
         { "dia": 1, "nombre": "Tapas en Boquería", "mapa": "https://maps.google.com/?q=Mercado+de+La+Boqueria" },
         { "dia": 1, "nombre": "Pastrami Craft 19 (el lugar de pastrami anotado)", "mapa": "https://maps.google.com/?q=Pastrami+Craft+19+Barcelona" },
-        { "dia": 1, "nombre": "Paella en Barceloneta", "mapa": "https://maps.google.com/?q=La+Barceloneta+Barcelona" },
+        { "dia": 4, "nombre": "Paella en Barceloneta", "mapa": "https://maps.google.com/?q=La+Barceloneta+Barcelona" },
+        { "dia": 0, "nombre": "Rabas en Squiddy", "mapa": "https://maps.google.com/?q=Squiddy+Barcelona" },
+        { "dia": 0, "nombre": "Pastrami en La del Pelado", "mapa": "https://maps.google.com/?q=La+del+Pelado+Barcelona" },
         { "dia": 0, "nombre": "TooGoodToGo: app para comprar comida excedente barata", "mapa": "" }
       ]
     },

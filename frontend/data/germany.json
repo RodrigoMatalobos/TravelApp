@@ -286,6 +286,11 @@
           "dia": 6,
           "nombre": "Kebab y comida local en Kreuzberg.",
           "mapa": "https://maps.google.com/?q=Kebab+Kreuzberg+Berlin"
+        },
+        {
+          "dia": 0,
+          "nombre": "Anotados por probar: Mutter Hoppe (cocina alemana tradicional), Gaststate (por confirmar) y panadería Sieber (desde 1906).",
+          "mapa": "https://maps.google.com/?q=Mutter+Hoppe+Berlin"
         }
       ]
     }
