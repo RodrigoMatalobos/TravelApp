@@ -1007,13 +1007,18 @@ function renderHomeView() {
     requestAnimationFrame(() => toast.classList.add('animate-[toast-in_.25s_ease-out]'));
   }
 
-  Promise.all([import('./map.js'), window.TravelFirestore.loadRouteStops()])
+  const routePromise = window.TravelFirestore.loadRouteStops().catch(error => {
+    console.error('No se pudieron cargar las paradas desde Firebase; se usará la ruta local:', error);
+    return null;
+  });
+  Promise.all([import('./map.js'), routePromise])
     .then(([{ mountTravelMap }, route]) => {
       if (!container.isConnected || homeMode !== 'map') return;
       const mapContainer = container.querySelector('#map-scene');
-      if (!canvasContainer) return;
+      if (!mapContainer) return;
       const metadataById = new Map(routeCatalog.stops.map(stop => [stop.id, stop]));
-      const locations = (Array.isArray(route) ? route : []).map((stop, index, stops) => {
+      const routeStops = Array.isArray(route) && route.length ? route : routeCatalog.stops;
+      const locations = routeStops.map((stop, index, stops) => {
         const sourceStop = metadataById.get(stop.id);
         return {
           ...stop,
