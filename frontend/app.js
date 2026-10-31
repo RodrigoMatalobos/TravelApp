@@ -11,8 +11,8 @@ import routeCatalog from './route-catalog.mjs';
 let currentViewState = { level: 'paises', paisId: null };
 let homeMode = 'list';
 let homeCountries = [];
-let disposeGlobe = null;
-let focusedGlobeLocation = null;
+let mapController = null;
+let focusedMapLocation = null;
 let signedInUser = null;
 let activeMember = null;
 let downloadedTicketFiles = [];
@@ -98,10 +98,10 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeFirebaseAccess();
 });
 
-function disposeHomeGlobe() {
-  disposeGlobe?.();
-  disposeGlobe = null;
-  focusedGlobeLocation = null;
+function disposeHomeMap() {
+  mapController?.dispose();
+  mapController = null;
+  focusedMapLocation = null;
 }
 
 function ensureItineraryDataSynced() {
@@ -138,7 +138,7 @@ function scheduleItineraryRevalidation() {
 }
 
 function renderSignIn(message = '') {
-  disposeHomeGlobe();
+  disposeHomeMap();
   updateHeader('🌍 Plan de Viaje', false);
   updateVaultNavigation();
   const container = document.getElementById('app');
@@ -176,7 +176,7 @@ function renderCheckingAccess(message = 'Verificando permisos…') {
 }
 
 function renderPendingAccess(user, error = '') {
-  disposeHomeGlobe();
+  disposeHomeMap();
   updateHeader('Acceso pendiente', false);
   updateVaultNavigation();
   const container = document.getElementById('app');
@@ -199,7 +199,7 @@ function renderPendingAccess(user, error = '') {
 
 function renderTicketDownloadPrompt(message = '') {
   if (!canManageTicketFiles(activeMember)) return showPaisesView();
-  disposeHomeGlobe();
+  disposeHomeMap();
   updateHeader('Archivos del viaje', false);
   updateVaultNavigation();
   const container = document.getElementById('app');
@@ -514,7 +514,7 @@ function setCurrentViewState(nextState, recordHistory = true) {
 
 function showPaisesView(recordHistory = true) {
   const requestId = ++viewSequence;
-  disposeHomeGlobe();
+  disposeHomeMap();
   ticketImportContext = null;
   setCurrentViewState({ level: 'paises', paisId: null }, recordHistory);
   updateHeader('🌍 Elegí un Destino', false);
@@ -547,7 +547,7 @@ function showPaisesView(recordHistory = true) {
 // Nivel 2: Cargar dinámicamente el JSON del país seleccionado
 function showCiudadesView(paisId, recordHistory = true) {
   const requestId = ++viewSequence;
-  disposeHomeGlobe();
+  disposeHomeMap();
   ticketImportContext = null;
   const canonicalPaisId = normalizeCountryId(paisId);
   setCurrentViewState({ level: 'ciudades', paisId: canonicalPaisId }, recordHistory);
@@ -652,7 +652,7 @@ function showDetalleCiudadView(pais, ciudadIndex, paisIdOverride, recordHistory 
   const statePaisId = normalizeCountryId(paisIdOverride || pais.id || currentViewState.paisId);
   ticketImportContext = { country: pais, cityIndex: ciudadIndex };
   viewSequence += 1;
-  disposeHomeGlobe();
+  disposeHomeMap();
   setCurrentViewState({ level: 'detalle', paisId: statePaisId, ciudadIndex }, recordHistory);
   updateHeader(ciudad.nombre || 'Detalle', true);
 
@@ -787,7 +787,7 @@ async function restoreAppView(view) {
 async function showAccessAdminView(recordHistory = true) {
   if (activeMember?.role !== 'admin') return showPaisesView(recordHistory);
 
-  disposeHomeGlobe();
+  disposeHomeMap();
   setCurrentViewState({ level: 'admin', paisId: null }, recordHistory);
   updateHeader('Administrar accesos', true);
   const container = document.getElementById('app');
@@ -882,7 +882,7 @@ function createHomeSwitch() {
   switcher.className = 'inline-flex items-center gap-1 rounded-full border border-white/15 bg-[#142d33]/90 p-1 shadow-lg backdrop-blur';
   switcher.setAttribute('aria-label', 'Vista de destinos');
   switcher.innerHTML = `
-    <button type="button" data-home-mode="globe" class="rounded-full px-4 py-2 text-xs font-semibold transition-colors">🌐 Globo</button>
+    <button type="button" data-home-mode="map" class="rounded-full px-4 py-2 text-xs font-semibold transition-colors">🗺️ Mapa</button>
     <button type="button" data-home-mode="list" class="rounded-full px-4 py-2 text-xs font-semibold transition-colors">☷ Lista</button>
   `;
   switcher.querySelectorAll('button').forEach(button => {
@@ -900,7 +900,7 @@ function createHomeSwitch() {
 function renderHomeView() {
   const container = document.getElementById('app');
   if (!container) return;
-  disposeHomeGlobe();
+  disposeHomeMap();
 
   if (homeMode === 'list') {
     container.className = 'p-4 max-w-md mx-auto space-y-4';
@@ -922,44 +922,44 @@ function renderHomeView() {
     return;
   }
 
-  container.className = 'relative isolate h-[calc(100svh-64px)] min-h-[520px] w-full overflow-hidden bg-[#09191e]';
+  container.className = 'relative isolate mx-auto min-h-[300px] w-full max-w-[1600px] overflow-hidden bg-[#09191e]';
+  container.style.height = 'min(74svh, max(300px, calc(100vw / 1.45)))';
   container.innerHTML = `
-    <div id="globe-scene" class="absolute inset-0"></div>
+    <div id="map-scene" class="travel-map absolute inset-0 z-0" role="application" aria-label="Mapa interactivo de Europa"></div>
     <div class="pointer-events-none absolute left-5 top-5 z-10 max-w-[55%]">
       <p class="text-[10px] font-bold uppercase tracking-[.18em] text-[#9dbfba]">Ruta del viaje</p>
-      <h2 class="mt-1 text-lg font-semibold text-white md:text-xl">Europa <span class="text-[#e7a66e]">2026</span></h2>
-      <p class="mt-1 text-[9px] text-slate-400">NASA Blue Marble</p>
+      <h2 class="mt-1 text-lg font-semibold text-white md:text-xl">Mapa de Europa <span class="text-[#e7a66e]">2026</span></h2>
     </div>
     <p class="pointer-events-none absolute left-5 top-[68px] z-10 text-[9px] text-slate-200">
       <span class="text-sky-400">●</span> Con itinerario
       <span class="ml-2 text-emerald-400">●</span> Solo parada
     </p>
     <div id="home-switch-slot" class="absolute right-4 top-4 z-20"></div>
-    <details class="absolute left-3 top-[100px] z-20 max-h-[60svh] w-[min(15rem,68vw)] overflow-hidden rounded-xl border border-white/15 bg-[#10252be8] text-white shadow-xl backdrop-blur-md" aria-label="Orden del recorrido">
+    <details class="absolute left-3 top-[100px] z-20 max-h-[50svh] w-[min(15rem,68vw)] overflow-hidden rounded-xl border border-white/15 bg-[#10252be8] text-white shadow-xl backdrop-blur-md" aria-label="Orden del recorrido">
       <summary id="route-sequence-title" class="cursor-pointer list-none px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#f3b77f]">Recorrido · cargando</summary>
-      <ol id="route-sequence-list" class="max-h-[52svh] space-y-1 overflow-y-auto border-t border-white/10 p-2 text-[10px]">
+      <ol id="route-sequence-list" class="max-h-[42svh] space-y-1 overflow-y-auto border-t border-white/10 p-2 text-[10px]">
         <li class="px-2 py-2 text-slate-300">Cargando las paradas…</li>
       </ol>
     </details>
     ${syncWarningMarkup('absolute left-4 top-24 z-20 max-w-md')}
-    <section id="destination-toast" class="absolute bottom-5 left-4 right-4 z-20 mx-auto max-w-md rounded-xl border border-white/15 bg-[#12272dcc] p-4 text-white shadow-2xl backdrop-blur-md" aria-live="polite">
+    <section id="destination-toast" class="absolute bottom-4 left-4 right-[58px] z-20 mx-0 max-w-md rounded-xl border border-white/15 bg-[#12272dcc] p-3 text-white shadow-2xl backdrop-blur-md" aria-live="polite">
       <div class="flex items-start justify-between gap-4">
         <div class="min-w-0">
           <p id="destination-country" class="text-[10px] font-bold uppercase tracking-[.16em] text-[#e7a66e]">Tu recorrido</p>
           <h3 id="destination-title" class="mt-1 text-lg font-semibold">Tocá un destino</h3>
-          <p id="destination-date" class="mt-1 text-xs text-slate-300">Girá el globo y elegí una parada.</p>
+          <p id="destination-date" class="mt-1 text-xs text-slate-300">Elegí una ciudad del mapa.</p>
         </div>
         <button id="destination-open" type="button" class="hidden shrink-0 rounded-lg bg-[#e7a66e] px-3 py-2 text-xs font-bold text-[#172328] transition-colors hover:bg-[#f2bd8f]">Ver itinerario <span aria-hidden="true">→</span></button>
       </div>
     </section>
-    <p class="pointer-events-none absolute bottom-[126px] left-0 right-0 z-10 text-center text-[10px] text-slate-300/75">Arrastr&aacute; para girar · pellizc&aacute; para acercar</p>
+    <p class="pointer-events-none absolute bottom-1 left-4 z-10 text-[9px] text-slate-300/75">Arrastr&aacute; · pellizc&aacute; o us&aacute; +/− para acercar</p>
   `;
   const homeControls = container.querySelector('#home-switch-slot');
   homeControls.classList.add('flex', 'flex-col', 'items-end', 'gap-2');
   homeControls.appendChild(createHomeSwitch());
 
   function showDestination(location) {
-    focusedGlobeLocation = location;
+    focusedMapLocation = location;
     const toast = container.querySelector('#destination-toast');
     const openButton = container.querySelector('#destination-open');
     container.querySelectorAll('[data-route-stop]').forEach(button => {
@@ -1007,10 +1007,10 @@ function renderHomeView() {
     requestAnimationFrame(() => toast.classList.add('animate-[toast-in_.25s_ease-out]'));
   }
 
-  Promise.all([import('./globe.js'), window.TravelFirestore.loadRouteStops()])
-    .then(([{ mountTravelGlobe }, route]) => {
-      if (!container.isConnected || homeMode !== 'globe') return;
-      const canvasContainer = container.querySelector('#globe-scene');
+  Promise.all([import('./map.js'), window.TravelFirestore.loadRouteStops()])
+    .then(([{ mountTravelMap }, route]) => {
+      if (!container.isConnected || homeMode !== 'map') return;
+      const mapContainer = container.querySelector('#map-scene');
       if (!canvasContainer) return;
       const metadataById = new Map(routeCatalog.stops.map(stop => [stop.id, stop]));
       const locations = (Array.isArray(route) ? route : []).map((stop, index, stops) => {
@@ -1047,22 +1047,25 @@ function renderHomeView() {
               <span class="block truncate font-semibold">${escapeHtml(location.flag || '')} ${escapeHtml(location.name || 'Parada')}</span>
               <span class="block truncate text-[9px] text-slate-400">${escapeHtml(location.stage || location.countryName || '')}</span>
             </span>`;
-          button.addEventListener('click', () => showDestination(location));
+          button.addEventListener('click', () => {
+            mapController?.focus(location);
+            showDestination(location);
+          });
           item.appendChild(button);
           routeList.appendChild(item);
         });
       }
-      disposeGlobe = mountTravelGlobe(
-        canvasContainer,
+      mapController = mountTravelMap(
+        mapContainer,
         locations,
         routeCatalog.animatedTrips,
         routeCatalog.celebrationDates,
         location => {
           if (location) showDestination(location);
-          else if (!focusedGlobeLocation) {
+          else if (!focusedMapLocation) {
             container.querySelector('#destination-country').textContent = 'Tu recorrido';
             container.querySelector('#destination-title').textContent = 'Tocá un destino';
-            container.querySelector('#destination-date').textContent = 'Girá el globo y elegí una parada.';
+            container.querySelector('#destination-date').textContent = 'Elegí una ciudad del mapa.';
             container.querySelector('#destination-open').classList.add('hidden');
           }
         },
@@ -1070,10 +1073,10 @@ function renderHomeView() {
       );
     })
     .catch(error => {
-      console.error('No se pudo cargar el globo:', error);
+      console.error('No se pudo cargar el mapa:', error);
       const title = container.querySelector('#destination-title');
       const detail = container.querySelector('#destination-date');
-      if (title) title.textContent = 'Globo no disponible';
+      if (title) title.textContent = 'Mapa no disponible';
       if (detail) detail.textContent = 'Podés cambiar a Lista para ver tus destinos.';
     });
 }
@@ -1096,7 +1099,7 @@ function showVaultListView(page, recordHistory = true) {
   updateHeader(`${icons[vaultPage]} ${vaultPage}`, true);
   const container = document.getElementById('app');
   if (!container) return;
-  disposeHomeGlobe();
+  disposeHomeMap();
   container.className = 'p-4 max-w-2xl mx-auto space-y-4';
   window.TravelVault.render(container, vaultPage, updateVaultNavigation);
 }

@@ -9,7 +9,7 @@ test('el módulo fuente de Vite expone los seis itinerarios y la ruta', async ()
   assert.equal(itinerarySource.route.stops.length, 31);
 });
 
-test('los vehículos del globo solo se programan para los trayectos y fechas del viaje', async () => {
+test('los vehículos del mapa solo se programan para los trayectos y fechas del viaje', async () => {
   const { itinerarySource } = await import('../frontend/itinerary-source.mjs');
   const { stops, animatedTrips, celebrationDates } = itinerarySource.route;
   const stopIndexes = new Map(stops.map((stop, index) => [stop.id, index]));

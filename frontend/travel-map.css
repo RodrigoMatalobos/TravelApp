@@ -1,0 +1,85 @@
+.travel-map-confetti {
+  position: absolute;
+  inset: 0;
+  z-index: 450;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.travel-map-city-icon,
+.travel-map-vehicle-icon {
+  border: 0;
+  background: transparent;
+}
+
+.travel-map-city-icon span {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #f8fafc;
+  border-radius: 50%;
+  box-shadow: 0 1px 5px #07141ccc;
+}
+
+.travel-map-city-official span {
+  background: #38a9ff;
+}
+
+.travel-map-city-stop span {
+  background: #36d990;
+}
+
+.travel-map-vehicle-icon {
+  display: grid;
+  place-items: center;
+  width: 38px !important;
+  height: 38px !important;
+  border: 1px solid #ffffffb8;
+  border-radius: 50%;
+  background: #10252bf2;
+  box-shadow: 0 2px 9px #07141c99;
+  font-size: 23px;
+  line-height: 1;
+}
+
+.travel-map-vehicle-icon span {
+  display: block;
+}
+
+.travel-map-tile-error {
+  position: absolute;
+  z-index: 800;
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(90%, 28rem);
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #fda4af;
+  border-radius: 0.5rem;
+  background: #4c0519e8;
+  color: #fff1f2;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.travel-map {
+  width: 100%;
+  height: 100%;
+  background: #cbd9dc;
+  font: inherit;
+}
+
+.travel-map .leaflet-control-zoom a {
+  color: #10252b;
+}
+
+.travel-map .leaflet-control-attribution {
+  background: #ffffffd9;
+  color: #27343a;
+  font-size: 10px;
+}
+
+.travel-map .leaflet-control-attribution a {
+  color: #075985;
+}
