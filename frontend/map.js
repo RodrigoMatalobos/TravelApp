@@ -1,9 +1,10 @@
 import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { greatCircleCoordinates } from './map-geometry.mjs';
 import './travel-map.css';
 
-const EUROPE_VIEW_BOUNDS = L.latLngBounds([35, -12], [70, 32]);
-const EUROPE_PAN_BOUNDS = L.latLngBounds([31, -28], [74, 46]);
+const EUROPE_VIEW_BOUNDS = L.latLngBounds([36, -12], [71, 33]);
+const EUROPE_PAN_BOUNDS = L.latLngBounds([34, -15], [73, 36]);
 const ROUTE_COLORS = { official: '#38a9ff', stop: '#36d990' };
 const CONFETTI_COLORS = ['#38bdf8', '#4ade80', '#facc15', '#fb7185', '#c084fc', '#fb923c'];
 const VEHICLES = {
@@ -12,9 +13,6 @@ const VEHICLES = {
   train: { icon: '🚆', label: 'Tren' },
   bus: { icon: '🚌', label: 'Bus' }
 };
-const DEGREES_TO_RADIANS = Math.PI / 180;
-const RADIANS_TO_DEGREES = 180 / Math.PI;
-
 function localDateKey() {
   const date = new Date();
   const year = date.getFullYear();
@@ -30,41 +28,6 @@ function hasCoordinates(location) {
     && location.lat <= 90
     && location.lon >= -180
     && location.lon <= 180;
-}
-
-function greatCircleCoordinates(start, end) {
-  const toVector = ({ lat, lon }) => {
-    const latitude = lat * DEGREES_TO_RADIANS;
-    const longitude = lon * DEGREES_TO_RADIANS;
-    return [
-      Math.cos(latitude) * Math.cos(longitude),
-      Math.cos(latitude) * Math.sin(longitude),
-      Math.sin(latitude)
-    ];
-  };
-  const first = toVector(start);
-  const second = toVector(end);
-  const angle = Math.acos(L.Util.clamp(
-    first[0] * second[0] + first[1] * second[1] + first[2] * second[2],
-    -1,
-    1
-  ));
-  if (angle < 0.00001) return [[start.lat, start.lon], [end.lat, end.lon]];
-
-  const steps = Math.max(12, Math.ceil(angle * 32));
-  const denominator = Math.sin(angle);
-  return Array.from({ length: steps + 1 }, (_, index) => {
-    const progress = index / steps;
-    const firstWeight = Math.sin((1 - progress) * angle) / denominator;
-    const secondWeight = Math.sin(progress * angle) / denominator;
-    const x = first[0] * firstWeight + second[0] * secondWeight;
-    const y = first[1] * firstWeight + second[1] * secondWeight;
-    const z = first[2] * firstWeight + second[2] * secondWeight;
-    return [
-      Math.atan2(z, Math.hypot(x, y)) * RADIANS_TO_DEGREES,
-      Math.atan2(y, x) * RADIANS_TO_DEGREES
-    ];
-  });
 }
 
 function makeVehicleIcon(type) {
@@ -83,7 +46,7 @@ export function mountTravelMap(container, locations, animatedTrips = [], celebra
     maxBounds: EUROPE_PAN_BOUNDS,
     maxBoundsViscosity: 0.8,
     maxZoom: 12,
-    minZoom: 3,
+    minZoom: 4,
     preferCanvas: true,
     scrollWheelZoom: true,
     zoomControl: false,
@@ -124,7 +87,7 @@ export function mountTravelMap(container, locations, animatedTrips = [], celebra
     return false;
   });
   const locationsById = new Map(validLocations.map(location => [location.id, location]));
-  map.fitBounds(EUROPE_VIEW_BOUNDS, { maxZoom: 5.25, padding: [48, 48] });
+  map.fitBounds(EUROPE_VIEW_BOUNDS, { maxZoom: 6, padding: [24, 24] });
 
   for (let index = 0; index < validLocations.length - 1; index += 1) {
     const start = validLocations[index];
