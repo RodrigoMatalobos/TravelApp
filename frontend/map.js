@@ -3,8 +3,7 @@ import 'leaflet/dist/leaflet.css';
 import { greatCircleCoordinates } from './map-geometry.mjs';
 import './travel-map.css';
 
-const EUROPE_VIEW_BOUNDS = L.latLngBounds([36, -12], [71, 33]);
-const EUROPE_PAN_BOUNDS = L.latLngBounds([34, -15], [73, 36]);
+const EUROPE_PAN_BOUNDS = L.latLngBounds([37, -12], [70, 32]);
 const ROUTE_COLORS = { official: '#38a9ff', stop: '#36d990' };
 const CONFETTI_COLORS = ['#38bdf8', '#4ade80', '#facc15', '#fb7185', '#c084fc', '#fb923c'];
 const VEHICLES = {
@@ -46,13 +45,13 @@ export function mountTravelMap(container, locations, animatedTrips = [], celebra
     maxBounds: EUROPE_PAN_BOUNDS,
     maxBoundsViscosity: 0.8,
     maxZoom: 12,
-    minZoom: 4,
+    minZoom: 5,
     preferCanvas: true,
     scrollWheelZoom: true,
     zoomControl: false,
     zoomSnap: 0.25
   });
-  map.setView([53.5, 10], 4.5);
+  map.setView([53.5, 10], 5.25);
   L.control.zoom({ position: 'bottomright' }).addTo(map);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
@@ -87,8 +86,6 @@ export function mountTravelMap(container, locations, animatedTrips = [], celebra
     return false;
   });
   const locationsById = new Map(validLocations.map(location => [location.id, location]));
-  map.fitBounds(EUROPE_VIEW_BOUNDS, { maxZoom: 6, padding: [24, 24] });
-
   for (let index = 0; index < validLocations.length - 1; index += 1) {
     const start = validLocations[index];
     const end = validLocations[index + 1];

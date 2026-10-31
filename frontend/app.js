@@ -35,7 +35,7 @@ if ('serviceWorker' in navigator && import.meta.env.DEV) {
     window.location.reload();
   });
 
-  navigator.serviceWorker.register('sw.js?v=1.0.25', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('sw.js?v=1.0.26', { updateViaCache: 'none' })
     .then(registration => registration.update())
     .catch(err => console.error('Service Worker error:', err));
 }
@@ -971,18 +971,13 @@ function renderHomeView() {
   `;
   container.querySelector('#map-switch-slot').appendChild(createHomeSwitch());
 
-  const routePromise = window.TravelFirestore.loadRouteStops().catch(error => {
-    console.error('No se pudieron cargar las paradas desde Firebase; se usará la ruta local:', error);
-    return null;
-  });
-  Promise.all([import('./map.js'), routePromise])
-    .then(([{ mountTravelMap }, route]) => {
+  import('./map.js')
+    .then(({ mountTravelMap }) => {
       if (!container.isConnected || homeMode !== 'map') return;
       const mapContainer = container.querySelector('#map-scene');
       if (!mapContainer) return;
       const metadataById = new Map(routeCatalog.stops.map(stop => [stop.id, stop]));
-      const routeStops = Array.isArray(route) && route.length ? route : routeCatalog.stops;
-      const locations = routeStops.map((stop, index, stops) => {
+      const locations = routeCatalog.stops.map((stop, index, stops) => {
         const sourceStop = metadataById.get(stop.id);
         return {
           ...stop,
@@ -1008,7 +1003,7 @@ function renderHomeView() {
       console.error('No se pudo cargar el mapa:', error);
       const notice = document.createElement('p');
       notice.className = 'travel-map-tile-error';
-      notice.textContent = 'No se pudo cargar el mapa. Volvé a Lista e intentá nuevamente.';
+      notice.textContent = `Error al cargar el mapa: ${error.message || 'falló la inicialización'}. Volvé a Lista e intentá nuevamente.`;
       container.appendChild(notice);
     });
 }
