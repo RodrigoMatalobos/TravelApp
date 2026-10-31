@@ -1,6 +1,14 @@
 const DEGREES_TO_RADIANS = Math.PI / 180;
 const RADIANS_TO_DEGREES = 180 / Math.PI;
 
+export function routeSegmentType(start, end) {
+  const isUnofficialEuropeanStop = location => location.hasItinerary !== true
+    && location.countryName !== 'Argentina';
+  return isUnofficialEuropeanStop(start) || isUnofficialEuropeanStop(end)
+    ? 'stop'
+    : 'official';
+}
+
 export function greatCircleCoordinates(start, end) {
   const toVector = ({ lat, lon }) => {
     const latitude = lat * DEGREES_TO_RADIANS;

@@ -342,7 +342,6 @@
     }
   ],
   "animatedTrips": [
-    { "date": "2026-10-31", "from": "colonia-regreso", "to": "dresde", "type": "train" },
     { "date": "2026-11-29", "from": "buenos-aires-salida", "to": "barcelona-ida", "type": "plane" },
     { "date": "2026-12-08", "from": "barcelona-girona-regreso", "to": "helsinki-ida", "type": "plane" },
     { "date": "2026-12-15", "from": "helsinki-vuelta", "to": "estocolmo", "type": "ship" },
@@ -356,7 +355,6 @@
     { "date": "2027-01-08", "from": "praga-vuelta", "to": "barcelona-vuelta", "type": "plane" }
   ],
   "celebrationDates": [
-    "2026-10-31",
     "2026-12-19",
     "2026-12-24",
     "2026-12-25",

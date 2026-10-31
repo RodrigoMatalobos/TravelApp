@@ -1,6 +1,6 @@
 import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { greatCircleCoordinates } from './map-geometry.mjs';
+import { greatCircleCoordinates, routeSegmentType } from './map-geometry.mjs';
 import './travel-map.css';
 
 const EUROPE_PAN_BOUNDS = L.latLngBounds([37, -12], [70, 32]);
@@ -39,19 +39,29 @@ function makeVehicleIcon(type) {
   });
 }
 
+function makeCityIcon(location, size = 22) {
+  const markerColor = location.hasItinerary === true ? 'official' : 'stop';
+  return L.divIcon({
+    className: `travel-map-city-icon travel-map-city-${markerColor}`,
+    html: '<span aria-hidden="true"></span>',
+    iconAnchor: [size / 2, size / 2],
+    iconSize: [size, size]
+  });
+}
+
 export function mountTravelMap(container, locations, animatedTrips = [], celebrationDates = [], onFocus = () => {}, onSelect = () => {}) {
   const map = L.map(container, {
     attributionControl: true,
     maxBounds: EUROPE_PAN_BOUNDS,
     maxBoundsViscosity: 0.8,
     maxZoom: 12,
-    minZoom: 5,
+    minZoom: 4.25,
     preferCanvas: true,
     scrollWheelZoom: true,
     zoomControl: false,
     zoomSnap: 0.25
   });
-  map.setView([53.5, 10], 5.25);
+  map.setView([55, 14.5], 4.5);
   L.control.zoom({ position: 'bottomright' }).addTo(map);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
@@ -92,7 +102,7 @@ export function mountTravelMap(container, locations, animatedTrips = [], celebra
     const coordinates = greatCircleCoordinates(start, end);
     L.polyline(coordinates, {
       className: 'travel-map-route-line',
-      color: end.hasItinerary === true ? ROUTE_COLORS.official : ROUTE_COLORS.stop,
+      color: ROUTE_COLORS[routeSegmentType(start, end)],
       interactive: false,
       opacity: 0.88,
       smoothFactor: 0.5,
@@ -110,34 +120,19 @@ export function mountTravelMap(container, locations, animatedTrips = [], celebra
       if (!existing.location.hasItinerary && location.hasItinerary) {
         existing.location = { ...location, stage: existing.location.stage };
         existing.marker.options.title = location.name;
+        existing.marker.setIcon(makeCityIcon(location, 22));
       }
       return;
     }
 
     const markerLocation = { ...location };
-    const markerColor = markerLocation.hasItinerary === true ? 'official' : 'stop';
     const marker = L.marker([location.lat, location.lon], {
       alt: location.name || 'Parada del recorrido',
-      icon: L.divIcon({
-        className: `travel-map-city-icon travel-map-city-${markerColor}`,
-        html: '<span aria-hidden="true"></span>',
-        iconAnchor: [7, 7],
-        iconSize: [14, 14]
-      }),
+      icon: makeCityIcon(markerLocation, 22),
       title: location.name || 'Parada del recorrido'
     }).addTo(map);
     const place = { location: markerLocation, marker };
     markersByPlace.set(placeKey, place);
-    const popupContent = document.createElement('div');
-    const placeName = document.createElement('strong');
-    placeName.textContent = markerLocation.name || 'Parada del recorrido';
-    popupContent.appendChild(placeName);
-    if (markerLocation.stage) {
-      const placeStage = document.createElement('div');
-      placeStage.textContent = markerLocation.stage;
-      popupContent.appendChild(placeStage);
-    }
-    marker.bindPopup(popupContent);
     marker.on('mouseover', () => onFocus(place.location));
     marker.on('mouseout', () => onFocus(null));
     marker.on('click', () => {
@@ -145,7 +140,10 @@ export function mountTravelMap(container, locations, animatedTrips = [], celebra
       onSelect(place.location);
     });
   });
-  map.on('click', () => onFocus(null));
+  map.on('click', () => {
+    onFocus(null);
+    onSelect(null);
+  });
 
   const tripPaths = animatedTrips.flatMap(trip => {
     const from = locationsById.get(trip.from);

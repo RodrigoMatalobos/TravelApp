@@ -47,9 +47,9 @@ body.map-mode > #app.travel-map-screen {
 
 .travel-map-city-icon span {
   display: block;
-  width: 10px;
-  height: 10px;
-  border: 2px solid #f8fafc;
+  width: 16px;
+  height: 16px;
+  border: 3px solid #f8fafc;
   border-radius: 50%;
   box-shadow: 0 1px 5px #07141ccc;
 }

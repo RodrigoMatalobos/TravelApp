@@ -12,7 +12,6 @@ let currentViewState = { level: 'paises', paisId: null };
 let homeMode = 'list';
 let homeCountries = [];
 let mapController = null;
-let focusedMapLocation = null;
 let signedInUser = null;
 let activeMember = null;
 let downloadedTicketFiles = [];
@@ -35,7 +34,7 @@ if ('serviceWorker' in navigator && import.meta.env.DEV) {
     window.location.reload();
   });
 
-  navigator.serviceWorker.register('sw.js?v=1.0.26', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('sw.js?v=1.0.27', { updateViaCache: 'none' })
     .then(registration => registration.update())
     .catch(err => console.error('Service Worker error:', err));
 }
@@ -101,7 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
 function disposeHomeMap() {
   mapController?.dispose();
   mapController = null;
-  focusedMapLocation = null;
   document.body.classList.remove('map-mode');
   if (screen.orientation?.unlock) {
     try {
@@ -935,7 +933,6 @@ function renderHomeView() {
   } else {
     mapController?.dispose();
     mapController = null;
-    focusedMapLocation = null;
   }
 
   if (homeMode === 'list') {
@@ -968,8 +965,45 @@ function renderHomeView() {
   container.innerHTML = `
     <div id="map-scene" class="travel-map absolute inset-0 z-0" role="application" aria-label="Mapa interactivo de Europa"></div>
     <div id="map-switch-slot" class="absolute left-3 top-3 z-[1000]"></div>
+    <section id="map-destination-toast" class="absolute bottom-4 left-4 right-4 z-[1000] hidden items-center justify-between gap-3 rounded-xl border border-white/15 bg-[#12272deF] p-3 text-white shadow-2xl backdrop-blur-md" aria-live="polite">
+      <div class="min-w-0">
+        <p id="map-destination-country" class="text-[10px] font-bold uppercase tracking-[.16em] text-[#e7a66e]"></p>
+        <h2 id="map-destination-title" class="mt-1 truncate text-base font-semibold"></h2>
+        <p id="map-destination-stage" class="mt-0.5 truncate text-xs text-slate-300"></p>
+      </div>
+      <div class="flex shrink-0 items-center gap-2">
+        <button id="map-destination-open" type="button" class="hidden rounded-lg bg-[#e7a66e] px-3 py-2 text-xs font-bold text-[#172328] transition-colors hover:bg-[#f2bd8f]">Ir al itinerario</button>
+        <button id="map-destination-close" type="button" class="grid h-9 w-9 place-items-center rounded-lg text-lg text-slate-200 hover:bg-white/10" aria-label="Cerrar destino">×</button>
+      </div>
+    </section>
   `;
   container.querySelector('#map-switch-slot').appendChild(createHomeSwitch());
+
+  let selectedMapLocation = null;
+  const destinationToast = container.querySelector('#map-destination-toast');
+  const itineraryButton = container.querySelector('#map-destination-open');
+  function showMapDestination(location) {
+    selectedMapLocation = location;
+    if (!location) {
+      destinationToast.classList.add('hidden');
+      destinationToast.classList.remove('flex');
+      return;
+    }
+    container.querySelector('#map-destination-country').textContent = location.hasItinerary
+      ? `${location.flag || ''} ${location.countryName || ''}`.trim()
+      : '';
+    container.querySelector('#map-destination-title').textContent = location.name || 'Parada del recorrido';
+    container.querySelector('#map-destination-stage').textContent = location.hasItinerary
+      ? location.stage || ''
+      : '';
+    itineraryButton.classList.toggle('hidden', !(location.hasItinerary && location.countryId));
+    destinationToast.classList.remove('hidden');
+    destinationToast.classList.add('flex');
+  }
+  itineraryButton.addEventListener('click', () => {
+    if (selectedMapLocation) openMapItinerary(selectedMapLocation);
+  });
+  container.querySelector('#map-destination-close').addEventListener('click', () => showMapDestination(null));
 
   import('./map.js')
     .then(({ mountTravelMap }) => {
@@ -996,7 +1030,7 @@ function renderHomeView() {
         routeCatalog.animatedTrips,
         routeCatalog.celebrationDates,
         () => {},
-        openMapItinerary
+        showMapDestination
       );
     })
     .catch(error => {

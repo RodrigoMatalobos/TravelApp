@@ -15,7 +15,6 @@ test('los vehículos del mapa solo se programan para los trayectos y fechas del 
   const stopIndexes = new Map(stops.map((stop, index) => [stop.id, index]));
 
   assert.deepEqual(animatedTrips.map(({ date, from, to, type }) => [date, from, to, type]), [
-    ['2026-10-31', 'colonia-regreso', 'dresde', 'train'],
     ['2026-11-29', 'buenos-aires-salida', 'barcelona-ida', 'plane'],
     ['2026-12-08', 'barcelona-girona-regreso', 'helsinki-ida', 'plane'],
     ['2026-12-15', 'helsinki-vuelta', 'estocolmo', 'ship'],
@@ -32,7 +31,6 @@ test('los vehículos del mapa solo se programan para los trayectos y fechas del 
     assert.equal(stopIndexes.get(trip.to), stopIndexes.get(trip.from) + 1);
   });
   assert.deepEqual(celebrationDates, [
-    '2026-10-31',
     '2026-12-19',
     '2026-12-24',
     '2026-12-25',
