@@ -102,6 +102,37 @@ function disposeHomeMap() {
   mapController?.dispose();
   mapController = null;
   focusedMapLocation = null;
+  document.body.classList.remove('map-mode');
+  if (screen.orientation?.unlock) {
+    try {
+      screen.orientation.unlock();
+    } catch (error) {
+      console.warn('No se pudo restaurar la orientación de la pantalla:', error);
+    }
+  }
+  if (document.fullscreenElement) {
+    document.exitFullscreen().catch(error => {
+      console.warn('No se pudo salir del modo de pantalla completa:', error);
+    });
+  }
+}
+
+async function enterMapMode() {
+  setVaultMenuOpen(false);
+  if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+    try {
+      await document.documentElement.requestFullscreen();
+    } catch (error) {
+      console.warn('No se pudo activar pantalla completa para el mapa:', error);
+    }
+  }
+  if (screen.orientation?.lock) {
+    try {
+      await screen.orientation.lock('landscape');
+    } catch (error) {
+      console.warn('El dispositivo no permite bloquear la pantalla en horizontal:', error);
+    }
+  }
 }
 
 function ensureItineraryDataSynced() {
@@ -878,34 +909,43 @@ function updateVaultNavigation() {
 }
 
 function createHomeSwitch() {
-  const switcher = document.createElement('div');
-  switcher.className = 'inline-flex items-center gap-1 rounded-full border border-white/15 bg-[#142d33]/90 p-1 shadow-lg backdrop-blur';
-  switcher.setAttribute('aria-label', 'Vista de destinos');
-  switcher.innerHTML = `
-    <button type="button" data-home-mode="map" class="rounded-full px-4 py-2 text-xs font-semibold transition-colors">🗺️ Mapa</button>
-    <button type="button" data-home-mode="list" class="rounded-full px-4 py-2 text-xs font-semibold transition-colors">☷ Lista</button>
-  `;
-  switcher.querySelectorAll('button').forEach(button => {
-    const active = button.dataset.homeMode === homeMode;
-    button.classList.add(...(active ? ['bg-[#e7a66e]', 'text-[#18252a]'] : ['text-slate-200', 'hover:bg-white/10']));
-    button.setAttribute('aria-pressed', String(active));
-    button.addEventListener('click', () => {
-      homeMode = button.dataset.homeMode;
-      renderHomeView();
-    });
+  const button = document.createElement('button');
+  const enteringMap = homeMode === 'list';
+  button.type = 'button';
+  button.className = 'rounded-xl border border-white/20 bg-[#142d33]/95 px-4 py-2.5 text-sm font-bold text-white shadow-lg backdrop-blur transition-colors hover:bg-[#24434b]';
+  button.setAttribute('aria-label', enteringMap ? 'Abrir mapa de Europa' : 'Volver a la lista de destinos');
+  button.textContent = enteringMap ? '🗺️ Mapa' : '☷ Lista';
+  button.addEventListener('click', async () => {
+    if (enteringMap) {
+      await enterMapMode();
+      homeMode = 'map';
+    } else {
+      homeMode = 'list';
+    }
+    renderHomeView();
   });
-  return switcher;
+  return button;
 }
 
 function renderHomeView() {
   const container = document.getElementById('app');
   if (!container) return;
-  disposeHomeMap();
+  if (homeMode === 'list') {
+    disposeHomeMap();
+  } else {
+    mapController?.dispose();
+    mapController = null;
+    focusedMapLocation = null;
+  }
 
   if (homeMode === 'list') {
     container.className = 'p-4 max-w-md mx-auto space-y-4';
+    container.style.height = '';
     container.innerHTML = syncWarningMarkup();
-    container.appendChild(createHomeSwitch());
+    const mapButton = document.createElement('div');
+    mapButton.className = 'flex justify-end';
+    mapButton.appendChild(createHomeSwitch());
+    container.appendChild(mapButton);
     homeCountries.forEach(country => {
       const card = document.createElement('button');
       card.type = 'button';
@@ -922,90 +962,14 @@ function renderHomeView() {
     return;
   }
 
-  container.className = 'relative isolate mx-auto min-h-[300px] w-full max-w-[1600px] overflow-hidden bg-[#09191e]';
-  container.style.height = 'min(74svh, max(300px, calc(100vw / 1.45)))';
+  document.body.classList.add('map-mode');
+  container.className = 'travel-map-screen relative isolate overflow-hidden bg-[#09191e]';
+  container.style.height = '';
   container.innerHTML = `
     <div id="map-scene" class="travel-map absolute inset-0 z-0" role="application" aria-label="Mapa interactivo de Europa"></div>
-    <div class="pointer-events-none absolute left-5 top-5 z-10 max-w-[55%]">
-      <p class="text-[10px] font-bold uppercase tracking-[.18em] text-[#9dbfba]">Ruta del viaje</p>
-      <h2 class="mt-1 text-lg font-semibold text-white md:text-xl">Mapa de Europa <span class="text-[#e7a66e]">2026</span></h2>
-    </div>
-    <p class="pointer-events-none absolute left-5 top-[68px] z-10 text-[9px] text-slate-200">
-      <span class="text-sky-400">●</span> Con itinerario
-      <span class="ml-2 text-emerald-400">●</span> Solo parada
-    </p>
-    <div id="home-switch-slot" class="absolute right-4 top-4 z-20"></div>
-    <details class="absolute left-3 top-[100px] z-20 max-h-[50svh] w-[min(15rem,68vw)] overflow-hidden rounded-xl border border-white/15 bg-[#10252be8] text-white shadow-xl backdrop-blur-md" aria-label="Orden del recorrido">
-      <summary id="route-sequence-title" class="cursor-pointer list-none px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#f3b77f]">Recorrido · cargando</summary>
-      <ol id="route-sequence-list" class="max-h-[42svh] space-y-1 overflow-y-auto border-t border-white/10 p-2 text-[10px]">
-        <li class="px-2 py-2 text-slate-300">Cargando las paradas…</li>
-      </ol>
-    </details>
-    ${syncWarningMarkup('absolute left-4 top-24 z-20 max-w-md')}
-    <section id="destination-toast" class="absolute bottom-4 left-4 right-[58px] z-20 mx-0 max-w-md rounded-xl border border-white/15 bg-[#12272dcc] p-3 text-white shadow-2xl backdrop-blur-md" aria-live="polite">
-      <div class="flex items-start justify-between gap-4">
-        <div class="min-w-0">
-          <p id="destination-country" class="text-[10px] font-bold uppercase tracking-[.16em] text-[#e7a66e]">Tu recorrido</p>
-          <h3 id="destination-title" class="mt-1 text-lg font-semibold">Tocá un destino</h3>
-          <p id="destination-date" class="mt-1 text-xs text-slate-300">Elegí una ciudad del mapa.</p>
-        </div>
-        <button id="destination-open" type="button" class="hidden shrink-0 rounded-lg bg-[#e7a66e] px-3 py-2 text-xs font-bold text-[#172328] transition-colors hover:bg-[#f2bd8f]">Ver itinerario <span aria-hidden="true">→</span></button>
-      </div>
-    </section>
-    <p class="pointer-events-none absolute bottom-1 left-4 z-10 text-[9px] text-slate-300/75">Arrastr&aacute; · pellizc&aacute; o us&aacute; +/− para acercar</p>
+    <div id="map-switch-slot" class="absolute left-3 top-3 z-[1000]"></div>
   `;
-  const homeControls = container.querySelector('#home-switch-slot');
-  homeControls.classList.add('flex', 'flex-col', 'items-end', 'gap-2');
-  homeControls.appendChild(createHomeSwitch());
-
-  function showDestination(location) {
-    focusedMapLocation = location;
-    const toast = container.querySelector('#destination-toast');
-    const openButton = container.querySelector('#destination-open');
-    container.querySelectorAll('[data-route-stop]').forEach(button => {
-      const active = button.dataset.routeStop === location.id;
-      button.classList.toggle('bg-[#e7a66e]/20', active);
-      button.classList.toggle('border-[#e7a66e]/50', active);
-      button.setAttribute('aria-current', active ? 'step' : 'false');
-    });
-    container.querySelector('#destination-country').textContent = location.hasItinerary
-      ? `${location.flag || ''} ${location.countryName || ''}`.trim()
-      : '';
-    container.querySelector('#destination-title').textContent = location.name;
-    const stage = location.stage ? ` · ${location.stage}` : '';
-    container.querySelector('#destination-date').textContent = location.hasItinerary
-      ? `Etapa ${location.routeIndex + 1} de ${location.routeLength}${stage}`
-      : '';
-    if (location.hasItinerary && location.countryId) {
-      openButton.classList.remove('hidden');
-      openButton.onclick = async () => {
-        try {
-          const country = await window.TravelFirestore.loadCountry(location.countryId);
-          if (!country) {
-            renderEmptyState('El itinerario de este destino todavía no está disponible.');
-            return;
-          }
-          const cities = Array.isArray(country.ciudades) ? country.ciudades : [];
-          const hasSelectedCity = location.hasItinerary
-            && Number.isInteger(location.cityIndex)
-            && cities[location.cityIndex];
-          const cityIndex = hasSelectedCity ? location.cityIndex : cities.length === 1 ? 0 : null;
-
-          if (cityIndex !== null && cities[cityIndex]) {
-            showDetalleCiudadView(country, cityIndex, location.countryId);
-          } else {
-            showCiudadesView(location.countryId);
-          }
-        } catch {
-          handleFetchError('No se pudo cargar el itinerario de este destino.', `frontend/data/${location.countryId}.json`);
-        }
-      };
-    } else {
-      openButton.classList.add('hidden');
-    }
-    toast.classList.remove('animate-[toast-in_.25s_ease-out]');
-    requestAnimationFrame(() => toast.classList.add('animate-[toast-in_.25s_ease-out]'));
-  }
+  container.querySelector('#map-switch-slot').appendChild(createHomeSwitch());
 
   const routePromise = window.TravelFirestore.loadRouteStops().catch(error => {
     console.error('No se pudieron cargar las paradas desde Firebase; se usará la ruta local:', error);
@@ -1031,59 +995,44 @@ function renderHomeView() {
           routeLength: stops.length
         };
       });
-      const routeList = container.querySelector('#route-sequence-list');
-      const routeTitle = container.querySelector('#route-sequence-title');
-      if (routeTitle) routeTitle.textContent = `Recorrido · ${locations.length} paradas`;
-      if (routeList) {
-        routeList.replaceChildren();
-        locations.forEach(location => {
-          const item = document.createElement('li');
-          const button = document.createElement('button');
-          button.type = 'button';
-          button.dataset.routeStop = location.id;
-          button.className = 'flex w-full items-start gap-2 rounded-lg border border-transparent px-2 py-2 text-left transition-colors hover:bg-white/10';
-          button.setAttribute('aria-label', `Parada ${location.routeIndex + 1}: ${location.name}, ${location.countryName}${location.stage ? `, ${location.stage}` : ''}`);
-          const markerColor = location.hasItinerary
-            ? 'border-sky-400/70 bg-sky-500/20 text-sky-100'
-            : 'border-emerald-400/70 bg-emerald-500/20 text-emerald-100';
-          button.innerHTML = `
-            <span class="grid h-5 w-5 shrink-0 place-items-center rounded-full border text-[9px] font-bold ${markerColor}">${location.routeIndex + 1}</span>
-            <span class="min-w-0">
-              <span class="block truncate font-semibold">${escapeHtml(location.flag || '')} ${escapeHtml(location.name || 'Parada')}</span>
-              <span class="block truncate text-[9px] text-slate-400">${escapeHtml(location.stage || location.countryName || '')}</span>
-            </span>`;
-          button.addEventListener('click', () => {
-            mapController?.focus(location);
-            showDestination(location);
-          });
-          item.appendChild(button);
-          routeList.appendChild(item);
-        });
-      }
       mapController = mountTravelMap(
         mapContainer,
         locations,
         routeCatalog.animatedTrips,
         routeCatalog.celebrationDates,
-        location => {
-          if (location) showDestination(location);
-          else if (!focusedMapLocation) {
-            container.querySelector('#destination-country').textContent = 'Tu recorrido';
-            container.querySelector('#destination-title').textContent = 'Tocá un destino';
-            container.querySelector('#destination-date').textContent = 'Elegí una ciudad del mapa.';
-            container.querySelector('#destination-open').classList.add('hidden');
-          }
-        },
-        showDestination
+        () => {},
+        openMapItinerary
       );
     })
     .catch(error => {
       console.error('No se pudo cargar el mapa:', error);
-      const title = container.querySelector('#destination-title');
-      const detail = container.querySelector('#destination-date');
-      if (title) title.textContent = 'Mapa no disponible';
-      if (detail) detail.textContent = 'Podés cambiar a Lista para ver tus destinos.';
+      const notice = document.createElement('p');
+      notice.className = 'travel-map-tile-error';
+      notice.textContent = 'No se pudo cargar el mapa. Volvé a Lista e intentá nuevamente.';
+      container.appendChild(notice);
     });
+}
+
+async function openMapItinerary(location) {
+  if (!location.hasItinerary || !location.countryId) return;
+  try {
+    const country = await window.TravelFirestore.loadCountry(location.countryId);
+    if (!country) {
+      renderEmptyState('El itinerario de este destino todavía no está disponible.');
+      return;
+    }
+    const cities = Array.isArray(country.ciudades) ? country.ciudades : [];
+    const cityIndex = Number.isInteger(location.cityIndex) && cities[location.cityIndex]
+      ? location.cityIndex
+      : cities.length === 1 ? 0 : null;
+    if (cityIndex !== null && cities[cityIndex]) {
+      showDetalleCiudadView(country, cityIndex, location.countryId);
+    } else {
+      showCiudadesView(location.countryId);
+    }
+  } catch {
+    handleFetchError('No se pudo cargar el itinerario de este destino.', `frontend/data/${location.countryId}.json`);
+  }
 }
 
 function updateHeader(title, showBackBtn) {

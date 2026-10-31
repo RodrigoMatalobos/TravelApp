@@ -168,6 +168,16 @@ export function mountTravelMap(container, locations, animatedTrips = [], celebra
     }).addTo(map);
     const place = { location: markerLocation, marker };
     markersByPlace.set(placeKey, place);
+    const popupContent = document.createElement('div');
+    const placeName = document.createElement('strong');
+    placeName.textContent = markerLocation.name || 'Parada del recorrido';
+    popupContent.appendChild(placeName);
+    if (markerLocation.stage) {
+      const placeStage = document.createElement('div');
+      placeStage.textContent = markerLocation.stage;
+      popupContent.appendChild(placeStage);
+    }
+    marker.bindPopup(popupContent);
     marker.on('mouseover', () => onFocus(place.location));
     marker.on('mouseout', () => onFocus(null));
     marker.on('click', () => {
