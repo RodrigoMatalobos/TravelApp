@@ -111,14 +111,14 @@ El programa solicita coordenadas, una etiqueta opcional y la posición de cada n
 Usá este formato dentro del CSV:
 
 ```text
-"Abadía de Montserrat|https://maps.google.com/?q=Abadia+de+Montserrat||Sagrada Familia|https://maps.google.com/?q=Basílica+de+la+Sagrada+Familia"
+"Barrio Gótico|https://maps.google.com/?q=Barri+Gotic+Barcelona||Sagrada Familia|https://maps.google.com/?q=Basílica+de+la+Sagrada+Familia"
 ```
 
 Esto genera dos objetos:
 
 ```json
 [
-  { "nombre": "Abadía de Montserrat", "mapa": "https://maps.google.com/?q=Abadia+de+Montserrat" },
+  { "nombre": "Barrio Gótico", "mapa": "https://maps.google.com/?q=Barri+Gotic+Barcelona" },
   { "nombre": "Sagrada Familia", "mapa": "https://maps.google.com/?q=Basílica+de+la+Sagrada+Familia" }
 ]
 ```

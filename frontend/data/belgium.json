@@ -33,13 +33,8 @@
         { "dia": 3, "nombre": "Excursión de un día a Gante: tren a Gent-Sint-Pieters, tranvía 1 al centro; Castillo de los Condes (Gravensteen), muelles de Graslei, Korenmarkt, Belfort, callejón del grafiti Werregarenstraat, Vrijdagmarkt y cerveza Max en Taberna Dulle Griet", "mapa": "https://maps.google.com/?q=Gravensteen+Ghent" },
         { "dia": 0, "nombre": "Ver si se hace un tour de la cerveza [Opcional]", "mapa": "" }
       ],
-      "gastronomia": [
-        { "dia": 1, "nombre": "Papas fritas en Fritland o Friterie Tabora (zona Bolsa)", "mapa": "https://maps.google.com/?q=Fritland+Brussels" },
-        { "dia": 2, "nombre": "Cono de papas en Maison Antoine (Place Jourdan, desde 1948): los bares de la plaza permiten comerlas con una cerveza", "mapa": "https://maps.google.com/?q=Maison+Antoine+Place+Jourdan+Bruxelles" },
-        { "dia": 3, "nombre": "Gante: cerveza Max de la casa en Dulle Griet (se deja un zapato como fianza)", "mapa": "https://maps.google.com/?q=Dulle+Griet+Ghent" },
-        { "dia": 0, "nombre": "Waffles belgas y chocolates artesanales; Frit Flagey junto a los estanques de Ixelles si se pasa por ahí", "mapa": "https://maps.google.com/?q=Place+Flagey+Brussels" }
-      ],
-      "mapaGastroLink": "https://maps.google.com/?q=Maison+Antoine+Place+Jourdan+Bruxelles"
+      "gastronomia": [],
+      "mapaGastroLink": ""
     }
   ]
 }

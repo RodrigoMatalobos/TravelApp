@@ -32,11 +32,7 @@
         { "dia": 2, "nombre": "Estación Náměstí Míru: la escalera mecánica más larga de la UE (87 m), ideal de noche", "mapa": "https://maps.google.com/?q=Namesti+Miru+Prague" },
         { "dia": 3, "nombre": "Tour de un día a Pilsen: fábrica Pilsner Urquell (prazdrojvisit.cz), Catedral de San Bartolomé (se puede subir a la torre), Plaza de la República y Ayuntamiento, Gran Sinagoga y Pilsen subterránea", "mapa": "https://maps.google.com/?q=Pilsner+Urquell+Brewery+Plzen" }
       ],
-      "gastronomia": [
-        { "dia": 1, "nombre": "U Kunštátů: craft beer bar con jardín en el centro", "mapa": "https://maps.google.com/?q=U+Kunstatu+Prague" },
-        { "dia": 2, "nombre": "Goulash checo y cerveza Pilsner Urquell; Trdelník callejero", "mapa": "https://maps.google.com/?q=Traditional+Czech+Restaurant+Mala+Strana+Prague" },
-        { "dia": 3, "nombre": "Pilsen: cerveza sin pasteurizar en Hospoda Na Spilce, Parkan o Lokál Pod Divadlem", "mapa": "https://maps.google.com/?q=Hospoda+Na+Spilce+Plzen" }
-      ]
+      "gastronomia": []
     },
     {
       "nombre": "Karlovy Vary",
@@ -56,10 +52,7 @@
         { "dia": 2, "nombre": "Calle principal T. G. Masaryka, Balneario Imperial (Císařské lázně) y Baños de Elizabeth", "mapa": "https://maps.google.com/?q=Cisarske+Lazne+Karlovy+Vary" },
         { "dia": 2, "nombre": "Excursión al Castillo de Loket (fortaleza gótica del siglo XII sobre el río; hradloket.cz) y regreso en bus a Praga", "mapa": "https://maps.google.com/?q=Hrad+Loket" }
       ],
-      "gastronomia": [
-        { "dia": 1, "nombre": "Oplatky, las galletas termales tradicionales", "mapa": "https://maps.google.com/?q=Oplatky+Karlovy+Vary" },
-        { "dia": 1, "nombre": "Degustación de licor Becherovka (museo)", "mapa": "https://maps.google.com/?q=Becherovka+Museum+Karlovy+Vary" }
-      ]
+      "gastronomia": []
     },
     {
       "nombre": "Praga (Vuelta)",
@@ -78,9 +71,7 @@
         { "dia": 1, "nombre": "Castillo de Vyšehrad y cementerio (10-17 h), Casa Danzante y atardecer en Parque Letná [Opcional según horario del tren]", "mapa": "https://maps.google.com/?q=Vysehrad+Prague" },
         { "dia": 1, "nombre": "Malá Strana, Isla de Kampa y Muro de John Lennon (día libre sin apuros, ideal para la despedida)", "mapa": "https://maps.google.com/?q=Lennon+Wall+Prague" }
       ],
-      "gastronomia": [
-        { "dia": 1, "nombre": "Codillo de cerdo asado (Koleno)", "mapa": "https://maps.google.com/?q=Czech+Koleno+Old+Town+Prague" }
-      ]
+      "gastronomia": []
     }
   ]
 }

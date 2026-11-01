@@ -92,18 +92,7 @@
           "mapa": "https://maps.google.com/?q=Carolus+Thermen+Aachen"
         }
       ],
-      "gastronomia": [
-        {
-          "dia": 2,
-          "nombre": "Cena y cerveza Kölsch en una cervecería tradicional de Colonia.",
-          "mapa": "https://maps.google.com/?q=K%C3%B6lsch+Brauhaus+K%C3%B6ln"
-        },
-        {
-          "dia": 3,
-          "nombre": "Nobis Printen: galletas Aachener Printen, una especialidad dulce local.",
-          "mapa": "https://maps.google.com/?q=Nobis+Printen+Aachen"
-        }
-      ]
+      "gastronomia": []
     },
     {
       "nombre": "Dresde",
@@ -179,18 +168,7 @@
           "mapa": "https://maps.google.com/?q=Yenidze+Dresden"
         }
       ],
-      "gastronomia": [
-        {
-          "dia": 1,
-          "nombre": "Elegir una cervecería para la noche de Navidad: Watzke am Goldenen Reiter, Freiberger Schankhaus o Augustiner an der Frauenkirche.",
-          "mapa": "https://maps.google.com/?q=cervecer%C3%ADas+Dresden"
-        },
-        {
-          "dia": 3,
-          "nombre": "Pfunds Molkerei: probar buttermilk con zumo de frutas o comprar quesos y recuerdos.",
-          "mapa": "https://maps.google.com/?q=Pfunds+Molke+Dresden"
-        }
-      ]
+      "gastronomia": []
     },
     {
       "nombre": "Berlín",
@@ -276,23 +254,7 @@
           "mapa": "https://maps.google.com/?q=Treptower+Park+Berlin"
         }
       ],
-      "gastronomia": [
-        {
-          "dia": 4,
-          "nombre": "Opciones para reservar en Nochevieja: Restaurant Maximilians Berlin, BRLO Brwhouse, Das Lemke o Hofbräu Wirtshaus Berlin.",
-          "mapa": "https://maps.google.com/?q=restaurants+Berlin+Mitte"
-        },
-        {
-          "dia": 6,
-          "nombre": "Kebab y comida local en Kreuzberg.",
-          "mapa": "https://maps.google.com/?q=Kebab+Kreuzberg+Berlin"
-        },
-        {
-          "dia": 0,
-          "nombre": "Anotados por probar: Mutter Hoppe (cocina alemana tradicional), Gaststate (por confirmar) y panadería Sieber (desde 1906).",
-          "mapa": "https://maps.google.com/?q=Mutter+Hoppe+Berlin"
-        }
-      ]
+      "gastronomia": []
     }
   ]
 }

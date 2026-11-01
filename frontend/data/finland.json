@@ -45,20 +45,7 @@
           "mapa": "https://maps.google.com/?q=Allas+Sea+Pool+Helsinki"
         }
       ],
-      "gastronomia": [
-        {
-          "nombre": "Café Esplanad (Korvapuusti / Rollo de canela tradicional)",
-          "mapa": "https://maps.google.com/?q=Cafe+Esplanad+Helsinki"
-        },
-        {
-          "nombre": "Sopa de salmón (Lohikeitto) en Vanha Kauppahalli",
-          "mapa": "https://maps.google.com/?q=Old+Market+Hall+Helsinki"
-        },
-        {
-          "nombre": "Probar Yogurth Skyr / Noma en Supermercado",
-          "mapa": "https://maps.google.com/?q=K-Supermarket+Helsinki"
-        }
-      ]
+      "gastronomia": []
     },
     {
       "nombre": "Inari y Rovaniemi (Laponia)",
@@ -95,16 +82,7 @@
           "mapa": "https://maps.google.com/?q=Lordi+Square+Rovaniemi"
         }
       ],
-      "gastronomia": [
-        {
-          "nombre": "Kaffeost / Leipäjuusto (Pan de queso con café/mora) en Lapland Restaurant Kotahovi o Santamus",
-          "mapa": "https://maps.google.com/?q=Lapland+Restaurant+Kotahovi+Rovaniemi"
-        },
-        {
-          "nombre": "Queso finlandés flambeado (Juustoleipä)",
-          "mapa": "https://maps.google.com/?q=Santa+Claus+Village+Restaurants"
-        }
-      ]
+      "gastronomia": []
     },
     {
       "nombre": "Helsinki (Vuelta)",
@@ -139,12 +117,7 @@
           "mapa": "https://maps.google.com/?q=Kotiharjun+Sauna+Helsinki"
         }
       ],
-      "gastronomia": [
-        {
-          "nombre": "Café local en el Barrio de Kallio",
-          "mapa": "https://maps.google.com/?q=Kallio+Helsinki"
-        }
-      ]
+      "gastronomia": []
     }
   ]
 }

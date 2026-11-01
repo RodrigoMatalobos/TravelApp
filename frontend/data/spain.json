@@ -38,17 +38,9 @@
         { "dia": 0, "nombre": "Sagrada Familia (ver por fuera; los interiores de Gaudí ya se conocen)", "mapa": "https://maps.google.com/?q=Basílica+de+la+Sagrada+Familia" },
         { "dia": 0, "nombre": "Barrio Gótico", "mapa": "https://maps.google.com/?q=barrio-gotico" },
         { "dia": 0, "nombre": "Extra de noche: Jardines de Laribal y Font Mágica (gratis de noche) [Opcional]", "mapa": "https://maps.google.com/?q=Font+Màgica+de+Montjuïc" },
-        { "dia": 0, "nombre": "Abadía de Montserrat (reservas en montserratvisita.com) [Opcional]", "mapa": "https://maps.google.com/?q=Abadia+de+Montserrat" },
         { "dia": 0, "nombre": "Tax Free: guardar los tickets de compras, tramitar con Diva y llevar el pasaporte de Ro", "mapa": "" }
       ],
-      "gastronomia": [
-        { "dia": 1, "nombre": "Tapas en Boquería", "mapa": "https://maps.google.com/?q=Mercado+de+La+Boqueria" },
-        { "dia": 1, "nombre": "Pastrami Craft 19 (el lugar de pastrami anotado)", "mapa": "https://maps.google.com/?q=Pastrami+Craft+19+Barcelona" },
-        { "dia": 4, "nombre": "Paella en Barceloneta", "mapa": "https://maps.google.com/?q=La+Barceloneta+Barcelona" },
-        { "dia": 0, "nombre": "Rabas en Squiddy", "mapa": "https://maps.google.com/?q=Squiddy+Barcelona" },
-        { "dia": 0, "nombre": "Pastrami en La del Pelado", "mapa": "https://maps.google.com/?q=La+del+Pelado+Barcelona" },
-        { "dia": 0, "nombre": "TooGoodToGo: app para comprar comida excedente barata", "mapa": "" }
-      ]
+      "gastronomia": []
     },
     {
       "nombre": "Barcelona (Vuelta)",
@@ -66,9 +58,7 @@
         { "dia": 1, "nombre": "Compras de último momento", "mapa": "" },
         { "dia": 1, "nombre": "Passeig de Gràcia", "mapa": "https://maps.google.com/?q=Passeig+de+Gracia+Barcelona" }
       ],
-      "gastronomia": [
-        { "dia": 1, "nombre": "Churros en Petritxol", "mapa": "https://maps.google.com/?q=Carrer+de+Petritxol+Barcelona" }
-      ]
+      "gastronomia": []
     }
   ]
 }

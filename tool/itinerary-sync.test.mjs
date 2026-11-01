@@ -31,7 +31,7 @@ test('la instantánea incluye Alemania, todas las paradas y referencias válidas
 
   assert.equal(snapshot.countries.length, 6);
   assert.ok(snapshot.countries.some(country => country.id === 'germany'));
-  assert.equal(snapshot.routeStops.length, 31);
+  assert.equal(snapshot.routeStops.length, 29);
   assert.ok(snapshot.routeStops.some(stop => stop.id === 'berlin' && stop.data.countryId === 'germany'));
   assert.ok(snapshot.routeStops.some(stop => stop.id === 'dresde' && stop.data.name === 'Dresde'));
   assert.ok(snapshot.routeStops.some(stop => stop.id === 'praga-vuelta' && stop.data.cityIndex === 2));

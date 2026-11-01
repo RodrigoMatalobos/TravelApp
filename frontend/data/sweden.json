@@ -36,12 +36,7 @@
         { "dia": 3, "nombre": "Vie 18 mediodía: Östermalms Saluhall (mercado gastronómico, ideal para almorzar)", "mapa": "https://maps.google.com/?q=Ostermalm+Market+Hall" },
         { "dia": 3, "nombre": "Vie 18 tarde [Opcional 13:00-15:30]: Palacio de Drottningholm (franja de invierno 12:00-15:30) o Museo Nacional / mercado navideño de Skansen", "mapa": "https://maps.google.com/?q=Drottningholm+Palace" }
       ],
-      "gastronomia": [
-        { "dia": 3, "nombre": "Almuerzo en Östermalms Saluhall (Mercado Gastronómico)", "mapa": "https://maps.google.com/?q=Ostermalm+Market+Hall" },
-        { "dia": 0, "nombre": "Platos típicos: albóndigas suecas (Köttbullar) y arenques (Sill)", "mapa": "https://maps.google.com/?q=Restaurang+Prinsen+Stockholm" },
-        { "dia": 0, "nombre": "Toast Skagen (gamba, mayonesa y eneldo) y salmón curado (Gravlax)", "mapa": "https://maps.google.com/?q=Gamla+Stan+Restaurants+Stockholm" },
-        { "dia": 0, "nombre": "Supermercado: probar yogur Skyr / Norrmejerier", "mapa": "https://maps.google.com/?q=ICA+Supermarket+Stockholm" }
-      ]
+      "gastronomia": []
     }
   ]
 }

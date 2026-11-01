@@ -6,7 +6,21 @@ test('el módulo fuente de Vite expone los seis itinerarios y la ruta', async ()
 
   assert.deepEqual(Object.keys(itinerarySource.countries), ['spain', 'finland', 'sweden', 'belgium', 'germany', 'czech']);
   assert.equal(itinerarySource.countries.germany.pais, 'Alemania');
-  assert.equal(itinerarySource.route.stops.length, 31);
+  assert.equal(itinerarySource.route.stops.length, 29);
+  assert.equal(itinerarySource.route.stops.some(stop => stop.name === 'Montserrat'), false);
+});
+
+test('gastronomía queda vacía y Barcelona no conserva la excursión cancelada', async () => {
+  const { itinerarySource } = await import('../frontend/itinerary-source.mjs');
+
+  Object.values(itinerarySource.countries).forEach(country => {
+    country.ciudades.forEach(city => assert.deepEqual(city.gastronomia, []));
+  });
+  const barcelonaActivities = itinerarySource.countries.spain.ciudades
+    .flatMap(city => city.actividades)
+    .map(activity => activity.nombre);
+  assert.equal(barcelonaActivities.some(name => /montserrat/i.test(name)), false);
+  assert.ok(barcelonaActivities.length >= 10);
 });
 
 test('los vehículos del mapa solo se programan para los trayectos y fechas del viaje', async () => {

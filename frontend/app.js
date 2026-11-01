@@ -6,6 +6,7 @@ import {
   saveLocalFolderFiles,
   ticketButtonLabel
 } from './ticket-files.mjs';
+import { activityDateLabel } from './itinerary-dates.mjs';
 import routeCatalog from './route-catalog.mjs';
 
 let currentViewState = { level: 'paises', paisId: null };
@@ -34,7 +35,7 @@ if ('serviceWorker' in navigator && import.meta.env.DEV) {
     window.location.reload();
   });
 
-  navigator.serviceWorker.register('sw.js?v=1.0.28', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('sw.js?v=1.0.29', { updateViaCache: 'none' })
     .then(registration => registration.update())
     .catch(err => console.error('Service Worker error:', err));
 }
@@ -452,14 +453,14 @@ function groupActivitiesByDay(activities) {
   });
 }
 
-function renderGroupedActivities(activities, emptyMessage) {
+function renderGroupedActivities(activities, emptyMessage, cityDates = '') {
   if (!activities.length) {
     return `<div class="text-xs text-slate-400">${emptyMessage}</div>`;
   }
 
   return groupActivitiesByDay(activities).map(([day, items]) => `
     <div class="space-y-1.5">
-      ${day === 'general' ? '' : `<h5 class="text-[11px] font-bold uppercase tracking-wide text-blue-400 pt-2">Día ${day}</h5>`}
+      <h5 class="text-[11px] font-bold uppercase tracking-wide text-blue-400 pt-2">${day === 'general' ? 'Fechas flexibles' : escapeHtml(activityDateLabel(cityDates, day))}</h5>
       ${items.map(item => `
         <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-700/30 flex justify-between items-start gap-3 text-sm leading-relaxed">
           <span class="text-slate-300 flex-1 min-w-0">${escapeHtml(item.nombre)}</span>${item.mapa ? `
@@ -634,6 +635,17 @@ function showCiudadesView(paisId, recordHistory = true) {
       });
       container.appendChild(ciudadesSection);
 
+      const countrySections = document.createElement('section');
+      countrySections.className = 'grid grid-cols-2 gap-2';
+      countrySections.innerHTML = `
+        <button type="button" data-country-section="actividades" class="rounded-xl border border-blue-800/60 bg-blue-950/40 p-3 text-left text-sm font-semibold text-blue-100 hover:bg-blue-900/50">🚶 Actividades</button>
+        <button type="button" data-country-section="gastronomia" class="rounded-xl border border-amber-800/60 bg-amber-950/30 p-3 text-left text-sm font-semibold text-amber-100 hover:bg-amber-900/40">🍽️ Gastronomía</button>
+      `;
+      countrySections.querySelectorAll('[data-country-section]').forEach(button => {
+        button.addEventListener('click', () => showCountrySectionView(pais, canonicalPaisId, button.dataset.countrySection));
+      });
+      container.appendChild(countrySections);
+
       const additionalData = (pais.datosAdicionales || []).filter(item => /^https:\/\//i.test(item.url || ''));
       if (additionalData.length) {
         const divider = document.createElement('hr');
@@ -658,6 +670,49 @@ function showCiudadesView(paisId, recordHistory = true) {
     });
 }
 
+function showCountrySectionView(pais, paisId, sectionId, recordHistory = true) {
+  const sections = {
+    actividades: {
+      label: 'Actividades',
+      property: 'actividades',
+      emptyMessage: 'No hay actividades cargadas para esta ciudad.'
+    },
+    gastronomia: {
+      label: 'Gastronomía',
+      property: 'gastronomia',
+      emptyMessage: 'Todavía no hay lugares de gastronomía cargados.'
+    }
+  };
+  const section = sections[sectionId];
+  if (!section || !Array.isArray(pais?.ciudades)) {
+    showCiudadesView(paisId, false);
+    return;
+  }
+
+  viewSequence += 1;
+  disposeHomeMap();
+  ticketImportContext = null;
+  setCurrentViewState({ level: 'seccion', paisId, sectionId }, recordHistory);
+  updateHeader(`${pais.flag || ''} ${section.label} · ${pais.pais}`.trim(), true);
+
+  const container = document.getElementById('app');
+  if (!container) return;
+  container.className = 'p-4 max-w-md mx-auto space-y-4';
+  container.innerHTML = pais.ciudades.map(city => `
+    <section class="space-y-2">
+      <div>
+        <h2 class="text-base font-bold text-white">${escapeHtml(city.nombre || 'Ciudad sin nombre')}</h2>
+        <p class="text-xs text-slate-400">${escapeHtml(city.fechas || '')}</p>
+      </div>
+      <div class="space-y-2">${renderGroupedActivities(
+        normalizeActivities(city[section.property]),
+        section.emptyMessage,
+        city.fechas
+      )}</div>
+    </section>
+  `).join('');
+}
+
 // Nivel 3: Vista de Detalle de Ciudad
 function showDetalleCiudadView(pais, ciudadIndex, paisIdOverride, recordHistory = true) {
   if (!pais || !Array.isArray(pais.ciudades) || !pais.ciudades[ciudadIndex]) {
@@ -676,9 +731,6 @@ function showDetalleCiudadView(pais, ciudadIndex, paisIdOverride, recordHistory 
   const container = document.getElementById('app');
   if (!container) return;
   container.className = 'p-4 max-w-md mx-auto space-y-4';
-
-  const actividades = normalizeActivities(ciudad.actividades);
-  const gastronomia = normalizeActivities(ciudad.gastronomia);
 
   // Transportes de la ciudad (vuelos, trenes, buses, ferrys) con fecha y horarios.
   const transportes = Array.isArray(ciudad.transportes) ? ciudad.transportes : [];
@@ -727,19 +779,6 @@ function showDetalleCiudadView(pais, ciudadIndex, paisIdOverride, recordHistory 
       ${transportePublicoHtml}
       ${guardaequipajeHtml}
 
-      <div class="space-y-2">
-        <h4 class="text-xs font-bold text-slate-300">🚶 Actividades</h4>
-        <div class="space-y-1.5">
-          ${renderGroupedActivities(actividades, 'No hay actividades disponibles.')}
-        </div>
-      </div>
-
-      <div class="space-y-2">
-        <h4 class="text-xs font-bold text-slate-300">🍽️ Gastronomía</h4>
-        <div class="space-y-1.5">
-          ${renderGroupedActivities(gastronomia, 'No hay gastronomía disponible.')}
-        </div>
-      </div>
     </div>
   `;
   appendTicketFiles(
@@ -754,6 +793,8 @@ function handleBack() {
   if (window.history.state?.travelAppView) {
     window.history.back();
   } else if (currentViewState.level === 'detalle') {
+    showCiudadesView(currentViewState.paisId, false);
+  } else if (currentViewState.level === 'seccion') {
     showCiudadesView(currentViewState.paisId, false);
   } else {
     showPaisesView(false);
@@ -777,6 +818,27 @@ async function restoreAppView(view) {
       if (requestId !== viewSequence) return;
       if (!country) {
         showCiudadesView(view.paisId, false);
+        return;
+      }
+      if (view.level === 'seccion') {
+        const requestId = ++viewSequence;
+        setTopLoading(true);
+        try {
+          const country = await window.TravelFirestore.loadCountry(view.paisId);
+          if (requestId !== viewSequence) return;
+          if (!country) {
+            showCiudadesView(view.paisId, false);
+            return;
+          }
+          showCountrySectionView(country, view.paisId, view.sectionId, false);
+        } catch (error) {
+          if (requestId === viewSequence) {
+            console.error('No se pudo restaurar el apartado anterior:', error);
+            showCiudadesView(view.paisId, false);
+          }
+        } finally {
+          setTopLoading(false);
+        }
         return;
       }
       showDetalleCiudadView(country, view.ciudadIndex, view.paisId, false);

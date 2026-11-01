@@ -23,27 +23,6 @@
       "longitude": 2.1686
     },
     {
-      "id": "montserrat",
-      "name": "Montserrat",
-      "countryName": "España",
-      "flag": "🇪🇸",
-      "stage": "Excursión opcional desde Barcelona",
-      "latitude": 41.5931,
-      "longitude": 1.8292
-    },
-    {
-      "id": "barcelona-montserrat-regreso",
-      "hasItinerary": true,
-      "name": "Barcelona",
-      "countryId": "spain",
-      "countryName": "España",
-      "flag": "🇪🇸",
-      "stage": "Regreso de Montserrat",
-      "cityIndex": 0,
-      "latitude": 41.3874,
-      "longitude": 2.1686
-    },
-    {
       "id": "girona",
       "name": "Girona",
       "countryName": "España",
