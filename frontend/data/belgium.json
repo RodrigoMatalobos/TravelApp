@@ -17,6 +17,12 @@
       "hotel": "B&B Marianne",
       "comoLlegar": "Desde Gare du Midi / Gare Central, tomar Metro Línea 6 dirección Roi Baudouin hasta la estación Stuyvenbergh. Caminar 3 min.",
       "mapaHotelLink": "https://maps.google.com/?q=BB+Marianne+Rue+Stuyvenbergh+46+Laeken",
+      "supermercadosDestino": "Bruselas (Laeken)",
+      "direccionHotel": "46 rue Stuyvenbergh, 1020 Bruselas, Bélgica",
+      "supermercados": [
+        { "nombre": "Carrefour Express (Houba de Strooper)", "mapa": "https://maps.google.com/?q=Carrefour+Express+Houba+de+Strooper+Brussels" },
+        { "nombre": "Carrefour Market Laeken", "mapa": "https://maps.google.com/?q=Carrefour+Market+Laeken+Brussels" }
+      ],
       "transportes": [
         { "tipo": "vuelo", "descripcion": "Estocolmo → Bruselas", "fecha": "19/12/2026", "salida": "07:30", "llegada": "" },
         { "tipo": "tren", "descripcion": "Bruselas → Colonia (DB)", "fecha": "22/12/2026", "salida": "12:25", "llegada": "14:15" }
@@ -33,7 +39,17 @@
         { "dia": 3, "nombre": "Excursión de un día a Gante: tren a Gent-Sint-Pieters, tranvía 1 al centro; Castillo de los Condes (Gravensteen), muelles de Graslei, Korenmarkt, Belfort, callejón del grafiti Werregarenstraat, Vrijdagmarkt y cerveza Max en Taberna Dulle Griet", "mapa": "https://maps.google.com/?q=Gravensteen+Ghent" },
         { "dia": 0, "nombre": "Ver si se hace un tour de la cerveza [Opcional]", "mapa": "" }
       ],
-      "gastronomia": [],
+      "gastronomia": [
+        { "dia": 1, "nombre": "Fritland, junto a la Bolsa: papas fritas", "mapa": "https://maps.google.com/?q=Fritland+Brussels", "website": "https://fritlandbrussels.be/" },
+        { "dia": 2, "nombre": "Maison Antoine, Place Jourdan: cono de papas fritas; se pueden comer en los bares de la plaza", "mapa": "https://maps.google.com/?q=Maison+Antoine+Place+Jourdan+Brussels", "website": "http://www.maisonantoine.be/" },
+        { "nombre": "Frit Flagey, junto a los estanques de Ixelles", "mapa": "https://maps.google.com/?q=Frit+Flagey+Brussels" },
+        { "nombre": "Rue des Bouchers: zona de restaurantes para cenar", "mapa": "https://maps.google.com/?q=Rue+des+Bouchers+Brussels" },
+        { "nombre": "Delirium Café: cervezas belgas", "mapa": "https://maps.google.com/?q=Delirium+Cafe+Brussels" },
+        { "nombre": "Gaufre de Liège y gaufre de Bruxelles", "mapa": "https://maps.google.com/?q=Belgian+waffles+Brussels" },
+        { "nombre": "Mattentaart y cramique: pastelería belga", "mapa": "https://maps.google.com/?q=Belgian+pastries+Brussels" },
+        { "nombre": "Lotus Biscoff, galletas Jules Destrooper y LU Bastogne", "mapa": "https://maps.google.com/?q=Belgian+cookies+Brussels" },
+        { "dia": 3, "nombre": "Gante: cerveza Max en la taberna Dulle Griet (se deja un zapato como fianza)", "mapa": "https://maps.google.com/?q=Dulle+Griet+Ghent", "website": "https://www.dullegriet.be/" }
+      ],
       "mapaGastroLink": ""
     }
   ]

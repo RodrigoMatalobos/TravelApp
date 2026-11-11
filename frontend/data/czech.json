@@ -16,6 +16,12 @@
       "fechas": "03/01/2027 – 06/01/2027",
       "hotel": "U 3 Pštrosů",
       "mapaHotelLink": "https://maps.google.com/?q=U+3+Pstrosu+Drazickeho+namesti+12+Prague",
+      "supermercadosDestino": "Praga 1 (Malá Strana)",
+      "direccionHotel": "Dražického náměstí 12, 11000 Praga, República Checa",
+      "supermercados": [
+        { "nombre": "Billa (Quadrio - Spálená)", "mapa": "https://maps.google.com/?q=Billa+Quadrio+Prague" },
+        { "nombre": "Žabka (Mostecká)", "mapa": "https://maps.google.com/?q=Zabka+Mostecka+Prague" }
+      ],
       "comoLlegar": "Llegada 03/01 a las 17:25 en tren desde Berlín. Desde Hlavní nádraží, Metro C a Muzeum, transbordo al Metro A hasta Malostranská y 5 min a pie; también sirve el tranvía 15/22 hasta Malostranské náměstí.",
       "transportes": [
         { "tipo": "tren", "descripcion": "Tren DB: Berlín → Praga", "fecha": "03/01/2027", "salida": "13:28", "llegada": "17:25" },
@@ -32,13 +38,28 @@
         { "dia": 2, "nombre": "Estación Náměstí Míru: la escalera mecánica más larga de la UE (87 m), ideal de noche", "mapa": "https://maps.google.com/?q=Namesti+Miru+Prague" },
         { "dia": 3, "nombre": "Tour de un día a Pilsen: fábrica Pilsner Urquell (prazdrojvisit.cz), Catedral de San Bartolomé (se puede subir a la torre), Plaza de la República y Ayuntamiento, Gran Sinagoga y Pilsen subterránea", "mapa": "https://maps.google.com/?q=Pilsner+Urquell+Brewery+Plzen" }
       ],
-      "gastronomia": []
+      "gastronomia": [
+        { "nombre": "Café Louvre: café y restaurante histórico, Národní 22", "mapa": "https://maps.google.com/?q=Cafe+Louvre+Narodni+22+Prague", "website": "https://www.cafelouvre.cz/" },
+        { "nombre": "Pork's, Mostecká 16: codillo de cerdo y helado de cerveza", "mapa": "https://maps.google.com/?q=Porks+Mostecka+16+Prague", "website": "https://www.porks.cz/en/mostecka" },
+        { "nombre": "Kolacherie: koláče y café de especialidad, Celetná 27", "mapa": "https://maps.google.com/?q=Kolacherie+Celetna+27+Prague", "website": "https://www.kolacherie.cz/en/" },
+        { "dia": 1, "nombre": "U Kunštátů: bar de cerveza artesanal con jardín", "mapa": "https://maps.google.com/?q=U+Kunstatu+Prague" },
+        { "dia": 3, "nombre": "Pilsen: tour oficial de la fábrica Pilsner Urquell", "mapa": "https://maps.google.com/?q=Pilsner+Urquell+Brewery+Plzen", "website": "https://www.prazdrojvisit.cz/en/tours/pilsner-urquell-brewery-tour" },
+        { "dia": 3, "nombre": "Pilsen: comida tradicional y cerveza sin pasteurizar en Hospoda Na Spilce o Parkan", "mapa": "https://maps.google.com/?q=Hospoda+Na+Spilce+Parkan+Plzen" },
+        { "nombre": "Koláče y loupáček: pastelería tradicional checa", "mapa": "https://maps.google.com/?q=Czech+pastries+Prague" },
+        { "nombre": "Opavia Fidorka y BeBe / Esíčka: galletas y obleas checas", "mapa": "https://maps.google.com/?q=Czech+cookies+Prague" }
+      ]
     },
     {
       "nombre": "Karlovy Vary",
       "fechas": "06/01/2027 – 07/01/2027",
       "hotel": "Vienna House Dvořák",
       "mapaHotelLink": "https://maps.google.com/?q=Vienna+House+Dvorak+Nova+Louka+11+Karlovy+Vary",
+      "supermercadosDestino": "Karlovy Vary",
+      "direccionHotel": "Nová Louka 11, 36021 Karlovy Vary, República Checa",
+      "supermercados": [
+        { "nombre": "Billa (T. G. Masaryka)", "mapa": "https://maps.google.com/?q=Billa+T+G+Masaryka+Karlovy+Vary" },
+        { "nombre": "Albert Hypermarket", "mapa": "https://maps.google.com/?q=Albert+Hypermarket+Karlovy+Vary" }
+      ],
       "comoLlegar": "Tren desde Praga el 06/01 (horario por confirmar, sin ticket todavía). Desde la terminal de buses/trenes de Karlovy Vary, bus local 2 hasta Tržnice/Divadelní náměstí o taxi directo al hotel.",
       "transportes": [
         { "tipo": "tren", "descripcion": "Karlovy Vary → Praga (sin ticket todavía)", "fecha": "07/01/2027", "salida": "por confirmar", "llegada": "por confirmar" }
@@ -52,13 +73,21 @@
         { "dia": 2, "nombre": "Calle principal T. G. Masaryka, Balneario Imperial (Císařské lázně) y Baños de Elizabeth", "mapa": "https://maps.google.com/?q=Cisarske+Lazne+Karlovy+Vary" },
         { "dia": 2, "nombre": "Excursión al Castillo de Loket (fortaleza gótica del siglo XII sobre el río; hradloket.cz) y regreso en bus a Praga", "mapa": "https://maps.google.com/?q=Hrad+Loket" }
       ],
-      "gastronomia": []
+      "gastronomia": [
+        { "nombre": "Oplatky: obleas tradicionales de Karlovy Vary, de avellana, chocolate o canela", "mapa": "https://maps.google.com/?q=Karlovy+Vary+Oplatky" }
+      ]
     },
     {
       "nombre": "Praga (Vuelta)",
       "fechas": "07/01/2027 – 08/01/2027",
       "hotel": "Prague Inn",
       "mapaHotelLink": "https://maps.google.com/?q=Prague+Inn+28+rijna+15+Prague",
+      "supermercadosDestino": "Praga 2 (Ciudad Nueva)",
+      "direccionHotel": "28.října 378/15, 11000 Praga, República Checa",
+      "supermercados": [
+        { "nombre": "Albert (Václavské náměstí)", "mapa": "https://maps.google.com/?q=Albert+Vaclavske+namesti+Prague" },
+        { "nombre": "Tesco (Národní)", "mapa": "https://maps.google.com/?q=Tesco+Narodni+Prague" }
+      ],
       "comoLlegar": "Regreso en tren desde Karlovy Vary el 07/01 (horario por confirmar). El hotel queda junto a la plaza Wenceslao y la estación Můstek (28. října 15). El 08/01 sale el vuelo a Barcelona 11:05.",
       "transportes": [
         { "tipo": "vuelo", "descripcion": "Praga → Barcelona", "fecha": "08/01/2027", "salida": "11:05", "llegada": "13:30" }
@@ -71,7 +100,14 @@
         { "dia": 1, "nombre": "Castillo de Vyšehrad y cementerio (10-17 h), Casa Danzante y atardecer en Parque Letná [Opcional según horario del tren]", "mapa": "https://maps.google.com/?q=Vysehrad+Prague" },
         { "dia": 1, "nombre": "Malá Strana, Isla de Kampa y Muro de John Lennon (día libre sin apuros, ideal para la despedida)", "mapa": "https://maps.google.com/?q=Lennon+Wall+Prague" }
       ],
-      "gastronomia": []
+      "gastronomia": [
+        { "nombre": "Café Louvre: café y restaurante histórico, Národní 22", "mapa": "https://maps.google.com/?q=Cafe+Louvre+Narodni+22+Prague", "website": "https://www.cafelouvre.cz/" },
+        { "nombre": "Pork's, Mostecká 16: codillo de cerdo y helado de cerveza", "mapa": "https://maps.google.com/?q=Porks+Mostecka+16+Prague", "website": "https://www.porks.cz/en/mostecka" },
+        { "nombre": "Kolacherie: koláče y café de especialidad, Celetná 27", "mapa": "https://maps.google.com/?q=Kolacherie+Celetna+27+Prague", "website": "https://www.kolacherie.cz/en/" },
+        { "nombre": "U Kunštátů: bar de cerveza artesanal con jardín", "mapa": "https://maps.google.com/?q=U+Kunstatu+Prague" },
+        { "nombre": "Koláče y loupáček: pastelería tradicional checa", "mapa": "https://maps.google.com/?q=Czech+pastries+Prague" },
+        { "nombre": "Opavia Fidorka y BeBe / Esíčka: galletas y obleas checas", "mapa": "https://maps.google.com/?q=Czech+cookies+Prague" }
+      ]
     }
   ]
 }

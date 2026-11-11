@@ -17,6 +17,12 @@
       "fechas": "16/12/2026 – 19/12/2026",
       "hotel": "Mälardrottningen Yacht Hotel",
       "mapaHotelLink": "https://maps.google.com/?q=Malardrottningen+Yacht+Hotel+Stockholm",
+      "supermercadosDestino": "Estocolmo (Gamla Stan / Riddarholmen)",
+      "direccionHotel": "Riddarholmen, 111 28 Estocolmo, Suecia",
+      "supermercados": [
+        { "nombre": "Coop Järntorget (Järntorget 80)", "mapa": "https://maps.google.com/?q=Coop+Jarntorget+Stockholm" },
+        { "nombre": "Coop Centralen (Centralplan 1)", "mapa": "https://maps.google.com/?q=Coop+Centralen+Stockholm" }
+      ],
       "comoLlegar": "Llegada en ferry Viking Line el 16/12 a las 10:00 (puerto Stadsgården). Caminar 10-12 min a Slussen, Metro línea Roja/Verde a Gamla Stan (o a pie) y cruzar a la isla de Riddarholmen; el hotel está amarrado en el muelle oeste. El 19/12 a las 07:30 sale el vuelo a Bruselas.",
       "transportes": [
         { "tipo": "ferry", "descripcion": "Ferry Viking Line: Helsinki → Estocolmo", "fecha": "15/12/2026", "salida": "17:00", "llegada": "10:00 (+1)" },
@@ -36,7 +42,19 @@
         { "dia": 3, "nombre": "Vie 18 mediodía: Östermalms Saluhall (mercado gastronómico, ideal para almorzar)", "mapa": "https://maps.google.com/?q=Ostermalm+Market+Hall" },
         { "dia": 3, "nombre": "Vie 18 tarde [Opcional 13:00-15:30]: Palacio de Drottningholm (franja de invierno 12:00-15:30) o Museo Nacional / mercado navideño de Skansen", "mapa": "https://maps.google.com/?q=Drottningholm+Palace" }
       ],
-      "gastronomia": []
+      "gastronomia": [
+        { "dia": 3, "nombre": "Östermalms Saluhall: mercado gastronómico para almorzar", "mapa": "https://maps.google.com/?q=Ostermalms+Saluhall+Stockholm", "website": "https://en.ostermalmshallen.se/visit-us/" },
+        { "nombre": "Hötorgshallen: mercado de comida accesible", "mapa": "https://maps.google.com/?q=Hotorgshallen+Stockholm", "website": "https://hotorgshallen.se/" },
+        { "nombre": "Cajsa Warg: productos y comida local", "mapa": "https://maps.google.com/?q=Cajsa+Warg+Stockholm" },
+        { "nombre": "Pelikan, en Södermalm: albóndigas suecas (köttbullar) y cerveza", "mapa": "https://maps.google.com/?q=Restaurant+Pelikan+Stockholm", "website": "https://pelikan.se/" },
+        { "nombre": "Tranan, restaurante clásico de barrio en Vasastan", "mapa": "https://maps.google.com/?q=Tranan+Stockholm", "website": "https://www.tranan.se/" },
+        { "nombre": "Funky Chicken: hamburguesas", "mapa": "https://maps.google.com/?q=Funky+Chicken+Stockholm" },
+        { "nombre": "Platos típicos: arenques (sill), Toast Skagen y salmón gravlax", "mapa": "https://maps.google.com/?q=Swedish+food+Stockholm" },
+        { "nombre": "Kanelbulle: rollo sueco de canela y cardamomo", "mapa": "https://maps.google.com/?q=Kanelbulle+Stockholm" },
+        { "nombre": "Prinsesstårta, semla y kladdkaka", "mapa": "https://maps.google.com/?q=Swedish+pastries+Stockholm" },
+        { "nombre": "Galletas Marabou, Göteborgs Singoalla y Gille Chokladflarn", "mapa": "https://maps.google.com/?q=Swedish+cookies+Stockholm" },
+        { "nombre": "Probar yogur Skyr Noma en un supermercado", "mapa": "https://maps.google.com/?q=Supermarket+Stockholm" }
+      ]
     }
   ]
 }

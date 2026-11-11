@@ -39,6 +39,14 @@ function normalizeTransportes(value) {
   })).filter(item => item.descripcion);
 }
 
+function normalizeSupermarkets(value) {
+  if (!Array.isArray(value)) return [];
+  return value.map(item => ({
+    nombre: text(item?.nombre),
+    mapa: text(item?.mapa)
+  })).filter(item => item.nombre);
+}
+
 function mapActivity(activity, category, order) {
   const value = typeof activity === 'string' ? { nombre: activity } : activity || {};
   return {
@@ -46,6 +54,7 @@ function mapActivity(activity, category, order) {
     dia: Number.isFinite(Number(value.dia)) ? Number(value.dia) : null,
     nombre: text(value.nombre),
     mapa: text(value.mapa),
+    website: text(value.website),
     order
   };
 }
@@ -192,6 +201,9 @@ export function buildItinerarySnapshot({ countries = {}, route = {}, countryImag
           fechas: text(city.fechas),
           hotel: text(city.hotel),
           mapaHotelLink: text(city.mapaHotelLink),
+          supermercadosDestino: text(city.supermercadosDestino),
+          direccionHotel: text(city.direccionHotel),
+          supermercados: normalizeSupermarkets(city.supermercados),
           comoLlegar: text(city.comoLlegar),
           transportes: normalizeTransportes(city.transportes),
           transportePublico: text(city.transportePublico),

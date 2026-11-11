@@ -35,7 +35,7 @@ if ('serviceWorker' in navigator && import.meta.env.DEV) {
     window.location.reload();
   });
 
-  navigator.serviceWorker.register('sw.js?v=1.0.29', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('sw.js?v=1.0.31', { updateViaCache: 'none' })
     .then(registration => registration.update())
     .catch(err => console.error('Service Worker error:', err));
 }
@@ -423,7 +423,8 @@ function normalizeActivities(items) {
     return {
       dia: Number.isFinite(Number(item?.dia)) ? Number(item.dia) : null,
       nombre: item?.nombre || '',
-      mapa: item?.mapa || ''
+      mapa: item?.mapa || '',
+      website: item?.website || ''
     };
   }).filter(item => item.nombre);
 }
@@ -453,20 +454,23 @@ function groupActivitiesByDay(activities) {
   });
 }
 
-function renderGroupedActivities(activities, emptyMessage, cityDates = '') {
+function renderGroupedActivities(activities, emptyMessage, cityDates = '', showDateHeaders = true) {
   if (!activities.length) {
     return `<div class="text-xs text-slate-400">${emptyMessage}</div>`;
   }
 
   return groupActivitiesByDay(activities).map(([day, items]) => `
     <div class="space-y-1.5">
-      <h5 class="text-[11px] font-bold uppercase tracking-wide text-blue-400 pt-2">${day === 'general' ? 'Fechas flexibles' : escapeHtml(activityDateLabel(cityDates, day))}</h5>
+      ${showDateHeaders ? `<h5 class="text-[11px] font-bold uppercase tracking-wide text-blue-400 pt-2">${day === 'general' ? 'Fechas flexibles' : escapeHtml(activityDateLabel(cityDates, day))}</h5>` : ''}
       ${items.map(item => `
         <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-700/30 flex justify-between items-start gap-3 text-sm leading-relaxed">
-          <span class="text-slate-300 flex-1 min-w-0">${escapeHtml(item.nombre)}</span>${item.mapa ? `
+          <span class="text-slate-300 flex-1 min-w-0">${escapeHtml(item.nombre)}</span><span class="flex shrink-0 items-center gap-1.5">${/^https?:\/\//i.test(item.website) ? `
+            <a href="${escapeHtml(item.website)}" target="_blank" rel="noopener noreferrer" class="whitespace-nowrap text-emerald-300 font-medium hover:underline text-xs bg-slate-800 px-2.5 py-1.5 rounded-md border border-slate-700">
+              🌐 Web
+            </a>` : ''}${/^https?:\/\//i.test(item.mapa) ? `
             <a href="${escapeHtml(item.mapa)}" target="_blank" rel="noopener noreferrer" class="shrink-0 whitespace-nowrap text-blue-400 font-medium hover:underline text-xs flex items-center gap-1 bg-slate-800 px-2.5 py-1.5 rounded-md border border-slate-700">
               📍 Maps
-            </a>` : ''}
+            </a>` : ''}</span>
         </div>
       `).join('')}
     </div>
@@ -640,6 +644,7 @@ function showCiudadesView(paisId, recordHistory = true) {
       countrySections.innerHTML = `
         <button type="button" data-country-section="actividades" class="rounded-xl border border-blue-800/60 bg-blue-950/40 p-3 text-left text-sm font-semibold text-blue-100 hover:bg-blue-900/50">🚶 Actividades</button>
         <button type="button" data-country-section="gastronomia" class="rounded-xl border border-amber-800/60 bg-amber-950/30 p-3 text-left text-sm font-semibold text-amber-100 hover:bg-amber-900/40">🍽️ Gastronomía</button>
+        <button type="button" data-country-section="supermercados" class="col-span-2 rounded-xl border border-emerald-800/60 bg-emerald-950/30 p-3 text-left text-sm font-semibold text-emerald-100 hover:bg-emerald-900/40">🛒 Supermercados</button>
       `;
       countrySections.querySelectorAll('[data-country-section]').forEach(button => {
         button.addEventListener('click', () => showCountrySectionView(pais, canonicalPaisId, button.dataset.countrySection));
@@ -681,6 +686,11 @@ function showCountrySectionView(pais, paisId, sectionId, recordHistory = true) {
       label: 'Gastronomía',
       property: 'gastronomia',
       emptyMessage: 'Todavía no hay lugares de gastronomía cargados.'
+    },
+    supermercados: {
+      label: 'Supermercados',
+      property: 'supermercados',
+      emptyMessage: 'No hay supermercados cargados para esta estadía.'
     }
   };
   const section = sections[sectionId];
@@ -702,12 +712,15 @@ function showCountrySectionView(pais, paisId, sectionId, recordHistory = true) {
     <section class="space-y-2">
       <div>
         <h2 class="text-base font-bold text-white">${escapeHtml(city.nombre || 'Ciudad sin nombre')}</h2>
+        ${sectionId === 'supermercados' && city.supermercadosDestino ? `<p class="text-xs text-emerald-300">${escapeHtml(city.supermercadosDestino)}</p>` : ''}
         <p class="text-xs text-slate-400">${escapeHtml(city.fechas || '')}</p>
       </div>
+      ${sectionId === 'supermercados' && city.direccionHotel ? `<p class="text-xs text-slate-400">Hotel: ${escapeHtml(city.direccionHotel)}</p>` : ''}
       <div class="space-y-2">${renderGroupedActivities(
         normalizeActivities(city[section.property]),
         section.emptyMessage,
-        city.fechas
+        city.fechas,
+        sectionId !== 'supermercados'
       )}</div>
     </section>
   `).join('');
@@ -975,6 +988,16 @@ function createHomeSwitch() {
   return button;
 }
 
+function createShoppingShortcut() {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'rounded-xl border border-white/20 bg-[#142d33]/95 px-4 py-2.5 text-sm font-bold text-white shadow-lg backdrop-blur transition-colors hover:bg-[#24434b]';
+  button.setAttribute('aria-label', 'Abrir lista de compras');
+  button.textContent = '🛒 Compras';
+  button.addEventListener('click', () => showVaultListView('Compras'));
+  return button;
+}
+
 function renderHomeView() {
   const container = document.getElementById('app');
   if (!container) return;
@@ -990,8 +1013,9 @@ function renderHomeView() {
     container.style.height = '';
     container.innerHTML = syncWarningMarkup();
     const mapButton = document.createElement('div');
-    mapButton.className = 'flex justify-end';
+    mapButton.className = 'flex justify-end gap-2';
     mapButton.appendChild(createHomeSwitch());
+    mapButton.appendChild(createShoppingShortcut());
     container.appendChild(mapButton);
     homeCountries.forEach(country => {
       const card = document.createElement('button');
@@ -1027,7 +1051,11 @@ function renderHomeView() {
       </div>
     </section>
   `;
-  container.querySelector('#map-switch-slot').appendChild(createHomeSwitch());
+  const mapActions = document.createElement('div');
+  mapActions.className = 'flex gap-2';
+  mapActions.appendChild(createHomeSwitch());
+  mapActions.appendChild(createShoppingShortcut());
+  container.querySelector('#map-switch-slot').appendChild(mapActions);
 
   let selectedMapLocation = null;
   const destinationToast = container.querySelector('#map-destination-toast');

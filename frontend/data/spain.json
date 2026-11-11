@@ -16,6 +16,13 @@
       "fechas": "30/11/2026 – 08/12/2026",
       "hotel": "Apartamentos DV",
       "mapaHotelLink": "https://maps.google.com/?q=Apartamentos+DV+Barcelona",
+      "supermercadosDestino": "Barcelona 1 (Sants-Montjuïc)",
+      "direccionHotel": "Torns 3, 08028 Barcelona, España",
+      "supermercados": [
+        { "nombre": "Lidl (Gran Via de les Corts Catalanes, 159)", "mapa": "https://maps.google.com/?q=Lidl+Gran+Via+159+Barcelona" },
+        { "nombre": "Mercadona (Carrer de Sants)", "mapa": "https://maps.google.com/?q=Mercadona+Carrer+de+Sants+Barcelona" },
+        { "nombre": "Supermercados Consum (Carrer de Sants)", "mapa": "https://maps.google.com/?q=Consum+Carrer+de+Sants+Barcelona" }
+      ],
       "comoLlegar": "Metro L9S hasta Torrassa/Collblanc + 8 min a pie. La T-Casual no cubre la L9 al aeropuerto: usar Rodalies o bus urbano.",
       "transportes": [
         { "tipo": "vuelo", "descripcion": "Llegada a Barcelona", "fecha": "30/11/2026", "salida": "", "llegada": "" },
@@ -40,13 +47,30 @@
         { "dia": 0, "nombre": "Extra de noche: Jardines de Laribal y Font Mágica (gratis de noche) [Opcional]", "mapa": "https://maps.google.com/?q=Font+Màgica+de+Montjuïc" },
         { "dia": 0, "nombre": "Tax Free: guardar los tickets de compras, tramitar con Diva y llevar el pasaporte de Ro", "mapa": "" }
       ],
-      "gastronomia": []
+      "gastronomia": [
+        { "nombre": "La del Pelado: pastrami", "mapa": "https://maps.google.com/?q=La+del+Pelado+Barcelona" },
+        { "nombre": "Squiddy: rabas", "mapa": "https://maps.google.com/?q=Squiddy+Barcelona" },
+        { "nombre": "Dow Jones Bar, el bar de finanzas", "mapa": "https://maps.google.com/?q=Dow+Jones+Bar+Barcelona" },
+        { "nombre": "Choripa: pastrami, Travessera de Gràcia 202", "mapa": "https://maps.google.com/?q=Choripa+Travessera+de+Gracia+202+Barcelona" },
+        { "nombre": "Xuixo de Girona: bollo frito relleno de crema catalana", "mapa": "https://maps.google.com/?q=Xuixo+Girona" },
+        { "nombre": "Carquinyolis: galletas de almendra, para acompañar con vino dulce o café", "mapa": "https://maps.google.com/?q=Carquinyolis+Barcelona" },
+        { "nombre": "Neules y turrones, dulces tradicionales de invierno y Navidad", "mapa": "https://maps.google.com/?q=Neules+Turrones+Barcelona" },
+        { "nombre": "Coca de Llavaneres: hojaldre con crema pastelera, piñones y azúcar", "mapa": "https://maps.google.com/?q=Coca+de+Llavaneres+Barcelona" },
+        { "nombre": "Galletas María Fontaneda", "mapa": "https://maps.google.com/?q=Galletas+Maria+Fontaneda+Barcelona" },
+        { "nombre": "Cuétara Oceanix y Artiach Chiquilín / Filipinos", "mapa": "https://maps.google.com/?q=Galletas+Oceanix+Chiquilin+Filipinos+Barcelona" }
+      ]
     },
     {
       "nombre": "Barcelona (Vuelta)",
       "fechas": "08/01/2027 – 12/01/2027",
       "hotel": "Barcelona Century Hotel",
       "mapaHotelLink": "https://maps.google.com/?q=Barcelona+Century+Hotel",
+      "supermercadosDestino": "Barcelona 2 (Eixample)",
+      "direccionHotel": "Carrer de València, 154, Barcelona, España",
+      "supermercados": [
+        { "nombre": "Carrefour Express (Carrer de Provença)", "mapa": "https://maps.google.com/?q=Carrefour+Express+Carrer+de+Provenca+Barcelona" },
+        { "nombre": "Mercadona (Carrer de València / Enric Granados)", "mapa": "https://maps.google.com/?q=Mercadona+Valencia+Barcelona" }
+      ],
       "comoLlegar": "Aerobús A1/A2 a Plaça Universitat o Metro L9S+L5 a Hospital Clínic.",
       "transportes": [
         { "tipo": "vuelo", "descripcion": "Praga → Barcelona", "fecha": "08/01/2027", "salida": "11:05", "llegada": "13:30" },
@@ -58,7 +82,18 @@
         { "dia": 1, "nombre": "Compras de último momento", "mapa": "" },
         { "dia": 1, "nombre": "Passeig de Gràcia", "mapa": "https://maps.google.com/?q=Passeig+de+Gracia+Barcelona" }
       ],
-      "gastronomia": []
+      "gastronomia": [
+        { "nombre": "La del Pelado: pastrami", "mapa": "https://maps.google.com/?q=La+del+Pelado+Barcelona" },
+        { "nombre": "Squiddy: rabas", "mapa": "https://maps.google.com/?q=Squiddy+Barcelona" },
+        { "nombre": "Dow Jones Bar, el bar de finanzas", "mapa": "https://maps.google.com/?q=Dow+Jones+Bar+Barcelona" },
+        { "nombre": "Choripa: pastrami, Travessera de Gràcia 202", "mapa": "https://maps.google.com/?q=Choripa+Travessera+de+Gracia+202+Barcelona" },
+        { "nombre": "Xuixo de Girona: bollo frito relleno de crema catalana", "mapa": "https://maps.google.com/?q=Xuixo+Girona" },
+        { "nombre": "Carquinyolis: galletas de almendra, para acompañar con vino dulce o café", "mapa": "https://maps.google.com/?q=Carquinyolis+Barcelona" },
+        { "nombre": "Neules y turrones, dulces tradicionales de invierno y Navidad", "mapa": "https://maps.google.com/?q=Neules+Turrones+Barcelona" },
+        { "nombre": "Coca de Llavaneres: hojaldre con crema pastelera, piñones y azúcar", "mapa": "https://maps.google.com/?q=Coca+de+Llavaneres+Barcelona" },
+        { "nombre": "Galletas María Fontaneda", "mapa": "https://maps.google.com/?q=Galletas+Maria+Fontaneda+Barcelona" },
+        { "nombre": "Cuétara Oceanix y Artiach Chiquilín / Filipinos", "mapa": "https://maps.google.com/?q=Galletas+Oceanix+Chiquilin+Filipinos+Barcelona" }
+      ]
     }
   ]
 }

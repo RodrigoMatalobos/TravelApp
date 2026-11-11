@@ -10,17 +10,49 @@ test('el módulo fuente de Vite expone los seis itinerarios y la ruta', async ()
   assert.equal(itinerarySource.route.stops.some(stop => stop.name === 'Montserrat'), false);
 });
 
-test('gastronomía queda vacía y Barcelona no conserva la excursión cancelada', async () => {
+test('la gastronomía del documento se carga por ciudad con enlaces de Maps', async () => {
   const { itinerarySource } = await import('../frontend/itinerary-source.mjs');
 
   Object.values(itinerarySource.countries).forEach(country => {
-    country.ciudades.forEach(city => assert.deepEqual(city.gastronomia, []));
+    country.ciudades.forEach(city => {
+      assert.ok(city.gastronomia.length > 0, `${country.pais} · ${city.nombre} debe tener gastronomía`);
+      city.gastronomia.forEach(item => {
+        assert.ok(item.nombre);
+        assert.match(item.mapa, /^https:\/\/maps\.google\.com\//);
+      });
+    });
   });
   const barcelonaActivities = itinerarySource.countries.spain.ciudades
     .flatMap(city => city.actividades)
     .map(activity => activity.nombre);
   assert.equal(barcelonaActivities.some(name => /montserrat/i.test(name)), false);
   assert.ok(barcelonaActivities.length >= 10);
+  assert.ok(itinerarySource.countries.finland.ciudades[1].gastronomia.some(item => /Kaffeost/i.test(item.nombre)));
+  assert.ok(itinerarySource.countries.belgium.ciudades[0].gastronomia.some(item => /Dulle Griet/i.test(item.nombre)));
+  assert.ok(itinerarySource.countries.germany.ciudades[1].gastronomia.some(item => /Watzke/i.test(item.nombre)));
+  assert.ok(itinerarySource.countries.czech.ciudades[0].gastronomia.some(item => /Pilsner Urquell/i.test(item.nombre)));
+  ['Café Louvre', "Pork's", 'Kolacherie'].forEach(name => {
+    assert.ok(itinerarySource.countries.czech.ciudades[0].gastronomia.some(item => item.nombre.includes(name)));
+    assert.ok(itinerarySource.countries.czech.ciudades[2].gastronomia.some(item => item.nombre.includes(name)));
+  });
+});
+
+test('los supermercados incluyen las 13 estadías, direcciones y enlaces de Maps', async () => {
+  const { itinerarySource } = await import('../frontend/itinerary-source.mjs');
+  const cities = Object.values(itinerarySource.countries).flatMap(country => country.ciudades);
+  const citiesWithSupermarkets = cities.filter(city => city.supermercados?.length);
+
+  assert.equal(citiesWithSupermarkets.length, 13);
+  assert.equal(citiesWithSupermarkets.reduce((total, city) => total + city.supermercados.length, 0), 27);
+  citiesWithSupermarkets.forEach(city => {
+    assert.ok(city.supermercadosDestino);
+    assert.ok(city.direccionHotel);
+    city.supermercados.forEach(item => {
+      assert.ok(item.nombre);
+      assert.match(item.mapa, /^https:\/\/maps\.google\.com\//);
+    });
+  });
+  assert.equal(itinerarySource.countries.czech.ciudades[0].gastronomia[0].website, 'https://www.cafelouvre.cz/');
 });
 
 test('los vehículos del mapa solo se programan para los trayectos y fechas del viaje', async () => {

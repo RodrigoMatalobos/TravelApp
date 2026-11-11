@@ -16,6 +16,12 @@
       "fechas": "08/12/2026 – 09/12/2026",
       "hotel": "Hotel AX",
       "mapaHotelLink": "https://maps.google.com/?q=Hotel+AX+Helsinki",
+      "supermercadosDestino": "Helsinki 1 (Jätkäsaari)",
+      "direccionHotel": "Välimerenkatu 18, 00220 Helsinki, Finlandia",
+      "supermercados": [
+        { "nombre": "K-Market Busholmen (Välimerenkatu 5)", "mapa": "https://maps.google.com/?q=K-Market+Jatkasaari+Helsinki" },
+        { "nombre": "K-Supermarket Kamppi", "mapa": "https://maps.google.com/?q=K-Supermarket+Kamppi+Helsinki" }
+      ],
       "comoLlegar": "Vuelo Finnair (10:05 - 15:10). Desde el Aeropuerto Vantaa, tren I o P a la Estación Central y transbordo al Tranvía 9 dirección Jätkäsaari (parada Huutokonttori / Välimerenkatu, frente al hotel). Un solo ticket HSL cubre tren + tranvía; conviene bajar la app HSL antes de viajar.",
       "transportes": [
         { "tipo": "vuelo", "descripcion": "Barcelona → Helsinki", "fecha": "08/12/2026", "salida": "10:05", "llegada": "15:10" },
@@ -45,13 +51,27 @@
           "mapa": "https://maps.google.com/?q=Allas+Sea+Pool+Helsinki"
         }
       ],
-      "gastronomia": []
+      "gastronomia": [
+        { "dia": 1, "nombre": "Café Esplanad: korvapuusti (rollo de canela con cardamomo)", "mapa": "https://maps.google.com/?q=Cafe+Esplanad+Helsinki", "website": "https://cafeesplanad.fi/" },
+        { "dia": 1, "nombre": "Vanha Kauppahalli: sopa de salmón (lohikeitto)", "mapa": "https://maps.google.com/?q=Vanha+Kauppahalli+Helsinki" },
+        { "nombre": "Joulutorttu: hojaldre navideño relleno de ciruela", "mapa": "https://maps.google.com/?q=Joulutorttu+Helsinki" },
+        { "nombre": "Karjalanpiirakka: pastel salado de centeno y arroz o papa", "mapa": "https://maps.google.com/?q=Karjalanpiirakka+Helsinki" },
+        { "nombre": "Fazer Domino, Fazer Jaffa y Fasupala", "mapa": "https://maps.google.com/?q=Fazer+Domino+Jaffa+Fasupala+Helsinki" },
+        { "nombre": "Pipas: galletitas navideñas de jengibre y especias", "mapa": "https://maps.google.com/?q=Piparkakut+Helsinki" },
+        { "nombre": "Probar yogur Skyr Noma en un supermercado", "mapa": "https://maps.google.com/?q=Supermarket+Helsinki" }
+      ]
     },
     {
       "nombre": "Inari y Rovaniemi (Laponia)",
       "fechas": "10/12/2026 – 13/12/2026",
       "hotel": "Inari Camping Resort",
       "mapaHotelLink": "https://maps.google.com/?q=Inari+Camping+Resort",
+      "supermercadosDestino": "Inari",
+      "direccionHotel": "Inarintie 42, 99870 Inari, Finlandia",
+      "supermercados": [
+        { "nombre": "K-Market Inari (Inarintie 45)", "mapa": "https://maps.google.com/?q=K-Market+Inari" },
+        { "nombre": "Kuukkeli Shopping Center", "mapa": "https://maps.google.com/?q=Kuukkeli+Shopping+Center+Inari" }
+      ],
       "comoLlegar": "10/12: bus Matkahuolto Rovaniemi 11:45 → Inari 17:10 (estar 1-2 h antes en la estación). Descender en la parada principal de Inari y caminar 500 m al norte. El 13/12: bus Inari 07:15 → Rovaniemi 12:15 y a la noche tren nocturno VR 274 a Helsinki (21:00).",
       "transportes": [
         { "tipo": "bus", "descripcion": "Bus Matkahuolto: Rovaniemi → Inari", "fecha": "10/12/2026", "salida": "11:45", "llegada": "17:10" },
@@ -82,13 +102,21 @@
           "mapa": "https://maps.google.com/?q=Lordi+Square+Rovaniemi"
         }
       ],
-      "gastronomia": []
+      "gastronomia": [
+        { "nombre": "Lapland Restaurant Kotahovi o Santamus: Kaffeost / leipäjuusto con café o mora de los pantanos", "mapa": "https://maps.google.com/?q=Lapland+Restaurant+Kotahovi+Rovaniemi" }
+      ]
     },
     {
       "nombre": "Helsinki (Vuelta)",
       "fechas": "14/12/2026 – 15/12/2026",
       "hotel": "Töölö Towers",
       "mapaHotelLink": "https://maps.google.com/?q=Toolo+Towers+Helsinki",
+      "supermercadosDestino": "Helsinki 2 (Taka-Töölö)",
+      "direccionHotel": "Pohjoinen Hesperiankatu 23 A, 00260 Helsinki, Finlandia",
+      "supermercados": [
+        { "nombre": "K-Supermarket Kasarmi (Pohjoinen Hesperiankatu 33)", "mapa": "https://maps.google.com/?q=K-Supermarket+Kasarmi+Helsinki" },
+        { "nombre": "K-market Töölöntori", "mapa": "https://maps.google.com/?q=K-market+Toolontori+Helsinki" }
+      ],
       "comoLlegar": "14/12: llegada 09:30 en el tren nocturno desde Rovaniemi. Desde la Estación Central, Tranvía 1 o 2 a Töölö (Apollonkatu / Töölöntori) y 2 min a pie. El 15/12 a las 17:00 sale el ferry Viking Line a Estocolmo.",
       "transportes": [
         { "tipo": "ferry", "descripcion": "Ferry Viking Line: Helsinki → Estocolmo", "fecha": "15/12/2026", "salida": "17:00", "llegada": "10:00 (+1)" }
@@ -117,7 +145,15 @@
           "mapa": "https://maps.google.com/?q=Kotiharjun+Sauna+Helsinki"
         }
       ],
-      "gastronomia": []
+      "gastronomia": [
+        { "dia": 2, "nombre": "Café Esplanad: korvapuusti (rollo de canela con cardamomo)", "mapa": "https://maps.google.com/?q=Cafe+Esplanad+Helsinki", "website": "https://cafeesplanad.fi/" },
+        { "dia": 2, "nombre": "Vanha Kauppahalli: sopa de salmón (lohikeitto)", "mapa": "https://maps.google.com/?q=Vanha+Kauppahalli+Helsinki" },
+        { "nombre": "Joulutorttu: hojaldre navideño relleno de ciruela", "mapa": "https://maps.google.com/?q=Joulutorttu+Helsinki" },
+        { "nombre": "Karjalanpiirakka: pastel salado de centeno y arroz o papa", "mapa": "https://maps.google.com/?q=Karjalanpiirakka+Helsinki" },
+        { "nombre": "Fazer Domino, Fazer Jaffa y Fasupala", "mapa": "https://maps.google.com/?q=Fazer+Domino+Jaffa+Fasupala+Helsinki" },
+        { "nombre": "Pipas: galletitas navideñas de jengibre y especias", "mapa": "https://maps.google.com/?q=Piparkakut+Helsinki" },
+        { "nombre": "Probar yogur Skyr Noma en un supermercado", "mapa": "https://maps.google.com/?q=Supermarket+Helsinki" }
+      ]
     }
   ]
 }

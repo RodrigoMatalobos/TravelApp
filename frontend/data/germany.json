@@ -18,6 +18,12 @@
       "fechas": "22/12/2026 – 25/12/2026 (incluye excursión de día a Aquisgrán)",
       "hotel": "Premier Inn Köln City Süd",
       "mapaHotelLink": "https://maps.google.com/?q=Premier+Inn+K%C3%B6ln+City+S%C3%BCd",
+      "supermercadosDestino": "Colonia (Altstadt-Süd)",
+      "direccionHotel": "2 Perlengraben, 50676 Colonia, Alemania",
+      "supermercados": [
+        { "nombre": "REWE (Waidmarkt)", "mapa": "https://maps.google.com/?q=REWE+Waidmarkt+Cologne" },
+        { "nombre": "REWE (Eigelstein)", "mapa": "https://maps.google.com/?q=REWE+Eigelstein+Cologne" }
+      ],
       "comoLlegar": "Llegada 22/12 a las 14:15 en tren DB desde Bruselas (12:25). Desde Köln Hauptbahnhof, Stadtbahn 16 o 18 a Poststraße o Severinstraße y 3-5 min a pie.",
       "transportes": [
         { "tipo": "tren", "descripcion": "Tren DB: Bruselas → Colonia", "fecha": "22/12/2026", "salida": "12:25", "llegada": "14:15" },
@@ -92,13 +98,26 @@
           "mapa": "https://maps.google.com/?q=Carolus+Thermen+Aachen"
         }
       ],
-      "gastronomia": []
+      "gastronomia": [
+        { "dia": 1, "nombre": "Gilden im Zims o Hänneschen und die Pfeffermühle: codillo (Schweinshaxe), schnitzel y cerveza Kölsch", "mapa": "https://maps.google.com/?q=Gilden+im+Zims+Cologne", "website": "https://www.zims.de/en/home/" },
+        { "dia": 2, "nombre": "Ehrenfeld: restaurantes locales y de comida internacional", "mapa": "https://maps.google.com/?q=Restaurants+Ehrenfeld+Cologne" },
+        { "nombre": "Früh am Dom y Brauhaus Sion: cervecerías tradicionales", "mapa": "https://maps.google.com/?q=Traditional+Brewery+Cologne", "website": "https://www.brauhaus-sion.de/en/" },
+        { "dia": 3, "nombre": "Aquisgrán: Nobis Printen, galletas locales de jengibre", "mapa": "https://maps.google.com/?q=Nobis+Printen+Aachen" },
+        { "nombre": "Spekulatius: galletas navideñas de especias", "mapa": "https://maps.google.com/?q=Spekulatius+Cologne" },
+        { "nombre": "Prinzen Rolle, Leibniz Butterkeks y Manner Neapolitaner", "mapa": "https://maps.google.com/?q=German+cookies+Cologne" }
+      ]
     },
     {
       "nombre": "Dresde",
       "fechas": "25/12/2026 – 28/12/2026",
       "hotel": "Premier Inn Dresden City Centre",
       "mapaHotelLink": "https://maps.google.com/?q=Premier+Inn+Dresden+City+Centre",
+      "supermercadosDestino": "Dresde (Altstadt)",
+      "direccionHotel": "15a Dr.-Külz-Ring, 01067 Dresde, Alemania",
+      "supermercados": [
+        { "nombre": "REWE (Webergasse 1 - Altmarkt-Galerie)", "mapa": "https://maps.google.com/?q=REWE+Webergasse+Dresden" },
+        { "nombre": "REWE Stefan Lamke (Friedrichstraße 7)", "mapa": "https://maps.google.com/?q=REWE+Stefan+Lamke+Dresden" }
+      ],
       "comoLlegar": "Llegada 25/12 a las 13:42 (tren DB desde Colonia con transbordo). El primer recorrido empieza cerca de las 14:00. Itinerario pensado para Navidad. Salida 28/12 a las 10:53 hacia Berlín.",
       "transportes": [
         { "tipo": "tren", "descripcion": "Tren DB: Colonia → Dresde (transbordo 09:02)", "fecha": "25/12/2026", "salida": "07:55", "llegada": "13:42" },
@@ -168,13 +187,27 @@
           "mapa": "https://maps.google.com/?q=Yenidze+Dresden"
         }
       ],
-      "gastronomia": []
+      "gastronomia": [
+        { "dia": 1, "nombre": "Elegir una cervecería para la noche de Navidad: Watzke am Goldenen Reiter, Freiberger Schankhaus o Augustiner an der Frauenkirche", "mapa": "https://maps.google.com/?q=Restaurants+Altstadt+Dresden" },
+        { "nombre": "Watzke: cervezas artesanales sin filtrar", "mapa": "https://maps.google.com/?q=Watzke+am+Goldenen+Reiter+Dresden" },
+        { "nombre": "Freiberger Schankhaus: cerveza, codillo, goulash y salchichas con chucrut", "mapa": "https://maps.google.com/?q=Freiberger+Schankhaus+Dresden" },
+        { "nombre": "Augustiner an der Frauenkirche: cerveza servida desde barriles de madera", "mapa": "https://maps.google.com/?q=Augustiner+an+der+Frauenkirche+Dresden" },
+        { "nombre": "Pfunds Molkerei: buttermilk con jugo de frutas, quesos y souvenirs", "mapa": "https://maps.google.com/?q=Pfunds+Molkerei+Dresden" },
+        { "nombre": "Yenidze: restaurante bajo la cúpula de vidrio", "mapa": "https://maps.google.com/?q=Yenidze+Restaurant+Dresden" },
+        { "nombre": "Dresdner Christstollen, dulce tradicional de Navidad", "mapa": "https://maps.google.com/?q=Dresdner+Christstollen+Dresden", "website": "https://www.dresdnerstollen.com/" }
+      ]
     },
     {
       "nombre": "Berlín",
       "fechas": "28/12/2026 – 03/01/2027",
       "hotel": "Hampton by Hilton Berlin City West",
       "mapaHotelLink": "https://maps.google.com/?q=Hampton+by+Hilton+Berlin+City+West",
+      "supermercadosDestino": "Berlín (Charlottenburg)",
+      "direccionHotel": "Uhlandstraße 188-189, 10623 Berlín, Alemania",
+      "supermercados": [
+        { "nombre": "REWE (Uhlandstraße)", "mapa": "https://maps.google.com/?q=REWE+Uhlandstrasse+Berlin" },
+        { "nombre": "EDEKA (Kurfürstendamm)", "mapa": "https://maps.google.com/?q=EDEKA+Kurfurstendamm+Berlin" }
+      ],
       "comoLlegar": "Llegada 28/12 a las 12:28 (tren DB desde Dresde); instalarse en el alojamiento antes del primer paseo (~14:30). Salida 03/01 a las 13:28 hacia Praga.",
       "transportes": [
         { "tipo": "tren", "descripcion": "Tren DB: Dresde → Berlín", "fecha": "28/12/2026", "salida": "10:53", "llegada": "12:28" },
@@ -254,7 +287,15 @@
           "mapa": "https://maps.google.com/?q=Treptower+Park+Berlin"
         }
       ],
-      "gastronomia": []
+      "gastronomia": [
+        { "dia": 4, "nombre": "Restaurant Maximilians Berlin", "mapa": "https://maps.google.com/?q=Restaurant+Maximilians+Berlin" },
+        { "nombre": "BRLO Brwhouse: cervezas y comida", "mapa": "https://maps.google.com/?q=BRLO+Brwhouse+Berlin" },
+        { "nombre": "Das Lemke: cervecería y cocina alemana", "mapa": "https://maps.google.com/?q=Das+Lemke+Berlin" },
+        { "nombre": "Hofbräu Wirtshaus Berlin", "mapa": "https://maps.google.com/?q=Hofbrau+Wirtshaus+Berlin" },
+        { "dia": 6, "nombre": "Kreuzberg: probar kebabs y comida local", "mapa": "https://maps.google.com/?q=Kebab+Kreuzberg+Berlin" },
+        { "nombre": "Berliner / Pfannkuchen: bollo berlinés relleno de mermelada", "mapa": "https://maps.google.com/?q=Berliner+Pfannkuchen+Berlin" },
+        { "nombre": "Franzbrötchen: bollo de hojaldre con canela y azúcar", "mapa": "https://maps.google.com/?q=Franzbrotchen+Berlin" }
+      ]
     }
   ]
 }

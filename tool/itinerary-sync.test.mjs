@@ -59,6 +59,19 @@ test('la instantánea expone playlists múltiples y transportes con fecha y hora
   assert.equal(colonia.data.transportes[0].salida, '12:25');
 });
 
+test('la instantánea sincroniza supermercados y direcciones para las 13 estadías', () => {
+  const snapshot = buildItinerarySnapshot({ countries, route });
+  const citiesWithSupermarkets = snapshot.cities.filter(city => city.data.supermercados.length > 0);
+
+  assert.equal(citiesWithSupermarkets.length, 13);
+  assert.equal(citiesWithSupermarkets.reduce((total, city) => total + city.data.supermercados.length, 0), 27);
+  const barcelona = snapshot.cities.find(city => city.countryId === 'spain' && city.data.nombre === 'Barcelona (Ida)');
+  assert.equal(barcelona.data.supermercadosDestino, 'Barcelona 1 (Sants-Montjuïc)');
+  assert.equal(barcelona.data.direccionHotel, 'Torns 3, 08028 Barcelona, España');
+  assert.equal(barcelona.data.supermercados[0].nombre, 'Lidl (Gran Via de les Corts Catalanes, 159)');
+  assert.match(barcelona.data.supermercados[0].mapa, /^https:\/\/maps\.google\.com\//);
+});
+
 test('una playlist sin URL se descarta y el campo viejo spotifyUrl sigue funcionando', () => {
   const snapshot = buildItinerarySnapshot({
     countries: Object.fromEntries(INITIAL_COUNTRY_IDS.map(id => [id, {
@@ -71,6 +84,13 @@ test('una playlist sin URL se descarta y el campo viejo spotifyUrl sigue funcion
   const sweden = snapshot.countries.find(country => country.id === 'sweden');
 
   assert.deepEqual(sweden.data.playlists, [{ nombre: 'Playlist del viaje', url: 'https://spotify.test/suecia' }]);
+});
+
+test('la instantánea conserva las webs oficiales de lugares gastronómicos', () => {
+  const snapshot = buildItinerarySnapshot({ countries, route });
+  const cafeLouvre = snapshot.activities.find(activity => activity.data.nombre.startsWith('Café Louvre'));
+
+  assert.equal(cafeLouvre.data.website, 'https://www.cafelouvre.cz/');
 });
 
 test('la comparación detecta campos heredados y evita escrituras repetidas', () => {
