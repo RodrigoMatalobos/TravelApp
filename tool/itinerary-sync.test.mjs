@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
+  buildActivityDocument,
+  buildCityDocument,
+  buildCityRouteStop,
   buildItinerarySnapshot,
   diffDocuments,
   documentsEqual,
@@ -100,4 +103,41 @@ test('la comparación detecta campos heredados y evita escrituras repetidas', ()
   assert.equal(documentsEqual(existing[0].data, desired[0].data), false);
   assert.deepEqual(diffDocuments(existing, desired).upserts.map(item => item.id), ['germany']);
   assert.deepEqual(diffDocuments(desired, desired).upserts, []);
+});
+
+test('buildActivityDocument valida nombre, día y enlaces de Maps', () => {
+  const activity = buildActivityDocument({
+    nombre: 'Museo del Prado',
+    dia: '2',
+    category: 'actividad',
+    mapa: 'https://maps.google.com/?q=Museo+del+Prado',
+    nota: 'Entrar temprano',
+    order: 5
+  });
+  assert.equal(activity.nombre, 'Museo del Prado');
+  assert.equal(activity.dia, 2);
+  assert.equal(activity.mapa, 'https://maps.google.com/?q=Museo+del+Prado');
+  assert.equal(activity.nota, 'Entrar temprano');
+  assert.throws(() => buildActivityDocument({ nombre: '' }), /obligatorio/i);
+  assert.throws(() => buildActivityDocument({ nombre: 'Algo', mapa: 'ftp://invalido' }), /Google Maps/i);
+});
+
+test('buildCityDocument y buildCityRouteStop generan ciudad y parada de mapa válidas', () => {
+  const city = buildCityDocument({ id: 'city-04-milan', nombre: 'Milán', fechas: '10/01/2027 – 12/01/2027', order: 3 });
+  const stop = buildCityRouteStop({
+    id: 'italy-milan-1',
+    name: city.nombre,
+    countryId: 'italy',
+    countryName: 'Italia',
+    flag: '🇮🇹',
+    cityIndex: 3,
+    latitude: 45.4642,
+    longitude: 9.19,
+    order: 29
+  });
+  assert.equal(city.nombre, 'Milán');
+  assert.equal(stop.hasItinerary, true);
+  assert.equal(stop.cityIndex, 3);
+  assert.equal(stop.latitude, 45.4642);
+  assert.throws(() => buildCityRouteStop({ name: 'Sin coords', latitude: NaN, longitude: 9 }), /coordenadas válidas/i);
 });

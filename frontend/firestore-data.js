@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocFromCache,
@@ -16,6 +17,9 @@ import {
 import { db } from './firebase-client.js';
 import { mergeCountryCatalog } from './country-catalog.mjs';
 import {
+  buildActivityDocument,
+  buildCityDocument,
+  buildCityRouteStop,
   buildItinerarySnapshot,
   diffDocuments,
   INITIAL_COUNTRY_IDS
@@ -222,7 +226,7 @@ async function loadCountry(countryId) {
     const cities = await Promise.all(citySnapshot.docs.map(async cityDocument => {
       const city = { id: cityDocument.id, ...cityDocument.data() };
       const activitySnapshot = await getDocsSmart(collection(db, 'countries', countryId, 'cities', cityDocument.id, 'activities'));
-      const activities = orderedBy(activitySnapshot.docs.map(activity => activity.data()));
+      const activities = orderedBy(activitySnapshot.docs.map(activity => ({ id: activity.id, ...activity.data() })));
       return {
         ...city,
         actividades: activities.filter(activity => activity.category === 'actividad'),
@@ -379,6 +383,93 @@ async function seedInitialData(options) {
   return syncItineraryData(options);
 }
 
+async function ensureInitialSeed(options) {
+  const existing = await getDocs(collection(db, 'countries'));
+  if (!existing.empty) {
+    return { seeded: false, writeCount: 0, countries: [], routeStops: 0 };
+  }
+  const result = await syncItineraryData(options);
+  return { seeded: true, ...result };
+}
+
+function invalidateCountryCache(countryId, includeRoute = false) {
+  const key = `country:${countryId}`;
+  sessionCache.delete(key);
+  deletePersistentCache(key);
+  if (includeRoute) {
+    sessionCache.delete('route');
+    deletePersistentCache('route');
+    sessionCache.delete('countries');
+    deletePersistentCache('countries');
+  }
+}
+
+async function saveActivity(countryId, cityId, activityInput) {
+  if (!countryId || !cityId) throw new Error('Faltan país o ciudad para guardar la actividad.');
+  const activityId = activityInput?.id || `activity-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+  const payload = buildActivityDocument(activityInput);
+  await setDoc(doc(db, 'countries', countryId, 'cities', cityId, 'activities', activityId), payload);
+  invalidateCountryCache(countryId);
+  return { id: activityId, ...payload };
+}
+
+async function deleteActivity(countryId, cityId, activityId) {
+  if (!countryId || !cityId || !activityId) throw new Error('Faltan datos para eliminar la actividad.');
+  await deleteDoc(doc(db, 'countries', countryId, 'cities', cityId, 'activities', activityId));
+  invalidateCountryCache(countryId);
+}
+
+async function addCityWithRouteStop({ countryId, countryName = '', flag = '', cityData = {}, stopData = null }) {
+  if (!countryId) throw new Error('Falta el país para crear la ciudad.');
+  const existingCitiesSnapshot = await getDocs(collection(db, 'countries', countryId, 'cities'));
+  const nextCityIndex = existingCitiesSnapshot.size;
+  const slug = String(cityData.nombre || 'ciudad')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '') || 'ciudad';
+  const cityId = `city-${String(nextCityIndex + 1).padStart(2, '0')}-${slug.slice(0, 20)}`;
+  const cityDoc = buildCityDocument({ ...cityData, id: cityId, order: nextCityIndex });
+
+  const batch = writeBatch(db);
+  batch.set(doc(db, 'countries', countryId, 'cities', cityId), cityDoc);
+
+  let createdStop = null;
+  if (stopData && Number.isFinite(Number(stopData.latitude)) && Number.isFinite(Number(stopData.longitude))) {
+    const routeSnapshot = await getDocs(collection(db, 'routeStops'));
+    const existingStops = orderedBy(routeSnapshot.docs.map(s => ({ id: s.id, ...s.data() })));
+    const insertOrder = Number.isInteger(Number(stopData.order))
+      ? Math.max(0, Math.min(existingStops.length, Number(stopData.order)))
+      : existingStops.length;
+    const stopId = `${countryId}-${slug}-${Date.now().toString(36)}`;
+    createdStop = buildCityRouteStop({
+      id: stopId,
+      name: cityDoc.nombre,
+      countryId,
+      countryName,
+      flag,
+      cityIndex: nextCityIndex,
+      latitude: stopData.latitude,
+      longitude: stopData.longitude,
+      order: insertOrder,
+      stage: stopData.stage || cityDoc.fechas || ''
+    });
+
+    existingStops.forEach((stop, index) => {
+      const targetOrder = index >= insertOrder ? index + 1 : index;
+      if (stop.order !== targetOrder) {
+        batch.set(doc(db, 'routeStops', stop.id), { ...stop, order: targetOrder });
+      }
+    });
+    batch.set(doc(db, 'routeStops', createdStop.id), createdStop);
+  }
+
+  await batch.commit();
+  invalidateCountryCache(countryId, Boolean(createdStop));
+  return { city: cityDoc, cityIndex: nextCityIndex, routeStop: createdStop };
+}
+
 async function getMember(uid) {
   const snapshot = await getDocSmart(doc(db, 'members', uid));
   return snapshot.exists() ? { uid: snapshot.id, ...snapshot.data() } : null;
@@ -495,6 +586,10 @@ window.TravelFirestore = Object.freeze({
   invalidateItineraryCache,
   syncItineraryData,
   seedInitialData,
+  ensureInitialSeed,
+  saveActivity,
+  deleteActivity,
+  addCityWithRouteStop,
   getMember,
   submitAccessRequest,
   listAccessRequests,

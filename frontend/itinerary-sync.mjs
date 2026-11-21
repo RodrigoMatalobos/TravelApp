@@ -54,8 +54,118 @@ function mapActivity(activity, category, order) {
     dia: Number.isFinite(Number(value.dia)) ? Number(value.dia) : null,
     nombre: text(value.nombre),
     mapa: text(value.mapa),
+    nota: text(value.nota),
     website: text(value.website),
     order
+  };
+}
+
+export function buildActivityDocument({
+  category = 'actividad',
+  dia = null,
+  nombre = '',
+  mapa = '',
+  nota = '',
+  website = '',
+  order = 0
+} = {}) {
+  const cleanName = text(nombre);
+  if (!cleanName) {
+    throw new Error('El nombre de la actividad es obligatorio.');
+  }
+  const cleanMap = text(mapa);
+  if (cleanMap && !/^https?:\/\//i.test(cleanMap)) {
+    throw new Error('El enlace de Google Maps debe empezar con http:// o https://.');
+  }
+  const cleanWebsite = text(website);
+  if (cleanWebsite && !/^https?:\/\//i.test(cleanWebsite)) {
+    throw new Error('El enlace web debe empezar con http:// o https://.');
+  }
+  const parsedDay = dia === '' || dia === null || dia === undefined ? null : Number(dia);
+  if (parsedDay !== null && (!Number.isInteger(parsedDay) || parsedDay < 1)) {
+    throw new Error('El día debe ser un número entero positivo o quedar vacío.');
+  }
+  return {
+    category: category === 'gastronomia' ? 'gastronomia' : 'actividad',
+    dia: parsedDay,
+    nombre: cleanName,
+    mapa: cleanMap,
+    nota: text(nota),
+    website: cleanWebsite,
+    order: Number.isFinite(Number(order)) ? Number(order) : 0
+  };
+}
+
+export function buildCityDocument({
+  id = '',
+  nombre = '',
+  fechas = '',
+  hotel = '',
+  mapaHotelLink = '',
+  comoLlegar = '',
+  transportePublico = '',
+  guardaequipaje = '',
+  order = 0
+} = {}) {
+  const cleanName = text(nombre);
+  if (!cleanName) {
+    throw new Error('El nombre de la ciudad es obligatorio.');
+  }
+  const cleanHotelMap = text(mapaHotelLink);
+  if (cleanHotelMap && !/^https?:\/\//i.test(cleanHotelMap)) {
+    throw new Error('El enlace de Maps del hotel debe empezar con http:// o https://.');
+  }
+  return {
+    id: text(id),
+    nombre: cleanName,
+    fechas: text(fechas),
+    hotel: text(hotel),
+    mapaHotelLink: cleanHotelMap,
+    supermercadosDestino: '',
+    direccionHotel: '',
+    supermercados: [],
+    comoLlegar: text(comoLlegar),
+    transportes: [],
+    transportePublico: text(transportePublico),
+    guardaequipaje: text(guardaequipaje),
+    mapaGastroLink: '',
+    order: Number.isFinite(Number(order)) ? Number(order) : 0
+  };
+}
+
+export function buildCityRouteStop({
+  id = '',
+  name = '',
+  countryId = '',
+  countryName = '',
+  flag = '',
+  cityIndex = 0,
+  latitude,
+  longitude,
+  order = 0,
+  stage = ''
+} = {}) {
+  const lat = Number(latitude);
+  const lon = Number(longitude);
+  if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lon) || lon < -180 || lon > 180) {
+    throw new Error('Seleccioná coordenadas válidas en el mapa para la ciudad.');
+  }
+  const stopName = text(name);
+  if (!stopName) {
+    throw new Error('La parada del mapa debe tener un nombre.');
+  }
+  return {
+    id: text(id) || `stop-${Date.now()}`,
+    name: stopName,
+    countryName: text(countryName),
+    flag: text(flag),
+    hasItinerary: true,
+    countryId: text(countryId),
+    cityIndex: Number(cityIndex),
+    latitude: lat,
+    longitude: lon,
+    order: Number.isFinite(Number(order)) ? Number(order) : 0,
+    ...(text(stage) ? { stage: text(stage) } : {})
   };
 }
 

@@ -1,3 +1,11 @@
+import {
+  clearPendingVaultChanges,
+  isOfflineError,
+  loadPendingVaultChanges,
+  mergePendingVaultRecords,
+  savePendingVaultChanges
+} from './vault-offline.mjs';
+
 (function () {
   'use strict';
 
@@ -52,6 +60,7 @@
       actor: window.TravelFirebase.auth.currentUser?.displayName || window.TravelFirebase.auth.currentUser?.email || '',
       authorized: Boolean(window.TravelFirebase.auth.currentUser),
       dirty: false,
+      hasPendingOffline: false,
       busy: false,
       status: '',
       statusKind: 'info'
@@ -78,38 +87,68 @@
   async function loadCurrentTab() {
     viewState.busy = true;
     const tab = viewState.tab;
+    const pending = loadPendingVaultChanges(tab);
     setStatus(`Descargando ${tab}…`);
     draw();
 
     try {
-      const records = await window.TravelFirestore.loadVaultRecords(tab);
-      viewState.baselines[tab] = new Map(records.map(record => [record.id, { ...record }]));
-      viewState.records[tab] = records.map(parseRecord.bind(null, tab));
+      const remoteRecords = await window.TravelFirestore.loadVaultRecords(tab);
+      viewState.baselines[tab] = new Map(remoteRecords.map(record => [record.id, { ...record }]));
+      const merged = mergePendingVaultRecords(remoteRecords, pending);
+      viewState.records[tab] = merged.records.map(parseRecord.bind(null, tab));
       viewState.conflicts = viewState.conflicts.filter(conflict => conflict.tab !== tab);
-      viewState.dirty = false;
+      viewState.hasPendingOffline = merged.hasPending;
+      viewState.dirty = merged.hasPending;
       viewState.lastSync = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      if (merged.hasPending) {
+        viewState.busy = false;
+        await saveAll({ fromAutoRetry: true });
+        return;
+      }
+
       setStatus(`${tab} actualizado desde Firestore ${viewState.lastSync}.`, 'success');
     } catch (error) {
-      setStatus(error.message || `No se pudo descargar ${tab}.`, 'error');
+      if (pending && Array.isArray(pending.records)) {
+        viewState.records[tab] = pending.records.map(parseRecord.bind(null, tab));
+        viewState.hasPendingOffline = true;
+        viewState.dirty = true;
+        setStatus('Sin conexión. Mostrando cambios guardados en el teléfono; tocá Reintentar cuando tengas internet.', 'warning');
+      } else {
+        setStatus(error.message || `No se pudo descargar ${tab}.`, 'error');
+      }
     } finally {
       viewState.busy = false;
       draw();
     }
   }
 
-  async function saveAll() {
+  async function saveAll({ fromAutoRetry = false } = {}) {
     if (!viewState.authorized) {
       setStatus('Iniciá sesión con una cuenta habilitada.', 'error');
       draw();
       return;
     }
 
+    const tab = viewState.tab;
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      const savedLocally = savePendingVaultChanges(tab, viewState.records[tab]);
+      viewState.hasPendingOffline = savedLocally;
+      setStatus(
+        savedLocally
+          ? 'Sin conexión a internet. Cambios guardados en el teléfono; se publicarán en Firebase al volver a abrir la app o tocar Reintentar.'
+          : 'Sin conexión a internet y no se pudo guardar localmente.',
+        savedLocally ? 'warning' : 'error'
+      );
+      draw();
+      return;
+    }
+
     viewState.busy = true;
-    setStatus('Revisando cambios compartidos antes de guardar en Firebase…');
+    setStatus(fromAutoRetry ? 'Sincronizando cambios guardados en el teléfono…' : 'Publicando cambios en Firebase…');
     draw();
 
     try {
-      const tab = viewState.tab;
       const result = await window.TravelFirestore.saveVaultRecords(
         tab,
         viewState.records[tab],
@@ -123,11 +162,24 @@
         return;
       }
 
-      await loadCurrentTab();
+      clearPendingVaultChanges(tab);
+      viewState.hasPendingOffline = false;
       viewState.dirty = false;
-      setStatus(result.saved ? 'Cambios guardados y listas actualizadas.' : 'No había cambios pendientes.', 'success');
+      await loadCurrentTab();
+      setStatus(result.saved ? 'Cambios guardados y listas actualizadas en Firebase.' : 'No había cambios pendientes.', 'success');
     } catch (error) {
-      setStatus(error.message || 'No se pudieron guardar los cambios.', 'error');
+      if (isOfflineError(error)) {
+        const savedLocally = savePendingVaultChanges(tab, viewState.records[tab]);
+        viewState.hasPendingOffline = savedLocally;
+        setStatus(
+          savedLocally
+            ? 'No se detectó conexión estable. Cambios guardados en el teléfono hasta el próximo intento.'
+            : (error.message || 'No se pudieron guardar los cambios.'),
+          savedLocally ? 'warning' : 'error'
+        );
+      } else {
+        setStatus(error.message || 'No se pudieron guardar los cambios.', 'error');
+      }
     } finally {
       viewState.busy = false;
       draw();
@@ -223,7 +275,7 @@
           <label class="text-xs text-slate-300">Categoría<input name="categoria" maxlength="40" placeholder="Transporte, comida…" class="mt-1 w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-white"></label>
           <label class="col-span-2 text-xs text-slate-300">Pagó<input name="pagado_por" required value="${escapeHtml(viewState.actor)}" maxlength="60" class="mt-1 w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-white"></label>
           <label class="col-span-2 text-xs text-slate-300">Participantes (separados por coma)<input name="participantes" placeholder="Los tres" class="mt-1 w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-white"></label>
-          <button class="col-span-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500" type="submit">Agregar gasto</button>
+          <button class="col-span-2 rounded-lg bg-slate-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-600" type="submit">Agregar a la lista</button>
         </form>
       `;
     }
@@ -234,7 +286,7 @@
         <label class="text-xs text-slate-300">Cantidad<input name="cantidad" type="number" min="1" step="1" value="1" class="mt-1 w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-white"></label>
         <label class="text-xs text-slate-300">Para<input name="asignado_a" maxlength="60" placeholder="Opcional" class="mt-1 w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-white"></label>
         <label class="col-span-2 text-xs text-slate-300">Nota<input name="nota" maxlength="200" placeholder="Opcional" class="mt-1 w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-white"></label>
-        <button class="col-span-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500" type="submit">Agregar a ${tab === 'Valija' ? 'la valija' : 'compras'}</button>
+        <button class="col-span-2 rounded-lg bg-slate-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-600" type="submit">Agregar a la lista</button>
       </form>
     `;
   }
@@ -265,6 +317,7 @@
 
         <div class="flex flex-wrap gap-2">
           ${active ? '<button id="vault-refresh" type="button" class="rounded-lg border border-slate-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/10">Actualizar</button>' : ''}
+          ${active && viewState.hasPendingOffline ? '<button id="vault-retry" type="button" class="rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-amber-400">Reintentar envío</button>' : ''}
         </div>
 
         ${viewState.status ? `<p class="rounded-lg border p-3 text-sm ${statusClass}" role="status">${escapeHtml(viewState.status)}</p>` : ''}
@@ -284,8 +337,11 @@
 
             <section class="rounded-lg border border-slate-700 bg-slate-800/60 px-4">
               <div class="flex items-center justify-between border-b border-slate-700 py-3">
-                <h3 class="text-sm font-semibold text-white">${viewState.tab}</h3>
-                <button id="vault-save" type="button" ${viewState.busy || viewState.conflicts.length ? 'disabled' : ''} class="rounded-md bg-emerald-600 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40">Guardar</button>
+                <div>
+                  <h3 class="text-sm font-semibold text-white">${viewState.tab}</h3>
+                  ${viewState.hasPendingOffline ? '<p class="text-[11px] text-amber-300">Pendiente en el teléfono</p>' : viewState.dirty ? '<p class="text-[11px] text-emerald-300">Cambios sin guardar</p>' : ''}
+                </div>
+                <button id="vault-save" type="button" ${viewState.busy || viewState.conflicts.length ? 'disabled' : ''} class="rounded-md bg-emerald-600 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40">${viewState.hasPendingOffline ? 'Reintentar' : 'Guardar cambios'}</button>
               </div>
               <ul class="divide-y divide-slate-700/70">${renderListRows(viewState.tab)}</ul>
             </section>
@@ -306,9 +362,12 @@
 
     viewState.container.querySelector('#vault-refresh')?.addEventListener('click', async () => {
       if (viewState.dirty && !window.confirm('Actualizar reemplaza los cambios locales no guardados. ¿Continuar?')) return;
+      clearPendingVaultChanges(viewState.tab);
+      viewState.hasPendingOffline = false;
       await loadCurrentTab();
     });
-    viewState.container.querySelector('#vault-save')?.addEventListener('click', saveAll);
+    viewState.container.querySelector('#vault-retry')?.addEventListener('click', () => saveAll());
+    viewState.container.querySelector('#vault-save')?.addEventListener('click', () => saveAll());
 
     viewState.container.querySelector('#vault-add-form')?.addEventListener('submit', event => {
       event.preventDefault();
@@ -351,7 +410,7 @@
       }
       viewState.records[viewState.tab].push(record);
       viewState.dirty = true;
-      setStatus('Elemento agregado localmente. Tocá Guardar para compartirlo.', 'success');
+      setStatus('Elemento agregado a la lista. Tocá "Guardar cambios" para publicarlo en Firebase.', 'success');
       draw();
     });
 

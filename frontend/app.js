@@ -125,7 +125,7 @@ async function enterMapMode() {
 function ensureItineraryDataSynced() {
   if (!itinerarySyncPromise) {
     itinerarySyncPromise = import('./itinerary-source.mjs')
-      .then(({ itinerarySource }) => window.TravelFirestore.syncItineraryData(itinerarySource))
+      .then(({ itinerarySource }) => window.TravelFirestore.ensureInitialSeed(itinerarySource))
       .catch(error => {
         itinerarySyncPromise = null;
         throw error;
@@ -418,13 +418,17 @@ function normalizeActivities(items) {
   if (!Array.isArray(items)) return [];
   return items.map(item => {
     if (typeof item === 'string') {
-      return { nombre: item, mapa: '' };
+      return { id: '', nombre: item, mapa: '', nota: '' };
     }
     return {
+      id: item?.id || '',
+      category: item?.category || 'actividad',
       dia: Number.isFinite(Number(item?.dia)) ? Number(item.dia) : null,
       nombre: item?.nombre || '',
       mapa: item?.mapa || '',
-      website: item?.website || ''
+      nota: item?.nota || '',
+      website: item?.website || '',
+      order: item?.order ?? 0
     };
   }).filter(item => item.nombre);
 }
@@ -454,7 +458,8 @@ function groupActivitiesByDay(activities) {
   });
 }
 
-function renderGroupedActivities(activities, emptyMessage, cityDates = '', showDateHeaders = true) {
+function renderGroupedActivities(activities, emptyMessage, cityDates = '', showDateHeaders = true, editContext = null) {
+  const isAdmin = activeMember?.role === 'admin' && Boolean(editContext);
   if (!activities.length) {
     return `<div class="text-xs text-slate-400">${emptyMessage}</div>`;
   }
@@ -463,14 +468,20 @@ function renderGroupedActivities(activities, emptyMessage, cityDates = '', showD
     <div class="space-y-1.5">
       ${showDateHeaders ? `<h5 class="text-[11px] font-bold uppercase tracking-wide text-blue-400 pt-2">${day === 'general' ? 'Fechas flexibles' : escapeHtml(activityDateLabel(cityDates, day))}</h5>` : ''}
       ${items.map(item => `
-        <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-700/30 flex justify-between items-start gap-3 text-sm leading-relaxed">
-          <span class="text-slate-300 flex-1 min-w-0">${escapeHtml(item.nombre)}</span><span class="flex shrink-0 items-center gap-1.5">${/^https?:\/\//i.test(item.website) ? `
+        <div data-activity-id="${escapeHtml(item.id || '')}" class="bg-slate-900/40 p-3 rounded-xl border border-slate-700/30 flex justify-between items-start gap-3 text-sm leading-relaxed transition-colors duration-300">
+          <div class="flex-1 min-w-0">
+            <span class="text-slate-300 block">${escapeHtml(item.nombre)}</span>
+            ${item.nota ? `<p class="mt-1 text-xs text-slate-400">${escapeHtml(item.nota)}</p>` : ''}
+          </div>
+          <span class="flex shrink-0 items-center gap-1.5">${/^https?:\/\//i.test(item.website) ? `
             <a href="${escapeHtml(item.website)}" target="_blank" rel="noopener noreferrer" class="whitespace-nowrap text-emerald-300 font-medium hover:underline text-xs bg-slate-800 px-2.5 py-1.5 rounded-md border border-slate-700">
               🌐 Web
             </a>` : ''}${/^https?:\/\//i.test(item.mapa) ? `
             <a href="${escapeHtml(item.mapa)}" target="_blank" rel="noopener noreferrer" class="shrink-0 whitespace-nowrap text-blue-400 font-medium hover:underline text-xs flex items-center gap-1 bg-slate-800 px-2.5 py-1.5 rounded-md border border-slate-700">
               📍 Maps
-            </a>` : ''}</span>
+            </a>` : ''}${isAdmin && item.id ? `
+            <button type="button" data-edit-activity="${escapeHtml(item.id)}" data-city-id="${escapeHtml(editContext.cityId)}" class="rounded-md border border-slate-700 bg-slate-800 px-2 py-1.5 text-xs text-slate-200 hover:bg-slate-700" aria-label="Editar actividad">✏️</button>
+            <button type="button" data-delete-activity="${escapeHtml(item.id)}" data-city-id="${escapeHtml(editContext.cityId)}" class="rounded-md border border-red-900/60 bg-red-950/40 px-2 py-1.5 text-xs text-red-200 hover:bg-red-900/50" aria-label="Eliminar actividad">🗑️</button>` : ''}</span>
         </div>
       `).join('')}
     </div>
@@ -637,6 +648,14 @@ function showCiudadesView(paisId, recordHistory = true) {
         `;
         ciudadesSection.appendChild(btn);
       });
+      if (activeMember?.role === 'admin') {
+        const addCityBtn = document.createElement('button');
+        addCityBtn.type = 'button';
+        addCityBtn.className = 'w-full rounded-xl border border-dashed border-emerald-500/60 bg-emerald-950/30 p-3 text-sm font-semibold text-emerald-200 hover:bg-emerald-900/40';
+        addCityBtn.textContent = '+ Agregar ciudad (y ubicar en el mapa)';
+        addCityBtn.addEventListener('click', () => openCityCreatorModal(pais, canonicalPaisId));
+        ciudadesSection.appendChild(addCityBtn);
+      }
       container.appendChild(ciudadesSection);
 
       const countrySections = document.createElement('section');
@@ -675,21 +694,24 @@ function showCiudadesView(paisId, recordHistory = true) {
     });
 }
 
-function showCountrySectionView(pais, paisId, sectionId, recordHistory = true) {
+function showCountrySectionView(pais, paisId, sectionId, recordHistory = true, options = {}) {
   const sections = {
     actividades: {
       label: 'Actividades',
       property: 'actividades',
+      category: 'actividad',
       emptyMessage: 'No hay actividades cargadas para esta ciudad.'
     },
     gastronomia: {
       label: 'Gastronomía',
       property: 'gastronomia',
+      category: 'gastronomia',
       emptyMessage: 'Todavía no hay lugares de gastronomía cargados.'
     },
     supermercados: {
       label: 'Supermercados',
       property: 'supermercados',
+      category: null,
       emptyMessage: 'No hay supermercados cargados para esta estadía.'
     }
   };
@@ -707,23 +729,289 @@ function showCountrySectionView(pais, paisId, sectionId, recordHistory = true) {
 
   const container = document.getElementById('app');
   if (!container) return;
+  const isAdmin = activeMember?.role === 'admin' && Boolean(section.category);
   container.className = 'p-4 max-w-md mx-auto space-y-4';
-  container.innerHTML = pais.ciudades.map(city => `
-    <section class="space-y-2">
-      <div>
-        <h2 class="text-base font-bold text-white">${escapeHtml(city.nombre || 'Ciudad sin nombre')}</h2>
-        ${sectionId === 'supermercados' && city.supermercadosDestino ? `<p class="text-xs text-emerald-300">${escapeHtml(city.supermercadosDestino)}</p>` : ''}
-        <p class="text-xs text-slate-400">${escapeHtml(city.fechas || '')}</p>
+  container.innerHTML = pais.ciudades.map(city => {
+    const editContext = section.category ? { cityId: city.id, category: section.category } : null;
+    return `
+      <section class="space-y-2">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <h2 class="text-base font-bold text-white">${escapeHtml(city.nombre || 'Ciudad sin nombre')}</h2>
+            ${sectionId === 'supermercados' && city.supermercadosDestino ? `<p class="text-xs text-emerald-300">${escapeHtml(city.supermercadosDestino)}</p>` : ''}
+            <p class="text-xs text-slate-400">${escapeHtml(city.fechas || '')}</p>
+          </div>
+          ${isAdmin && city.id ? `<button type="button" data-add-activity="${escapeHtml(city.id)}" class="shrink-0 rounded-lg border border-emerald-500/50 bg-emerald-950/40 px-2.5 py-1.5 text-xs font-semibold text-emerald-200 hover:bg-emerald-900/50">+ Agregar</button>` : ''}
+        </div>
+        ${sectionId === 'supermercados' && city.direccionHotel ? `<p class="text-xs text-slate-400">Hotel: ${escapeHtml(city.direccionHotel)}</p>` : ''}
+        <div class="space-y-2">${renderGroupedActivities(
+          normalizeActivities(city[section.property]),
+          section.emptyMessage,
+          city.fechas,
+          sectionId !== 'supermercados',
+          editContext
+        )}</div>
+      </section>
+    `;
+  }).join('');
+
+  if (isAdmin) {
+    container.querySelectorAll('[data-add-activity]').forEach(button => {
+      button.addEventListener('click', () => {
+        const city = pais.ciudades.find(item => item.id === button.dataset.addActivity);
+        if (city) {
+          openActivityEditorModal({
+            countryId: paisId,
+            city,
+            category: section.category,
+            onSaved: async () => {
+              const updated = await window.TravelFirestore.loadCountry(paisId);
+              if (updated) showCountrySectionView(updated, paisId, sectionId, false);
+            }
+          });
+        }
+      });
+    });
+
+    container.querySelectorAll('[data-edit-activity]').forEach(button => {
+      button.addEventListener('click', () => {
+        const city = pais.ciudades.find(item => item.id === button.dataset.cityId);
+        const activity = normalizeActivities(city?.[section.property]).find(item => item.id === button.dataset.editActivity);
+        if (city && activity) {
+          openActivityEditorModal({
+            countryId: paisId,
+            city,
+            category: section.category,
+            activity,
+            onSaved: async () => {
+              const updated = await window.TravelFirestore.loadCountry(paisId);
+              if (updated) showCountrySectionView(updated, paisId, sectionId, false);
+            }
+          });
+        }
+      });
+    });
+
+    container.querySelectorAll('[data-delete-activity]').forEach(button => {
+      button.addEventListener('click', async () => {
+        if (!window.confirm('¿Eliminar esta actividad del itinerario?')) return;
+        button.disabled = true;
+        try {
+          await window.TravelFirestore.deleteActivity(paisId, button.dataset.cityId, button.dataset.deleteActivity);
+          const updated = await window.TravelFirestore.loadCountry(paisId);
+          if (updated) showCountrySectionView(updated, paisId, sectionId, false);
+        } catch (error) {
+          button.disabled = false;
+          window.alert(error.message || 'No se pudo eliminar la actividad.');
+        }
+      });
+    });
+  }
+
+  if (options.focusActivityId) {
+    const target = Array.from(container.querySelectorAll('[data-activity-id]'))
+      .find(element => element.dataset.activityId === options.focusActivityId);
+    if (target) {
+      requestAnimationFrame(() => {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target.classList.add('ring-2', 'ring-emerald-400', 'bg-emerald-950/50');
+        setTimeout(() => {
+          target.classList.remove('ring-2', 'ring-emerald-400', 'bg-emerald-950/50');
+        }, 2500);
+      });
+    }
+  }
+}
+
+function openActivityEditorModal({ countryId, city, category, activity = null, onSaved }) {
+  const existingModal = document.getElementById('admin-editor-modal');
+  if (existingModal) existingModal.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'admin-editor-modal';
+  overlay.className = 'fixed inset-0 z-[120] flex items-end sm:items-center justify-center bg-slate-950/80 p-3 backdrop-blur-sm';
+  overlay.innerHTML = `
+    <div class="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-4 shadow-2xl space-y-3">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 class="text-base font-semibold text-white">${activity ? 'Editar actividad' : 'Nueva actividad'} · ${escapeHtml(city.nombre || '')}</h3>
+        <button type="button" data-modal-close class="h-8 w-8 rounded-lg text-lg text-slate-400 hover:bg-slate-800 hover:text-white">×</button>
       </div>
-      ${sectionId === 'supermercados' && city.direccionHotel ? `<p class="text-xs text-slate-400">Hotel: ${escapeHtml(city.direccionHotel)}</p>` : ''}
-      <div class="space-y-2">${renderGroupedActivities(
-        normalizeActivities(city[section.property]),
-        section.emptyMessage,
-        city.fechas,
-        sectionId !== 'supermercados'
-      )}</div>
-    </section>
-  `).join('');
+      <form id="activity-editor-form" class="space-y-3">
+        <label class="block text-xs text-slate-300">Nombre o descripción
+          <input name="nombre" required maxlength="240" value="${escapeHtml(activity?.nombre || '')}" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white">
+        </label>
+        <div class="grid grid-cols-2 gap-2">
+          <label class="text-xs text-slate-300">Día (opcional)
+            <input name="dia" type="number" min="1" step="1" value="${activity?.dia ? escapeHtml(String(activity.dia)) : ''}" placeholder="Flexible" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white">
+          </label>
+          <label class="text-xs text-slate-300">Categoría
+            <select name="category" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white">
+              <option value="actividad" ${(activity?.category || category) === 'actividad' ? 'selected' : ''}>Actividad</option>
+              <option value="gastronomia" ${(activity?.category || category) === 'gastronomia' ? 'selected' : ''}>Gastronomía</option>
+            </select>
+          </label>
+        </div>
+        <label class="block text-xs text-slate-300">Enlace de Google Maps (opcional)
+          <input name="mapa" type="url" placeholder="https://maps.google.com/?q=..." value="${escapeHtml(activity?.mapa || '')}" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white">
+        </label>
+        <label class="block text-xs text-slate-300">Nota (opcional)
+          <input name="nota" maxlength="200" value="${escapeHtml(activity?.nota || '')}" placeholder="Horario, reserva, detalle…" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white">
+        </label>
+        <label class="block text-xs text-slate-300">Web oficial (opcional)
+          <input name="website" type="url" placeholder="https://..." value="${escapeHtml(activity?.website || '')}" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white">
+        </label>
+        <p id="activity-editor-error" class="text-xs text-red-300" role="status"></p>
+        <div class="flex justify-end gap-2 pt-1">
+          <button type="button" data-modal-close class="rounded-lg border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800">Cancelar</button>
+          <button type="submit" class="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-500">Guardar</button>
+        </div>
+      </form>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelectorAll('[data-modal-close]').forEach(btn => btn.addEventListener('click', () => overlay.remove()));
+
+  const form = overlay.querySelector('#activity-editor-form');
+  form?.addEventListener('submit', async event => {
+    event.preventDefault();
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const errorEl = overlay.querySelector('#activity-editor-error');
+    const data = new FormData(form);
+    const existingCount = (city.actividades?.length || 0) + (city.gastronomia?.length || 0);
+    submitBtn.disabled = true;
+    errorEl.textContent = '';
+    try {
+      await window.TravelFirestore.saveActivity(countryId, city.id, {
+        id: activity?.id || undefined,
+        nombre: data.get('nombre'),
+        dia: data.get('dia'),
+        category: data.get('category'),
+        mapa: data.get('mapa'),
+        nota: data.get('nota'),
+        website: data.get('website'),
+        order: activity?.order ?? existingCount
+      });
+      overlay.remove();
+      if (onSaved) await onSaved();
+    } catch (error) {
+      errorEl.textContent = error.message || 'No se pudo guardar la actividad.';
+      submitBtn.disabled = false;
+    }
+  });
+}
+
+async function openCityCreatorModal(country, canonicalPaisId) {
+  const existingModal = document.getElementById('admin-editor-modal');
+  if (existingModal) existingModal.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'admin-editor-modal';
+  overlay.className = 'fixed inset-0 z-[120] flex items-end sm:items-center justify-center bg-slate-950/80 p-3 backdrop-blur-sm';
+  overlay.innerHTML = `
+    <div class="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-4 shadow-2xl space-y-3">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 class="text-base font-semibold text-white">Nueva ciudad en ${escapeHtml(country.pais || '')}</h3>
+        <button type="button" data-modal-close class="h-8 w-8 rounded-lg text-lg text-slate-400 hover:bg-slate-800 hover:text-white">×</button>
+      </div>
+      <form id="city-creator-form" class="space-y-3">
+        <label class="block text-xs text-slate-300">Nombre de la ciudad
+          <input name="nombre" required maxlength="100" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white">
+        </label>
+        <label class="block text-xs text-slate-300">Fechas
+          <input name="fechas" maxlength="80" placeholder="Ej: 10/01/2027 – 12/01/2027" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white">
+        </label>
+        <label class="block text-xs text-slate-300">Hotel (opcional)
+          <input name="hotel" maxlength="120" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white">
+        </label>
+        <label class="block text-xs text-slate-300">Enlace Maps del hotel (opcional)
+          <input name="mapaHotelLink" type="url" placeholder="https://maps.google.com/..." class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white">
+        </label>
+        <label class="block text-xs text-slate-300">Cómo llegar (opcional)
+          <textarea name="comoLlegar" rows="2" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white"></textarea>
+        </label>
+        <div class="space-y-1.5">
+          <p class="text-xs font-medium text-slate-300">Ubicación en el mapamundi (tocá el mapa para marcarla)</p>
+          <div id="city-picker-map" class="h-44 w-full overflow-hidden rounded-lg border border-slate-700 bg-slate-800"></div>
+          <p id="city-picker-coords" class="text-[11px] text-slate-400">Sin ubicación seleccionada todavía.</p>
+          <input type="hidden" name="latitude" value="">
+          <input type="hidden" name="longitude" value="">
+        </div>
+        <p id="city-creator-error" class="text-xs text-red-300" role="status"></p>
+        <div class="flex justify-end gap-2 pt-1">
+          <button type="button" data-modal-close class="rounded-lg border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800">Cancelar</button>
+          <button type="submit" class="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-500">Crear ciudad</button>
+        </div>
+      </form>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  let pickerMap = null;
+  const closeModal = () => {
+    pickerMap?.remove();
+    overlay.remove();
+  };
+  overlay.querySelectorAll('[data-modal-close]').forEach(btn => btn.addEventListener('click', closeModal));
+
+  try {
+    const L = await import('leaflet');
+    await import('leaflet/dist/leaflet.css');
+    const mapEl = overlay.querySelector('#city-picker-map');
+    if (mapEl && overlay.isConnected) {
+      pickerMap = L.map(mapEl, { zoomControl: true }).setView([50, 12], 4);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(pickerMap);
+      let marker = null;
+      pickerMap.on('click', event => {
+        const { lat, lng } = event.latlng;
+        overlay.querySelector('input[name="latitude"]').value = lat.toFixed(5);
+        overlay.querySelector('input[name="longitude"]').value = lng.toFixed(5);
+        overlay.querySelector('#city-picker-coords').textContent = `Ubicación marcada: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        if (marker) marker.setLatLng([lat, lng]);
+        else marker = L.circleMarker([lat, lng], { radius: 8, color: '#38a9ff', fillColor: '#38a9ff', fillOpacity: 0.9 }).addTo(pickerMap);
+      });
+      setTimeout(() => pickerMap?.invalidateSize(), 150);
+    }
+  } catch (error) {
+    console.warn('No se pudo inicializar el selector de mapa:', error);
+  }
+
+  const form = overlay.querySelector('#city-creator-form');
+  form?.addEventListener('submit', async event => {
+    event.preventDefault();
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const errorEl = overlay.querySelector('#city-creator-error');
+    const data = new FormData(form);
+    const latValue = data.get('latitude');
+    const lonValue = data.get('longitude');
+    submitBtn.disabled = true;
+    errorEl.textContent = '';
+    try {
+      await window.TravelFirestore.addCityWithRouteStop({
+        countryId: canonicalPaisId,
+        countryName: country.pais || '',
+        flag: country.flag || '',
+        cityData: {
+          nombre: data.get('nombre'),
+          fechas: data.get('fechas'),
+          hotel: data.get('hotel'),
+          mapaHotelLink: data.get('mapaHotelLink'),
+          comoLlegar: data.get('comoLlegar')
+        },
+        stopData: (latValue !== '' && lonValue !== '') ? {
+          latitude: Number(latValue),
+          longitude: Number(lonValue),
+          stage: data.get('fechas') || ''
+        } : null
+      });
+      closeModal();
+      showCiudadesView(canonicalPaisId, false);
+    } catch (error) {
+      errorEl.textContent = error.message || 'No se pudo crear la ciudad.';
+      submitBtn.disabled = false;
+    }
+  });
 }
 
 // Nivel 3: Vista de Detalle de Ciudad
@@ -1039,16 +1327,19 @@ function renderHomeView() {
   container.innerHTML = `
     <div id="map-scene" class="travel-map absolute inset-0 z-0" role="application" aria-label="Mapa interactivo de Europa"></div>
     <div id="map-switch-slot" class="absolute left-3 top-3 z-[1000]"></div>
-    <section id="map-destination-toast" class="absolute bottom-4 left-4 right-4 z-[1000] hidden items-center justify-between gap-3 rounded-xl border border-white/15 bg-[#12272deF] p-3 text-white shadow-2xl backdrop-blur-md" aria-live="polite">
-      <div class="min-w-0">
-        <p id="map-destination-country" class="text-[10px] font-bold uppercase tracking-[.16em] text-[#e7a66e]"></p>
-        <h2 id="map-destination-title" class="mt-1 truncate text-base font-semibold"></h2>
-        <p id="map-destination-stage" class="mt-0.5 truncate text-xs text-slate-300"></p>
+    <section id="map-destination-toast" class="absolute bottom-4 left-4 right-4 z-[1000] hidden flex-col gap-2.5 rounded-xl border border-white/15 bg-[#12272deF] p-3 text-white shadow-2xl backdrop-blur-md" aria-live="polite">
+      <div class="flex items-center justify-between gap-3">
+        <div class="min-w-0">
+          <p id="map-destination-country" class="text-[10px] font-bold uppercase tracking-[.16em] text-[#e7a66e]"></p>
+          <h2 id="map-destination-title" class="mt-1 truncate text-base font-semibold"></h2>
+          <p id="map-destination-stage" class="mt-0.5 truncate text-xs text-slate-300"></p>
+        </div>
+        <div class="flex shrink-0 items-center gap-2">
+          <button id="map-destination-open" type="button" class="hidden rounded-lg bg-[#e7a66e] px-3 py-2 text-xs font-bold text-[#172328] transition-colors hover:bg-[#f2bd8f]">Ir al itinerario</button>
+          <button id="map-destination-close" type="button" class="grid h-9 w-9 place-items-center rounded-lg text-lg text-slate-200 hover:bg-white/10" aria-label="Cerrar destino">×</button>
+        </div>
       </div>
-      <div class="flex shrink-0 items-center gap-2">
-        <button id="map-destination-open" type="button" class="hidden rounded-lg bg-[#e7a66e] px-3 py-2 text-xs font-bold text-[#172328] transition-colors hover:bg-[#f2bd8f]">Ir al itinerario</button>
-        <button id="map-destination-close" type="button" class="grid h-9 w-9 place-items-center rounded-lg text-lg text-slate-200 hover:bg-white/10" aria-label="Cerrar destino">×</button>
-      </div>
+      <div id="map-destination-activities" class="hidden max-h-36 space-y-1 overflow-y-auto border-t border-white/10 pt-2"></div>
     </section>
   `;
   const mapActions = document.createElement('div');
@@ -1058,13 +1349,18 @@ function renderHomeView() {
   container.querySelector('#map-switch-slot').appendChild(mapActions);
 
   let selectedMapLocation = null;
+  let mapSelectionToken = 0;
   const destinationToast = container.querySelector('#map-destination-toast');
   const itineraryButton = container.querySelector('#map-destination-open');
-  function showMapDestination(location) {
+  const activitiesBox = container.querySelector('#map-destination-activities');
+  async function showMapDestination(location) {
+    const token = ++mapSelectionToken;
     selectedMapLocation = location;
     if (!location) {
       destinationToast.classList.add('hidden');
       destinationToast.classList.remove('flex');
+      activitiesBox.classList.add('hidden');
+      activitiesBox.innerHTML = '';
       return;
     }
     container.querySelector('#map-destination-country').textContent = location.hasItinerary
@@ -1077,19 +1373,69 @@ function renderHomeView() {
     itineraryButton.classList.toggle('hidden', !(location.hasItinerary && location.countryId));
     destinationToast.classList.remove('hidden');
     destinationToast.classList.add('flex');
+
+    if (!(location.hasItinerary && location.countryId)) {
+      activitiesBox.classList.add('hidden');
+      activitiesBox.innerHTML = '';
+      return;
+    }
+
+    activitiesBox.classList.remove('hidden');
+    activitiesBox.innerHTML = '<p class="text-[11px] text-slate-300">Cargando actividades…</p>';
+    try {
+      const country = await window.TravelFirestore.loadCountry(location.countryId);
+      if (token !== mapSelectionToken || !container.isConnected) return;
+      const cities = Array.isArray(country?.ciudades) ? country.ciudades : [];
+      const cityIndex = Number.isInteger(location.cityIndex) && cities[location.cityIndex]
+        ? location.cityIndex
+        : (cities.length === 1 ? 0 : null);
+      const city = cityIndex !== null ? cities[cityIndex] : null;
+      const items = [
+        ...normalizeActivities(city?.actividades).map(item => ({ ...item, category: 'actividad' })),
+        ...normalizeActivities(city?.gastronomia).map(item => ({ ...item, category: 'gastronomia' }))
+      ];
+      if (!items.length) {
+        activitiesBox.innerHTML = '<p class="text-[11px] text-slate-400">No hay actividades cargadas para esta ciudad.</p>';
+        return;
+      }
+      activitiesBox.innerHTML = items.map((item, idx) => `
+        <button type="button" data-map-activity-idx="${idx}" class="flex w-full items-center justify-between gap-2 rounded-lg bg-white/5 px-2.5 py-1.5 text-left text-xs text-slate-100 hover:bg-white/15">
+          <span class="min-w-0 truncate">${item.category === 'gastronomia' ? '🍽️' : '🚶'} ${escapeHtml(item.nombre)}</span>
+          <span class="shrink-0 text-[10px] text-[#e7a66e]">Ver ➔</span>
+        </button>
+      `).join('');
+      activitiesBox.querySelectorAll('[data-map-activity-idx]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const item = items[Number(btn.dataset.mapActivityIdx)];
+          if (!item) return;
+          const sectionId = item.category === 'gastronomia' ? 'gastronomia' : 'actividades';
+          showCountrySectionView(country, location.countryId, sectionId, true, { focusActivityId: item.id });
+        });
+      });
+    } catch {
+      if (token === mapSelectionToken) {
+        activitiesBox.innerHTML = '<p class="text-[11px] text-slate-400">No se pudieron cargar las actividades.</p>';
+      }
+    }
   }
   itineraryButton.addEventListener('click', () => {
     if (selectedMapLocation) openMapItinerary(selectedMapLocation);
   });
   container.querySelector('#map-destination-close').addEventListener('click', () => showMapDestination(null));
 
-  import('./map.js')
-    .then(({ mountTravelMap }) => {
+  Promise.all([
+    import('./map.js'),
+    window.TravelFirestore.loadRouteStops().catch(() => [])
+  ])
+    .then(([{ mountTravelMap }, firestoreStops]) => {
       if (!container.isConnected || homeMode !== 'map') return;
       const mapContainer = container.querySelector('#map-scene');
       if (!mapContainer) return;
+      const sourceStops = Array.isArray(firestoreStops) && firestoreStops.length
+        ? firestoreStops
+        : routeCatalog.stops;
       const metadataById = new Map(routeCatalog.stops.map(stop => [stop.id, stop]));
-      const locations = routeCatalog.stops.map((stop, index, stops) => {
+      const locations = sourceStops.map((stop, index, stops) => {
         const sourceStop = metadataById.get(stop.id);
         return {
           ...stop,
