@@ -10,29 +10,6 @@ import {
   'use strict';
 
   const TABS = ['Valija', 'Compras', 'Gastos'];
-  const TAB_LABELS = { Valija: 'Valija', Compras: 'Compras', Gastos: 'Gastos' };
-  const DISPLAY_FIELDS = {
-    Valija: [
-      ['nombre', 'Artículo'],
-      ['cantidad', 'Cantidad'],
-      ['nota', 'Nota'],
-      ['asignado_a', 'Para']
-    ],
-    Compras: [
-      ['nombre', 'Qué comprar'],
-      ['cantidad', 'Cantidad'],
-      ['nota', 'Nota'],
-      ['asignado_a', 'Para']
-    ],
-    Gastos: [
-      ['descripcion', 'Gasto'],
-      ['fecha', 'Fecha'],
-      ['categoria', 'Categoría'],
-      ['moneda', 'Moneda'],
-      ['pagado_por', 'Pagó'],
-      ['participantes', 'Se divide entre']
-    ]
-  };
   const ACTOR_KEY = 'travelapp.vault.actor.v1';
   let viewState = null;
 
