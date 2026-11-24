@@ -22,3 +22,15 @@ test('countries added to Firestore later are appended to the home catalog', () =
 
   assert.equal(countries.at(-1).id, 'france');
 });
+
+test('an explicitly empty Spotify playlist list removes catalog fallback banners', () => {
+  const [germany] = mergeCountryCatalog([{
+    id: 'germany',
+    pais: 'Alemania',
+    playlists: [],
+    spotifyUrl: ''
+  }]).filter(country => country.id === 'germany');
+
+  assert.deepEqual(germany.playlists, []);
+  assert.equal(germany.spotifyUrl, '');
+});

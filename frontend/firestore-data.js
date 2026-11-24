@@ -20,9 +20,11 @@ import {
   buildActivityDocument,
   buildCityDocument,
   buildCityRouteStop,
+  buildPlaylistDocuments,
   buildItinerarySnapshot,
   diffDocuments,
-  INITIAL_COUNTRY_IDS
+  INITIAL_COUNTRY_IDS,
+  planCityDeletion
 } from './itinerary-sync.mjs';
 
 const COUNTRY_IMAGES = {
@@ -246,6 +248,26 @@ async function loadCountry(countryId) {
   });
 }
 
+async function loadCountryCities(countryId) {
+  if (!countryId) throw new Error('Falta el país para cargar sus ciudades.');
+  return cachedLoad(`country-cities:${countryId}`, async () => {
+    const snapshot = await getDocsSmart(collection(db, 'countries', countryId, 'cities'));
+    return orderedBy(snapshot.docs.map(cityDocument => {
+      const city = cityDocument.data();
+      return {
+        id: cityDocument.id,
+        nombre: city.nombre || '',
+        fechas: city.fechas || '',
+        hotel: city.hotel || '',
+        mapaHotelLink: city.mapaHotelLink || '',
+        supermercadosDestino: city.supermercadosDestino || '',
+        direccionHotel: city.direccionHotel || '',
+        order: city.order
+      };
+    }));
+  });
+}
+
 async function loadRouteStops() {
   return cachedLoad('route', async () => {
     const snapshot = await getDocsSmart(collection(db, 'routeStops'));
@@ -396,6 +418,8 @@ function invalidateCountryCache(countryId, includeRoute = false) {
   const key = `country:${countryId}`;
   sessionCache.delete(key);
   deletePersistentCache(key);
+  sessionCache.delete(`country-cities:${countryId}`);
+  deletePersistentCache(`country-cities:${countryId}`);
   if (includeRoute) {
     sessionCache.delete('route');
     deletePersistentCache('route');
@@ -419,8 +443,22 @@ async function deleteActivity(countryId, cityId, activityId) {
   invalidateCountryCache(countryId);
 }
 
+async function saveCountryPlaylists(countryId, playlists) {
+  if (!countryId) throw new Error('Falta el país para guardar las playlists.');
+  const cleanPlaylists = buildPlaylistDocuments(playlists);
+  await updateDoc(doc(db, 'countries', countryId), {
+    playlists: cleanPlaylists,
+    spotifyUrl: cleanPlaylists[0]?.url || ''
+  });
+  invalidateCountryCache(countryId, true);
+  return cleanPlaylists;
+}
+
 async function addCityWithRouteStop({ countryId, countryName = '', flag = '', cityData = {}, stopData = null }) {
   if (!countryId) throw new Error('Falta el país para crear la ciudad.');
+  if (!stopData || !Number.isFinite(Number(stopData.latitude)) || !Number.isFinite(Number(stopData.longitude))) {
+    throw new Error('Seleccioná la ubicación de la ciudad en el mapa antes de guardarla.');
+  }
   const existingCitiesSnapshot = await getDocs(collection(db, 'countries', countryId, 'cities'));
   const nextCityIndex = existingCitiesSnapshot.size;
   const slug = String(cityData.nombre || 'ciudad')
@@ -468,6 +506,143 @@ async function addCityWithRouteStop({ countryId, countryName = '', flag = '', ci
   await batch.commit();
   invalidateCountryCache(countryId, Boolean(createdStop));
   return { city: cityDoc, cityIndex: nextCityIndex, routeStop: createdStop };
+}
+
+async function updateCityWithRouteStop({
+  countryId,
+  cityId,
+  cityIndex,
+  cityData = {},
+  stopData = null
+}) {
+  if (!countryId || !cityId) throw new Error('Faltan país o ciudad para actualizar.');
+  const cityRef = doc(db, 'countries', countryId, 'cities', cityId);
+  const citySnapshot = await getDoc(cityRef);
+  if (!citySnapshot.exists()) throw new Error('La ciudad ya no existe en Firebase.');
+
+  const currentCity = citySnapshot.data();
+  const validatedCity = buildCityDocument({
+    ...currentCity,
+    ...cityData,
+    id: cityId,
+    order: Number.isFinite(Number(currentCity.order)) ? currentCity.order : cityIndex
+  });
+  const updatedCity = {
+    ...currentCity,
+    nombre: validatedCity.nombre,
+    fechas: validatedCity.fechas,
+    hotel: validatedCity.hotel,
+    mapaHotelLink: validatedCity.mapaHotelLink,
+    comoLlegar: validatedCity.comoLlegar
+  };
+  const batch = writeBatch(db);
+  batch.set(cityRef, updatedCity);
+
+  if (stopData && Number.isFinite(Number(stopData.latitude)) && Number.isFinite(Number(stopData.longitude))) {
+    const routeSnapshot = await getDocs(collection(db, 'routeStops'));
+    const relatedStops = routeSnapshot.docs
+      .filter(stop => stop.data().countryId === countryId && Number(stop.data().cityIndex) === Number(cityIndex));
+    if (!relatedStops.length) {
+      const routeStops = orderedBy(routeSnapshot.docs.map(stop => ({ id: stop.id, ...stop.data() })));
+      const slug = validatedCity.nombre
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '') || 'ciudad';
+      const newStop = buildCityRouteStop({
+        id: `${countryId}-${slug}-${Date.now().toString(36)}`,
+        name: validatedCity.nombre,
+        countryId,
+        countryName: stopData.countryName || '',
+        flag: stopData.flag || '',
+        cityIndex,
+        latitude: stopData.latitude,
+        longitude: stopData.longitude,
+        order: routeStops.length,
+        stage: stopData.stage || validatedCity.fechas || ''
+      });
+      batch.set(doc(db, 'routeStops', newStop.id), newStop);
+    }
+    relatedStops.forEach(stop => {
+      const currentStop = stop.data();
+      const updatedStop = buildCityRouteStop({
+        ...currentStop,
+        id: stop.id,
+        name: validatedCity.nombre,
+        countryId,
+        countryName: stopData.countryName || currentStop.countryName || '',
+        flag: stopData.flag || currentStop.flag || '',
+        cityIndex,
+        latitude: stopData.latitude,
+        longitude: stopData.longitude,
+        order: currentStop.order,
+        stage: currentStop.stage
+      });
+      batch.set(stop.ref, updatedStop);
+    });
+  }
+
+  await batch.commit();
+  invalidateCountryCache(countryId, Boolean(stopData));
+  return updatedCity;
+}
+
+async function deleteCityAndRouteStops({ countryId, cityId, cityIndex }) {
+  if (!countryId || !cityId || !Number.isInteger(Number(cityIndex))) {
+    throw new Error('Faltan datos válidos para eliminar la ciudad.');
+  }
+
+  const [citiesSnapshot, activitySnapshot, routeSnapshot] = await Promise.all([
+    getDocs(collection(db, 'countries', countryId, 'cities')),
+    getDocs(collection(db, 'countries', countryId, 'cities', cityId, 'activities')),
+    getDocs(collection(db, 'routeStops'))
+  ]);
+  const cityRecords = citiesSnapshot.docs.map(city => ({
+    id: city.id,
+    data: city.data()
+  }));
+  const stopRecords = routeSnapshot.docs.map(stop => ({
+    id: stop.id,
+    data: stop.data()
+  }));
+  const deletionPlan = planCityDeletion({
+    countryId,
+    cityId,
+    cityIndex,
+    cities: cityRecords,
+    routeStops: stopRecords
+  });
+  const operations = [
+    { type: 'delete', ref: doc(db, 'countries', countryId, 'cities', cityId) },
+    ...activitySnapshot.docs.map(activity => ({ type: 'delete', ref: activity.ref }))
+  ];
+  deletionPlan.cityUpdates.forEach(city => operations.push({
+    type: 'set',
+    ref: doc(db, 'countries', countryId, 'cities', city.id),
+    data: city.data
+  }));
+  deletionPlan.routeStopUpdates.forEach(stop => operations.push({
+    type: 'set',
+    ref: doc(db, 'routeStops', stop.id),
+    data: stop.data
+  }));
+  deletionPlan.routeStopsToDelete.forEach(stop => operations.push({
+    type: 'delete',
+    ref: doc(db, 'routeStops', stop.id)
+  }));
+
+  for (let start = 0; start < operations.length; start += 400) {
+    const batch = writeBatch(db);
+    operations.slice(start, start + 400).forEach(operation => {
+      if (operation.type === 'delete') batch.delete(operation.ref);
+      else batch.set(operation.ref, operation.data);
+    });
+    await batch.commit();
+  }
+
+  invalidateCountryCache(countryId, true);
+  return { deletedCityId: cityId, deletedRouteStops: deletionPlan.routeStopsToDelete.length };
 }
 
 async function getMember(uid) {
@@ -580,6 +755,7 @@ window.TravelFirestore = Object.freeze({
   VAULT_SCHEMAS,
   loadCountries,
   loadCountry,
+  loadCountryCities,
   loadRouteStops,
   revalidateItinerary,
   refreshItineraryNow,
@@ -589,7 +765,10 @@ window.TravelFirestore = Object.freeze({
   ensureInitialSeed,
   saveActivity,
   deleteActivity,
+  saveCountryPlaylists,
   addCityWithRouteStop,
+  updateCityWithRouteStop,
+  deleteCityAndRouteStops,
   getMember,
   submitAccessRequest,
   listAccessRequests,

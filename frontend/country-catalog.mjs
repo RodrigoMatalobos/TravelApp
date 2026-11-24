@@ -29,10 +29,14 @@ export function mergeCountryCatalog(storedCountries, countryImages = {}) {
       id: country.id,
       pais: stored.pais || country.pais,
       flag: stored.flag || country.flag,
-      spotifyUrl: country.spotifyUrl || stored.spotifyUrl || '',
-      playlists: (Array.isArray(stored.playlists) && stored.playlists.length)
+      spotifyUrl: typeof stored.spotifyUrl === 'string'
+        ? stored.spotifyUrl
+        : (country.spotifyUrl || ''),
+      playlists: Array.isArray(stored.playlists)
         ? stored.playlists
-        : (country.playlists || []),
+        : (stored.spotifyUrl
+          ? [{ nombre: 'Playlist del viaje', url: stored.spotifyUrl }]
+          : (country.playlists || [])),
       bgImage: countryImages[country.id] || stored.bgImage || '',
       order
     };

@@ -26,6 +26,27 @@ export function normalizePlaylists(source) {
   return normalized;
 }
 
+export function buildPlaylistDocuments(playlists) {
+  if (!Array.isArray(playlists)) throw new Error('Las playlists deben enviarse como una lista.');
+  return playlists.flatMap(item => {
+    const nombre = text(item?.nombre);
+    const url = text(item?.url);
+    if (!nombre && !url) return [];
+    if (!url) throw new Error('Cada banner de Spotify necesita un enlace.');
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(url);
+    } catch {
+      throw new Error('Ingresá un enlace válido de Spotify.');
+    }
+    if (parsedUrl.protocol !== 'https:' || parsedUrl.hostname !== 'open.spotify.com') {
+      throw new Error('El enlace debe ser una URL HTTPS de open.spotify.com.');
+    }
+    if (parsedUrl.pathname === '/') throw new Error('El enlace no apunta a una playlist o contenido de Spotify.');
+    return [{ nombre: nombre || 'Playlist', url: parsedUrl.toString() }];
+  });
+}
+
 // Un transporte es { tipo, descripcion, fecha, salida, llegada }.
 // "tipo" puede ser: vuelo, tren, bus, ferry u otro texto libre.
 function normalizeTransportes(value) {
@@ -194,6 +215,43 @@ export function diffDocuments(existingDocs, desiredDocs) {
     upserts: desiredDocs.filter(item => !existingByKey.has(keyOf(item)) || !documentsEqual(existingByKey.get(keyOf(item)), item.data)),
     deletes: existingDocs.filter(item => !desiredKeys.has(keyOf(item)))
   };
+}
+
+export function planCityDeletion({ countryId, cityId, cityIndex, cities = [], routeStops = [] }) {
+  const deletedIndex = Number(cityIndex);
+  if (!countryId || !cityId || !Number.isInteger(deletedIndex) || deletedIndex < 0) {
+    throw new Error('Faltan datos válidos para eliminar la ciudad.');
+  }
+
+  const orderedCities = [...cities].sort((first, second) =>
+    Number(first.data?.order || 0) - Number(second.data?.order || 0));
+  if (!orderedCities.some(city => city.id === cityId)) {
+    throw new Error('La ciudad ya no existe en Firebase.');
+  }
+
+  const cityUpdates = orderedCities
+    .filter(city => city.id !== cityId)
+    .flatMap((city, index) => Number(city.data?.order) !== index
+      ? [{ id: city.id, data: { ...city.data, order: index } }]
+      : []);
+  const orderedStops = [...routeStops].sort((first, second) =>
+    Number(first.data?.order || 0) - Number(second.data?.order || 0));
+  const routeStopsToDelete = orderedStops.filter(stop =>
+    stop.data?.countryId === countryId && Number(stop.data?.cityIndex) === deletedIndex);
+  const deletedStopIds = new Set(routeStopsToDelete.map(stop => stop.id));
+  const routeStopUpdates = orderedStops
+    .filter(stop => !deletedStopIds.has(stop.id))
+    .flatMap((stop, index) => {
+      const data = { ...stop.data, order: index };
+      if (data.countryId === countryId && Number(data.cityIndex) > deletedIndex) {
+        data.cityIndex = Number(data.cityIndex) - 1;
+      }
+      return data.order !== stop.data?.order || data.cityIndex !== stop.data?.cityIndex
+        ? [{ id: stop.id, data }]
+        : [];
+    });
+
+  return { cityUpdates, routeStopsToDelete, routeStopUpdates };
 }
 
 function validateSource(countries, route) {

@@ -198,7 +198,7 @@ async function replaceTicketFiles(files, onProgress = () => {}, { merge = false 
 }
 
 export function chooseLocalFolder() {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     const picker = document.createElement('input');
     picker.type = 'file';
     picker.multiple = true;

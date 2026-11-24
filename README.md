@@ -18,13 +18,17 @@ npm run build
 
 Vite usa `frontend/` como raíz y genera el sitio en `dist/`. Firebase CLI lee `firebase.json` en la raíz, que apunta a `backend/firestore.rules`.
 
-Los itinerarios siguen el esquema de `tool/templates/country-template.json`. Al abrir la app, una cuenta administradora compara los JSON versionados de `frontend/data/` y `map-locations.json` con Firestore; crea Alemania y cualquier país faltante, actualiza diferencias, elimina IDs heredados conocidos y sincroniza todas las paradas del globo sin mostrar un importador.
+Los itinerarios siguen el esquema de `tool/templates/country-template.json`. Una cuenta administradora carga los JSON versionados de `frontend/data/` y `map-locations.json` en Firestore solo cuando todavía no hay países cargados. Después de esa carga inicial, Firestore es la fuente principal y la app no vuelve a sobrescribir cambios hechos desde la interfaz con los JSON locales.
 
 Los archivos de tickets se eligen desde la carpeta local `TravelApp` en el dispositivo de una cuenta administradora y se guardan en IndexedDB; no se suben a Firebase. Cada dispositivo administrador debe seleccionarla por separado. La estructura esperada es `TravelApp/<País>/<Ciudad>/<archivo>`.
 
 ## Cómo editar el viaje sin tocar código
 
-Todo el contenido sale de los JSON de `frontend/data/`. Editás el archivo, subís el cambio y al abrir la app una cuenta administradora lo sincroniza solo con Firebase (escribe únicamente lo que cambió).
+Los JSON de `frontend/data/` sirven como semilla inicial y respaldo. Después de cargar el itinerario, una cuenta administradora puede agregar ciudades desde el itinerario del país, marcar sus coordenadas en el mapa y usar el menú hamburguesa de cada tarjeta de ciudad para editarla o eliminarla. Al eliminarla también se borran sus actividades y sus paradas vinculadas, y se reordenan las ciudades restantes. Las actividades y la gastronomía se administran con el botón de lápiz en sus secciones. En Actividades, cada persona puede guardar marcas locales de favorita o importante; las importantes se muestran como recordatorio en la portada desde el día programado hasta marcarlas como listas. Estas marcas no sincronizan entre dispositivos.
+
+La portada muestra hora local y clima actual por país. Durante las fechas del itinerario usa la ciudad correspondiente; fuera de esas fechas muestra la primera ciudad. El clima se consulta en Open-Meteo al cargar por primera vez cada ubicación, se muestra desde la caché local antes de revalidar y se vuelve a consultar como máximo cada seis horas. Si no hay internet, se conserva el último resultado guardado.
+
+Las cuentas administradoras pueden agregar, editar y quitar los banners de Spotify desde el botón **Editar banners de Spotify** en cada país.
 
 Campos de cada país (`frontend/data/<pais>.json`):
 
@@ -49,4 +53,5 @@ Las coordenadas y el orden del globo están en `frontend/data/map-locations.json
 - Además, los datos se descargan de Firebase una vez al día por dispositivo; navegar, volver atrás o reabrir pestañas usa la caché local sin nuevas descargas.
 - Una vez al día se hace una comparación en segundo plano contra Firebase; si algo cambió, la pantalla se actualiza sola.
 - El botón 🔄 “Actualizar datos” del menú ☰ fuerza la descarga en el momento.
+- Clima y hora usan la última respuesta guardada localmente mientras se consulta el servicio, sin bloquear la portada; los intentos de actualización se limitan a uno cada seis horas por ubicación.
 - La barra fina verde bajo el encabezado indica descargas reales en curso.

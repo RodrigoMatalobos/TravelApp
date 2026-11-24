@@ -6,9 +6,11 @@ import {
   buildCityDocument,
   buildCityRouteStop,
   buildItinerarySnapshot,
+  buildPlaylistDocuments,
   diffDocuments,
   documentsEqual,
-  INITIAL_COUNTRY_IDS
+  INITIAL_COUNTRY_IDS,
+  planCityDeletion
 } from '../frontend/itinerary-sync.mjs';
 
 function readJson(path) {
@@ -89,6 +91,22 @@ test('una playlist sin URL se descarta y el campo viejo spotifyUrl sigue funcion
   assert.deepEqual(sweden.data.playlists, [{ nombre: 'Playlist del viaje', url: 'https://spotify.test/suecia' }]);
 });
 
+test('buildPlaylistDocuments valida y permite reemplazar o quitar todos los banners', () => {
+  assert.deepEqual(buildPlaylistDocuments([
+    { nombre: 'Europa', url: 'https://open.spotify.com/playlist/abc123' },
+    { nombre: '', url: '' }
+  ]), [{ nombre: 'Europa', url: 'https://open.spotify.com/playlist/abc123' }]);
+  assert.deepEqual(buildPlaylistDocuments([]), []);
+  assert.throws(
+    () => buildPlaylistDocuments([{ nombre: 'No segura', url: 'http://open.spotify.com/playlist/abc123' }]),
+    /HTTPS de open\.spotify\.com/
+  );
+  assert.throws(
+    () => buildPlaylistDocuments([{ nombre: 'URL inválida', url: 'https://example.com/playlist' }]),
+    /HTTPS de open\.spotify\.com/
+  );
+});
+
 test('la instantánea conserva las webs oficiales de lugares gastronómicos', () => {
   const snapshot = buildItinerarySnapshot({ countries, route });
   const cafeLouvre = snapshot.activities.find(activity => activity.data.nombre.startsWith('Café Louvre'));
@@ -140,4 +158,38 @@ test('buildCityDocument y buildCityRouteStop generan ciudad y parada de mapa vá
   assert.equal(stop.cityIndex, 3);
   assert.equal(stop.latitude, 45.4642);
   assert.throws(() => buildCityRouteStop({ name: 'Sin coords', latitude: NaN, longitude: 9 }), /coordenadas válidas/i);
+});
+
+test('planCityDeletion removes linked stops and reindexes later cities and route stops', () => {
+  const plan = planCityDeletion({
+    countryId: 'spain',
+    cityId: 'city-02',
+    cityIndex: 1,
+    cities: [
+      { id: 'city-01', data: { nombre: 'Barcelona', order: 0 } },
+      { id: 'city-02', data: { nombre: 'Madrid', order: 1 } },
+      { id: 'city-03', data: { nombre: 'Sevilla', order: 2 } }
+    ],
+    routeStops: [
+      { id: 'barcelona', data: { countryId: 'spain', cityIndex: 0, order: 1 } },
+      { id: 'madrid-arrival', data: { countryId: 'spain', cityIndex: 1, order: 2 } },
+      { id: 'madrid-return', data: { countryId: 'spain', cityIndex: 1, order: 3 } },
+      { id: 'seville', data: { countryId: 'spain', cityIndex: 2, order: 4 } },
+      { id: 'flight', data: { order: 0 } }
+    ]
+  });
+
+  assert.deepEqual(plan.cityUpdates, [
+    { id: 'city-03', data: { nombre: 'Sevilla', order: 1 } }
+  ]);
+  assert.deepEqual(plan.routeStopsToDelete.map(stop => stop.id), ['madrid-arrival', 'madrid-return']);
+  assert.deepEqual(plan.routeStopUpdates, [
+    { id: 'seville', data: { countryId: 'spain', cityIndex: 1, order: 2 } },
+  ]);
+  assert.throws(() => planCityDeletion({
+    countryId: 'spain',
+    cityId: 'missing',
+    cityIndex: 0,
+    cities: []
+  }), /ya no existe/i);
 });
