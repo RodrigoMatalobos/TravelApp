@@ -20,6 +20,7 @@ import {
   formatLocalTime,
   getCachedCurrentConditions,
   localDateKey,
+  selectCityLocation,
   selectCountryDestination,
   weatherPresentation
 } from './destination-conditions.mjs';
@@ -40,6 +41,7 @@ let authCallbackSequence = 0;
 let viewSequence = 0;
 let homeConditionRequestSequence = 0;
 let homeConditionClockTimer = null;
+let cityConditionsTimer = null;
 let homeConditionTimeZones = new Map();
 let homeConditionsDate = '';
 
@@ -55,7 +57,7 @@ if ('serviceWorker' in navigator && import.meta.env.DEV) {
     window.location.reload();
   });
 
-  navigator.serviceWorker.register('sw.js?v=1.0.33', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('sw.js?v=1.0.34', { updateViaCache: 'none' })
     .then(registration => registration.update())
     .catch(err => console.error('Service Worker error:', err));
 }
@@ -694,13 +696,20 @@ function showCiudadesView(paisId, recordHistory = true) {
         `;
         container.appendChild(spotifyBtn);
       });
-      if (activeMember?.role === 'admin') {
+      const isAdminUser = activeMember?.role === 'admin';
+      if (isAdminUser) {
         const editPlaylistsButton = document.createElement('button');
         editPlaylistsButton.type = 'button';
-        editPlaylistsButton.className = 'mb-4 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-left text-xs font-semibold text-slate-200 hover:bg-slate-700';
-        editPlaylistsButton.textContent = '✏️ Editar banners de Spotify';
+        editPlaylistsButton.className = 'w-full rounded-xl border border-dashed border-emerald-500/60 bg-emerald-950/30 p-3 text-sm font-semibold text-emerald-200 hover:bg-emerald-900/40';
+        editPlaylistsButton.textContent = '+';
+        editPlaylistsButton.setAttribute('aria-label', 'Agregar o editar banners de Spotify');
         editPlaylistsButton.addEventListener('click', () => openSpotifyPlaylistsEditor(pais, canonicalPaisId));
         container.appendChild(editPlaylistsButton);
+      }
+      if (playlists.length || isAdminUser) {
+        const spotifyDivider = document.createElement('hr');
+        spotifyDivider.className = 'border-slate-700';
+        container.appendChild(spotifyDivider);
       }
 
       const ciudades = Array.isArray(pais.ciudades) ? pais.ciudades : [];
@@ -717,22 +726,25 @@ function showCiudadesView(paisId, recordHistory = true) {
         cityCard.className = 'relative';
         const cityButton = document.createElement('button');
         cityButton.type = 'button';
-        cityButton.className = 'w-full bg-slate-800 border border-slate-700 p-4 pr-16 rounded-xl text-left hover:bg-slate-700 transition-all flex justify-between items-center active:scale-98 shadow-sm';
+        cityButton.className = `w-full bg-slate-800 border border-slate-700 p-4 ${activeMember?.role === 'admin' && c.id ? 'pr-14' : ''} rounded-xl text-left hover:bg-slate-700 transition-all flex justify-between items-center gap-3 active:scale-98 shadow-sm`;
         cityButton.addEventListener('click', () => showDetalleCiudadView(pais, index, canonicalPaisId));
         cityButton.innerHTML = `
-          <div>
+          <div class="min-w-0">
             <h3 class="font-bold text-base text-white">${escapeHtml(c.nombre || 'Ciudad sin nombre')}</h3>
             <p class="text-xs text-blue-400 font-medium mt-0.5">${escapeHtml(c.fechas || '')}</p>
           </div>
-          <span class="text-slate-400 text-lg">➔</span>
+          <span data-city-conditions="${index}" class="flex shrink-0 flex-col items-end gap-0.5 text-xs font-semibold text-slate-200">
+            <span data-city-clock class="tabular-nums">--:--</span>
+            <span data-city-weather>— °C</span>
+          </span>
         `;
         cityCard.appendChild(cityButton);
 
         if (activeMember?.role === 'admin' && c.id) {
           const menuWrapper = document.createElement('div');
-          menuWrapper.className = 'absolute right-2 top-2 z-10';
+          menuWrapper.className = 'absolute right-1 top-1/2 z-10 -translate-y-1/2';
           menuWrapper.innerHTML = `
-            <button type="button" aria-label="Opciones de ${escapeHtml(c.nombre || 'ciudad')}" aria-expanded="false" class="city-options-toggle h-10 w-10 rounded-lg text-xl text-slate-200 hover:bg-slate-600">☰</button>
+            <button type="button" aria-label="Opciones de ${escapeHtml(c.nombre || 'ciudad')}" aria-expanded="false" class="city-options-toggle h-10 w-8 rounded-lg text-2xl font-bold leading-none text-slate-200 hover:bg-slate-600">⋮</button>
             <div class="city-options-menu absolute right-0 top-full hidden min-w-40 overflow-hidden rounded-lg border border-slate-600 bg-slate-900 py-1 shadow-xl">
               <button type="button" data-edit-city class="block w-full px-3 py-2 text-left text-xs text-slate-100 hover:bg-slate-800">✏️ Editar datos</button>
               <button type="button" data-delete-city class="block w-full px-3 py-2 text-left text-xs text-red-200 hover:bg-red-950/60">🗑️ Eliminar ciudad</button>
@@ -816,6 +828,8 @@ function showCiudadesView(paisId, recordHistory = true) {
         `).join('');
         container.appendChild(additionalBlock);
       }
+        loadCityConditions(container, pais, routeStops, () =>
+          requestId === viewSequence && currentViewState.level === 'ciudades');
     })
     .catch(error => {
       setTopLoading(false);
@@ -1611,19 +1625,67 @@ function findHomeCountryCard(countryId) {
     .find(card => card.dataset.countryCard === countryId);
 }
 
-function showHomeConditions(countryId, destination, conditions) {
-  const card = findHomeCountryCard(countryId);
-  if (!card || !destination || !conditions) return;
-  const clock = card.querySelector('[data-country-clock]');
-  const weatherLabel = card.querySelector('[data-country-weather]');
-  homeConditionTimeZones.set(countryId, conditions.timeZone);
+function applyConditions(clock, weatherLabel, cityName, conditions) {
   const presentation = weatherPresentation(conditions.weatherCode);
   const degrees = Math.round(conditions.temperatureC);
   weatherLabel.textContent = `${presentation.icon} ${degrees} °C`;
-  weatherLabel.title = `${presentation.label} en ${destination.cityName}${conditions.stale ? ' · dato guardado en caché' : ''}`;
-  weatherLabel.setAttribute('aria-label', `${presentation.label}, ${degrees} grados Celsius en ${destination.cityName}`);
+  weatherLabel.title = `${presentation.label} en ${cityName}${conditions.stale ? ' · dato guardado en caché' : ''}`;
+  weatherLabel.setAttribute('aria-label', `${presentation.label}, ${degrees} grados Celsius en ${cityName}`);
+  clock.dataset.timeZone = conditions.timeZone;
   clock.textContent = formatLocalTime(conditions.timeZone);
-  clock.title = `Hora local de ${destination.cityName}`;
+  clock.title = `Hora local de ${cityName}`;
+}
+
+function showHomeConditions(countryId, destination, conditions) {
+  const card = findHomeCountryCard(countryId);
+  if (!card || !destination || !conditions) return;
+  homeConditionTimeZones.set(countryId, conditions.timeZone);
+  applyConditions(
+    card.querySelector('[data-country-clock]'),
+    card.querySelector('[data-country-weather]'),
+    destination.cityName,
+    conditions
+  );
+}
+
+function loadCityConditions(container, country, routeStops, isCurrentView) {
+  if (cityConditionsTimer) clearInterval(cityConditionsTimer);
+  cityConditionsTimer = null;
+
+  container.querySelectorAll('[data-city-conditions]').forEach(element => {
+    const clock = element.querySelector('[data-city-clock]');
+    const weatherLabel = element.querySelector('[data-city-weather]');
+    const location = selectCityLocation(country, Number(element.dataset.cityConditions), routeStops);
+    if (!location || !Number.isFinite(location.latitude) || !Number.isFinite(location.longitude)) {
+      weatherLabel.title = 'Esta ciudad todavía no tiene ubicación en el mapa.';
+      return;
+    }
+    try {
+      const cached = getCachedCurrentConditions(location);
+      if (cached) applyConditions(clock, weatherLabel, location.cityName, cached);
+    } catch (error) {
+      console.warn(`No se pudo leer el clima guardado de ${location.cityName}:`, error);
+    }
+    fetchCurrentConditions(location)
+      .then(conditions => {
+        if (isCurrentView()) applyConditions(clock, weatherLabel, location.cityName, conditions);
+      })
+      .catch(error => {
+        weatherLabel.title = error?.message || 'No se pudo consultar el clima.';
+        console.warn(`No se pudo cargar hora y clima de ${location.cityName}:`, error);
+      });
+  });
+
+  cityConditionsTimer = setInterval(() => {
+    if (!isCurrentView()) {
+      clearInterval(cityConditionsTimer);
+      cityConditionsTimer = null;
+      return;
+    }
+    container.querySelectorAll('[data-city-clock][data-time-zone]').forEach(clock => {
+      clock.textContent = formatLocalTime(clock.dataset.timeZone);
+    });
+  }, 60 * 1000);
 }
 
 function createImportantActivitiesBanner() {

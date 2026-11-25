@@ -5,6 +5,7 @@ import {
   fetchCurrentConditions,
   formatLocalTime,
   getCachedCurrentConditions,
+  selectCityLocation,
   selectCountryDestination,
   weatherPresentation
 } from '../frontend/destination-conditions.mjs';
@@ -116,6 +117,36 @@ test('cached conditions display immediately and a failed refresh is throttled fo
   assert.equal(stale.temperatureC, 12);
   assert.equal(stale.stale, true);
   assert.equal(fetchCount, 2);
+});
+
+test('a failed first request without cache does not block the next attempt', async () => {
+  const storage = createMemoryStorage();
+  const location = { latitude: 40.4168, longitude: -3.7038 };
+  await assert.rejects(
+    fetchCurrentConditions(location, { fetchImpl: async () => { throw new Error('offline'); }, storage, now: 1000 }),
+    /offline/
+  );
+  const conditions = await fetchCurrentConditions(location, {
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({
+        timezone: 'Europe/Madrid',
+        current: { temperature_2m: 9, weather_code: 3, time: '2026-11-24T11:00' }
+      })
+    }),
+    storage,
+    now: 2000
+  });
+  assert.equal(conditions.temperatureC, 9);
+  assert.equal(conditions.timeZone, 'Europe/Madrid');
+});
+
+test('selectCityLocation picks the stop that matches each city of the country', () => {
+  const laponia = selectCityLocation(finland, 1, finlandStops);
+  assert.equal(laponia.cityName, 'Inari');
+  assert.equal(selectCityLocation(finland, 0, finlandStops).cityName, 'Helsinki');
+  assert.equal(selectCityLocation(finland, 5, finlandStops), null);
+  assert.equal(selectCityLocation(finland, 1, []).latitude, null);
 });
 
 test('formatLocalTime and weatherPresentation return accessible localized labels', () => {

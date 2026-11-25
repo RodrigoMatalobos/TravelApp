@@ -1,6 +1,7 @@
-const WEATHER_CACHE_PREFIX = 'travelapp-weather-v1:';
+const WEATHER_CACHE_PREFIX = 'travelapp-weather-v2:';
 const WEATHER_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const memoryCache = new Map();
+const inFlightRequests = new Map();
 
 function normalizedText(value) {
   return String(value || '')
@@ -57,6 +58,28 @@ function stopMatchScore(stop, city) {
   return score;
 }
 
+export function selectCityLocation(country, cityIndex, routeStops = []) {
+  const city = country?.ciudades?.[cityIndex];
+  if (!city) return null;
+  const stop = routeStops
+    .filter(candidate => candidate.countryId === country.id && Number(candidate.cityIndex) === cityIndex)
+    .sort((first, second) => Number(first.order || 0) - Number(second.order || 0))
+    .map(candidate => ({ candidate, score: stopMatchScore(candidate, city) }))
+    .sort((first, second) => second.score - first.score)[0]?.candidate;
+  const hasCoordinates = stop
+    && Number.isFinite(Number(stop.latitude))
+    && Number.isFinite(Number(stop.longitude));
+
+  return {
+    countryId: country.id,
+    cityIndex,
+    cityName: stop?.name || city.nombre || country.pais || '',
+    latitude: hasCoordinates ? Number(stop.latitude) : null,
+    longitude: hasCoordinates ? Number(stop.longitude) : null,
+    timeZone: ''
+  };
+}
+
 export function selectCountryDestination(country, routeStops = [], date = new Date()) {
   const cities = Array.isArray(country?.ciudades) ? country.ciudades : [];
   if (!cities.length) return null;
@@ -69,35 +92,7 @@ export function selectCountryDestination(country, routeStops = [], date = new Da
   const isTravelDate = cityIndex >= 0;
   if (!isTravelDate) cityIndex = 0;
 
-  const city = cities[cityIndex];
-  const matchingStops = routeStops
-    .filter(stop => stop.countryId === country.id && Number(stop.cityIndex) === cityIndex)
-    .sort((first, second) => Number(first.order || 0) - Number(second.order || 0));
-  const stop = matchingStops
-    .map(candidate => ({ candidate, score: stopMatchScore(candidate, city) }))
-    .sort((first, second) => second.score - first.score)[0]?.candidate;
-
-  if (!stop || !Number.isFinite(Number(stop.latitude)) || !Number.isFinite(Number(stop.longitude))) {
-    return {
-      countryId: country.id,
-      cityIndex,
-      cityName: city.nombre || country.pais || '',
-      isTravelDate,
-      latitude: null,
-      longitude: null,
-      timeZone: ''
-    };
-  }
-
-  return {
-    countryId: country.id,
-    cityIndex,
-    cityName: stop.name || city.nombre || country.pais || '',
-    isTravelDate,
-    latitude: Number(stop.latitude),
-    longitude: Number(stop.longitude),
-    timeZone: ''
-  };
+  return { ...selectCityLocation(country, cityIndex, routeStops), isTravelDate };
 }
 
 function storageOrNull(storage) {
@@ -119,7 +114,7 @@ function readCache(key, storage) {
     if (value) {
       const parsed = JSON.parse(value);
       const hasConditions = Number.isFinite(parsed?.storedAt) && parsed?.conditions?.timeZone;
-      if (hasConditions || Number.isFinite(parsed?.lastAttemptAt)) return parsed;
+      if (hasConditions) return parsed;
     }
   } catch {
     // Continue with the in-memory cache if persistent storage is unavailable.
@@ -169,22 +164,31 @@ export function getCachedCurrentConditions(location, { storage, now = Date.now()
   };
 }
 
-export async function fetchCurrentConditions(
-  location,
+export function fetchCurrentConditions(location, options = {}) {
+  const { fetchImpl = globalThis.fetch, storage } = options;
+  const { latitude, longitude } = validateLocation(location, fetchImpl);
+  const cacheKey = weatherCacheKey(latitude, longitude);
+  // Evita consultas duplicadas cuando la portada o la lista de ciudades se renderizan a la vez.
+  if (inFlightRequests.has(cacheKey) && storage === undefined) return inFlightRequests.get(cacheKey);
+
+  const request = requestConditions({ latitude, longitude, cacheKey }, options)
+    .finally(() => inFlightRequests.delete(cacheKey));
+  if (storage === undefined) inFlightRequests.set(cacheKey, request);
+  return request;
+}
+
+async function requestConditions(
+  { latitude, longitude, cacheKey },
   { fetchImpl = globalThis.fetch, storage, now = Date.now(), timeoutMs = 8000 } = {}
 ) {
-  const { latitude, longitude } = validateLocation(location, fetchImpl);
-
-  const cacheKey = weatherCacheKey(latitude, longitude);
   const currentStorage = storageOrNull(storage);
   const cached = readCache(cacheKey, currentStorage);
-  if (cached && now - cached.storedAt < WEATHER_CACHE_TTL_MS) {
+  if (cached?.conditions && now - cached.storedAt < WEATHER_CACHE_TTL_MS) {
     return { ...cached.conditions, stale: false };
   }
-  const lastAttemptAt = Number(cached?.lastAttemptAt ?? cached?.storedAt ?? 0);
-  if (cached && now - lastAttemptAt < WEATHER_CACHE_TTL_MS) {
-    if (cached.conditions) return { ...cached.conditions, stale: true };
-    throw new Error('No hay datos de clima guardados y se mantiene el último intento de consulta.');
+  // Tras un intento fallido se conserva el dato guardado y se evita reintentar durante el período de caché.
+  if (cached?.conditions && now - Number(cached.lastAttemptAt || 0) < WEATHER_CACHE_TTL_MS) {
+    return { ...cached.conditions, stale: true };
   }
 
   const url = new URL('https://api.open-meteo.com/v1/forecast');
@@ -196,7 +200,6 @@ export async function fetchCurrentConditions(
 
   const controller = typeof AbortController === 'function' ? new AbortController() : null;
   const timeout = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
-  writeCache(cacheKey, { ...cached, lastAttemptAt: now }, currentStorage);
   try {
     const response = await fetchImpl(url.toString(), controller ? { signal: controller.signal } : undefined);
     if (!response?.ok) throw new Error(`El servicio de clima respondió ${response?.status || 'sin estado'}.`);
@@ -212,8 +215,10 @@ export async function fetchCurrentConditions(
     writeCache(cacheKey, { storedAt: now, lastAttemptAt: now, conditions }, currentStorage);
     return conditions;
   } catch (error) {
-    writeCache(cacheKey, { ...cached, lastAttemptAt: now }, currentStorage);
-    if (cached?.conditions) return { ...cached.conditions, stale: true };
+    if (cached?.conditions) {
+      writeCache(cacheKey, { ...cached, lastAttemptAt: now }, currentStorage);
+      return { ...cached.conditions, stale: true };
+    }
     if (error?.name === 'AbortError') {
       throw new Error('La consulta del clima superó el tiempo de espera.', { cause: error });
     }
